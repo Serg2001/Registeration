@@ -9,6 +9,7 @@ using Registeration.Repos;
 using System.Reflection;
 using Registeration.Services;
 using Microsoft.Extensions.DependencyInjection;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +50,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<Registeration.Repos.IAccount, Account>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7266") });
 builder.Services.AddScoped<IAccountService, AccountService>();
+
+builder.Services.AddMudServices();
 
 var app = builder.Build();
 

@@ -1,0 +1,25 @@
+﻿@page "/Api"
+
+<PageTitle>API</PageTitle>
+
+<h1>Hello!</h1>
+@using Registeration.DTOs
+@using Registeration.Services
+@inject PupilService PupilService
+
+<button @onclick="LoadPupil">Load Pupil Info</button>
+
+@if (pupil != null)
+{
+    <p><strong>Name:</strong> @pupil.School</p>
+}
+
+
+@code {
+    private PupilInfo? pupil;
+
+    private async Task LoadPupil()
+    {
+        pupil = await PupilService.GetPupilBySocNumber("2222180325");
+    }
+}

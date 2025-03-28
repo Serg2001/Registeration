@@ -29,6 +29,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 
+builder.Services.AddHttpClient("CRM", client =>
+{
+    client.BaseAddress = new Uri("https://crm.dshh.am:1400");
+});
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -50,6 +55,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<Registeration.Repos.IAccount, Account>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7266") });
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<PupilService>();
 
 builder.Services.AddMudServices();
 

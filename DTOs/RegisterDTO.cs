@@ -4,17 +4,15 @@ namespace Registeration.DTOs
 {
     public class RegisterDTO
     {
-        [Required]
-        public string Name { get; set; } = string.Empty;
 
-        [Required, DataType(DataType.EmailAddress), EmailAddress]
-        public string Email { get; set; } = string.Empty;
-        
-        [Required, DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
-        
-        [Required, Compare(nameof(Password)), DataType(DataType.Password)]
-        public string ConfirmPassword { get; set; } = string.Empty;
+        [Required]
+        [StringLength(15, MinimumLength = 4, ErrorMessage = "SocNumber must be between 4 and 15 characters.")]
+        public string SocNumber { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(15, MinimumLength = 4, ErrorMessage = "Passport must be between 4 and 15 characters.")]
+        public string Passport { get; set; } = string.Empty;
+
 
     }
 }

@@ -5,156 +5,145 @@
 @inject IJSRuntime js
 @inject IAccountService accountService
 
-
 @if (_state == 0)
 {
-    @* <div class="container">
-        <div class="row">
-            <div class="col-sm-4">
-                <h3>Register</h3>
-                <EditForm Model="Register" OnValidSubmit="RegisterClicked">
-                    <DataAnnotationsValidator />
-                    <div class="form-group">
-                        <label class="form-label">Name</label>
-                        <InputText @bind-Value="Register.Name" class="form-control"></InputText>
-                    </div>
-                    <div class="form-group mt-3">
-                        <label class="form-label">Email Address</label>
-                        <InputText @bind-Value="Register.Email" class="form-control"></InputText>
-                    </div>
-                    <div class="form-group mt-3">
-                        <label class="form-label">Password</label>
-                        <InputText @bind-Value="Register.Password" class="form-control"></InputText>
-                    </div>
-                    <div class="form-group mt-3">
-                        <label class="form-label">Confirm Password</label>
-                        <InputText @bind-Value="Register.ConfirmPassword" class="form-control"></InputText>
-                    </div>
-                    <div class="form-group mt-3">
-                        <button class="btn btn-primary" type="submit">Next</button>
-                    </div>
-                    <ValidationSummary />
-                </EditForm>
-            </div>
-        </div>
-    </div> *@
-
     <EditForm Model="Register" OnValidSubmit="RegisterClicked">
         <DataAnnotationsValidator />
-        <MudGrid>
-            <MudItem xs="12" sm="7">
-                <MudCard>
-                    <MudCardContent>
-                        <MudTextField Label="First name" HelperText="Max. 8 characters"
-                        @bind-Value="Register.Name" For="@(() => Register.Name)" />
-                        <MudTextField Label="Email" Class="mt-3"
-                        @bind-Value="Register.Email" For="@(() => Register.Email)" />
-                        <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
-                        @bind-Value="Register.Password" For="@(() => Register.Password)" InputType="InputType.Password" />
-                        <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
-                        @bind-Value="Register.ConfirmPassword" For="@(() => Register.ConfirmPassword)" InputType="InputType.Password" />
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Next</MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12">
-                <MudText Typo="Typo.body2" Align="Align.Center">
-                    Fill out the form correctly to see the success message.
-                </MudText>
-            </MudItem>
-        </MudGrid>
+        <ValidationSummary />
+
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="socNumber">Սոց. Քարտ</label>
+                                <InputText id="socNumber" class="form-control" @bind-Value="Register.SocNumber" />
+                                <ValidationMessage For="@(() => Register.SocNumber)" />
+                                <small class="form-text text-muted">Min 4, Max. 15 characters</small>
+                            </div>
+
+                            <div class="form-group mt-3">
+                                <label for="passport">Անձնագիր/Ծննդյան Վկայական</label>
+                                <InputText id="passport" class="form-control" @bind-Value="Register.Passport" />
+                                <ValidationMessage For="@(() => Register.Passport)" />
+                            </div>
+                        </div>
+
+                        <div class="card-footer text-end">
+                            <button type="submit" class="btn btn-primary">Next</button>
+                        </div>
+                    </div>
+
+                    <p class="text-center mt-3 text-muted">
+                        Լրացրեք բոլոր տվյալները հաջորդ քայլին անցնելու համար:
+                    </p>
+                </div>
+            </div>
+        </div>
     </EditForm>
 }
 
-
-
 @if (_state == 1)
 {
-    <div>
-        <MudTextField @bind-Value="Surname" Label="Ա․ Ա․ Հ․" ReadOnly="true" Variant="Variant.Filled" />
-        <MudTextField @bind-Value="Region" Label="Մարզ" ReadOnly="true" Variant="Variant.Filled" />
-        <MudTextField @bind-Value="School" Label="Դպրոց" ReadOnly="true" Variant="Variant.Filled" />
-        <MudTextField @bind-Value="Grade" Label="Դասարան" ReadOnly="true" Variant="Variant.Filled" />
-        <MudTextField @bind-Value="DateOfBirth" Label="Ծննդյան օր" ReadOnly="true" Variant="Variant.Filled" />
-    </div>
-
-
-    <div class="d-flex align-center gap-4 mt-4">
-        <MudCheckBox T="bool"
-        Label="I agree!"
-        @bind-Value="isAgreed"
-        Color="Color.Success" />
-
-        <MudCheckBox T="bool"
-        Label="I disagree!"
-        @bind-Value="isDisagreed"
-        Color="Color.Error" />
-    </div>
-
-    <MudButton ButtonType="ButtonType.Submit"
-    Disabled="@(!isAgreed || isDisagreed)"
-    Variant="Variant.Filled"
-    Color="Color.Primary"
-    Class="ml-auto mt-4"
-    OnClick="OnNextClicked">
-        NEXT
-    </MudButton>
-
-    <MudButton ButtonType="ButtonType.Submit"
-    Disabled="@(isAgreed || !isDisagreed)"
-    Variant="Variant.Filled"
-    Color="Color.Primary"
-    Class="ml-auto mt-4"
-    OnClick="ContactUs">
-        Contact Us
-    </MudButton>
-
-}
-
-
-@if (_state == 2)
-{
-    <div class="container">
+    <div class="container mt-4">
         <div class="row">
-            <div class="col-sm-4">
-                <h3>You are in state=2</h3>
+            <div class="col-md-6 offset-md-3">
+                <MudTextField @bind-Value="Surname" Label="Ա․ Ա․ Հ․" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Region" Label="Մարզ" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="School" Label="Դպրոց" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Grade" Label="Դասարան" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="DateOfBirth" Label="Ծննդյան օր" ReadOnly="true" Variant="Variant.Filled" />
+
+                <div class="d-flex align-center gap-4 mt-4">
+                    <MudCheckBox T="bool" Label="I agree!" @bind-Value="isAgreed" Color="Color.Success" />
+                    <MudCheckBox T="bool" Label="I disagree!" @bind-Value="isDisagreed" Color="Color.Error" />
+                </div>
+
+                <div class="d-flex gap-3 mt-4">
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Disabled="@(!isAgreed || isDisagreed)"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="OnNextClicked">
+                        NEXT
+                    </MudButton>
+
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Disabled="@(isAgreed || !isDisagreed)"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="ContactUs">
+                        Contact Us
+                    </MudButton>
+                </div>
             </div>
         </div>
     </div>
+}
+
+@if (_state == 2)
+{
+    <EditForm Model="Mail" OnValidSubmit="SendEmailVerificationCode">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group mt-3">
+            <label for="email">Email Address</label>
+            <InputText id="email" class="form-control" @bind-Value="Mail.Email" />
+            <ValidationMessage For="@(() => Mail.Email)" />
+        </div>
+
+        <button type="submit" class="btn btn-outline-primary mt-2">Send Code</button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(VerificationResult))
+    {
+        <p class="text-success mt-2">@VerificationResult</p>
+    }
 }
 
 @code {
     public RegisterDTO Register = new();
+    public MailDTO Mail = new();
     private int _state = 0;
     private bool isAgreed;
     private bool isDisagreed;
+    private string? VerificationResult;
 
-    public string Surname { get; set; } = "Շահանե Հակոբյան";
-    public string Region { get; set; } = "Արագածոտն";
-    public string School { get; set; } = "Ներքին Բազմաբերդի միջնակարգ դպրոց";
+    public string Surname { get; set; } = "Ռոզի Մինասյան";
+    public string Region { get; set; } = "Էջմիածին";
+    public string School { get; set; } = "Էռռռնեկկյաննն";
     public string Grade { get; set; } = "4-րդ դասարան";
-    public string DateOfBirth { get; set; } = "01/06/2002";
-
+    public string DateOfBirth { get; set; } = "11/05/2006";
 
     public async Task RegisterClicked()
     {
         try
         {
-            RegisterationResponse response = await accountService.RegisterAsync(Register);
-            await js.InvokeVoidAsync("alert", response.Message);
+            var response = await accountService.RegisterAsync(Register);
+
+            if (response is null)
+            {
+                await js.InvokeVoidAsync("alert", "No response received from the server.");
+                return;
+            }
+
+            await js.InvokeVoidAsync("alert", $"Response: {response.Message}");
 
             if (response.Flag)
             {
-                Register = new(); // Reset the form
-                _state = 1; // Change state to hide the form
-                StateHasChanged(); // Ensure UI updates (optional, depending on context)
+                Register = new();
+                _state = 1;
+            }
+            else
+            {
+                await js.InvokeVoidAsync("alert", "Registration failed. Server returned false.");
             }
         }
         catch (Exception ex)
         {
-            await js.InvokeVoidAsync("alert", $"Registration failed: {ex.Message}");
+            await js.InvokeVoidAsync("alert", $"Exception: {ex.Message}");
         }
     }
 
@@ -163,8 +152,22 @@
         _state = 2;
     }
 
+    private async Task SendEmailVerificationCode()
+    {
+        try
+        {
+            var result = await accountService.SendEmailCodeAsync(Mail.Email);
+            VerificationResult = result.Message;
+            await js.InvokeVoidAsync("alert", VerificationResult);
+        }
+        catch (Exception ex)
+        {
+            await js.InvokeVoidAsync("alert", $"Failed to send code: {ex.Message}");
+        }
+    }
+
     private async void ContactUs()
     {
-        await js.InvokeVoidAsync("alert", $"Please Contact Us!");
+        await js.InvokeVoidAsync("alert", "Please contact us for assistance.");
     }
 }

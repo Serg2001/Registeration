@@ -20,21 +20,21 @@ namespace Registeration.Repos
             this.config = config;
         }
 
-        private async Task<ApplicationUser> GetUser(string email)
-            => await appDbContext.Users.FirstOrDefaultAsync(e => e.Email == email);
+        private async Task<ApplicationUser> GetUser(string socqart)
+            => await appDbContext.Users.FirstOrDefaultAsync(e => e.SocNumber == socqart);
 
         public async Task<RegisterationResponse> RegisterAsync(RegisterDTO model)
         {
-            var findUser = await GetUser(model.Email);
+            var findUser = await GetUser(model.SocNumber);
             if (findUser != null)
                 return new RegisterationResponse(false, "User already exist");
 
             appDbContext.Users.Add(
                 new ApplicationUser()
                 {
-                    Name = model.Name,
-                    Email = model.Email,
-                    Password = BCrypt.Net.BCrypt.HashPassword(model.Password)
+                    SocNumber = model.SocNumber,
+                    Passport = model.Passport,
+                    //Password = BCrypt.Net.BCrypt.HashPassword(model.Password)
                 });
 
             await appDbContext.SaveChangesAsync();

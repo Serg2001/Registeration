@@ -1,9 +1,13 @@
 ﻿@page "/register"
+@using MailKit
 @using Registeration.DTOs
 @using Registeration.Services
+@using System.ComponentModel.DataAnnotations
 @using static Registeration.Responses.CustomResponses
 @inject IJSRuntime js
 @inject IAccountService accountService
+@inject IEmailService emailService
+
 
 @if (_state == 0)
 {
@@ -62,18 +66,18 @@
 
                 <div class="d-flex gap-3 mt-4">
                     <MudButton ButtonType="ButtonType.Submit"
-                               Disabled="@(!isAgreed || isDisagreed)"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="OnNextClicked">
+                    Disabled="@(!isAgreed || isDisagreed)"
+                    Variant="Variant.Filled"
+                    Color="Color.Primary"
+                    OnClick="OnNextClicked">
                         NEXT
                     </MudButton>
 
                     <MudButton ButtonType="ButtonType.Submit"
-                               Disabled="@(isAgreed || !isDisagreed)"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="ContactUs">
+                    Disabled="@(isAgreed || !isDisagreed)"
+                    Variant="Variant.Filled"
+                    Color="Color.Primary"
+                    OnClick="ContactUs">
                         Contact Us
                     </MudButton>
                 </div>
@@ -84,7 +88,7 @@
 
 @if (_state == 2)
 {
-    <EditForm Model="Mail" OnValidSubmit="SendEmailVerificationCode">
+    <EditForm Model="Mail" OnValidSubmit=SendEmailVerificationCode>
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -103,6 +107,26 @@
     }
 }
 
+@if (_state == 3)
+{
+    <EditForm Model="inputCodeModel" OnValidSubmit="VerifyCode">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group mt-3">
+            <label for="inputCodeModel">Enter the 6-digit code sent to your email</label>
+            <InputText id="inputCodeModel" class="form-control text-center" @bind-Value="inputCodeModel.Code" maxlength="6" />
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">Verify</button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(VerificationResult))
+    {
+        <p class="text-info mt-3">@VerificationResult</p>
+    }
+}
+
 @code {
     public RegisterDTO Register = new();
     public MailDTO Mail = new();
@@ -110,7 +134,8 @@
     private bool isAgreed;
     private bool isDisagreed;
     private string? VerificationResult;
-
+    public string code;
+    private CodeModel inputCodeModel = new();
     public string Surname { get; set; } = "Ռոզի Մինասյան";
     public string Region { get; set; } = "Էջմիածին";
     public string School { get; set; } = "Էռռռնեկկյաննն";
@@ -156,13 +181,45 @@
     {
         try
         {
-            var result = await accountService.SendEmailCodeAsync(Mail.Email);
-            VerificationResult = result.Message;
-            await js.InvokeVoidAsync("alert", VerificationResult);
+            // Generate random 6-digit code
+
+            code = new Random().Next(100000, 999999).ToString();
+
+            // Store it temporarily (in memory, state, or send to server later)
+            VerificationResult = $"Sent verification code to {Mail.Email}";
+
+            // Build the email body (HTML)
+            string emailBody = $@"
+            <h3>DSHH Verification Code</h3>
+            <p>Your code is: <strong>{code}</strong></p>
+            <p>This code will expire in 5 minutes.</p>";
+
+            // Send the email
+            await emailService.SendEmailAsync(Mail.Email, "Your DSHH Verification Code", emailBody);
+
+            await js.InvokeVoidAsync("alert", "Verification code sent!");
+            _state = 3;
         }
         catch (Exception ex)
         {
-            await js.InvokeVoidAsync("alert", $"Failed to send code: {ex.Message}");
+            VerificationResult = "Error sending verification code.";
+            await js.InvokeVoidAsync("alert", $"Error: {ex.Message}");
+        }
+    }
+
+
+    private async Task VerifyCode()
+    {
+        if (inputCodeModel.Code == code)
+        {
+            VerificationResult = "✅ Code verified successfully!";
+            await js.InvokeVoidAsync("alert", VerificationResult);
+            _state = 4;
+        }
+        else
+        {
+            VerificationResult = "❌ Invalid code. Please try again.";
+            await js.InvokeVoidAsync("alert", VerificationResult);
         }
     }
 
@@ -170,4 +227,13 @@
     {
         await js.InvokeVoidAsync("alert", "Please contact us for assistance.");
     }
+
+    public class CodeModel
+    {
+        [Required(ErrorMessage = "Code is required")]
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "Code must be exactly 6 digits")]
+        [RegularExpression("^[0-9]{6}$", ErrorMessage = "Code must be numeric")]
+        public string Code { get; set; } = string.Empty;
+    }
 }
+

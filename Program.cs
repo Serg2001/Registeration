@@ -10,6 +10,8 @@ using System.Reflection;
 using Registeration.Services;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
+using Microsoft.Extensions.Configuration;
+using Registeration.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,11 +54,15 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
 builder.Services.AddScoped<Registeration.Repos.IAccount, Account>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7266") });
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<PupilService>();
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
 builder.Services.AddScoped<IEmailService, EmailService>();
+
 
 
 builder.Services.AddMudServices();

@@ -1,38 +1,34 @@
 ﻿using System.Net.Mail;
 using System.Net;
+using Microsoft.Extensions.Options;
+using Registeration.DTOs;
 
 namespace Registeration.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration _config;
-
-        public EmailService(IConfiguration config)
+        private readonly MailSettings _mailConfig;
+        public EmailService(IOptions<MailSettings> mailConfig)
         {
-            _config = config;
+            _mailConfig = mailConfig.Value;
         }
 
-        public async Task SendEmailAsync(string to, string subject, string body)
+        public async Task SendEmailAsync(string ToEmail, string Subject, string HTMLBody)
         {
-            var smtpClient = new SmtpClient("smtp.gmail.com")
-            {
-                Port = 587,
-                Credentials = new NetworkCredential(
-                    _config["EmailSettings:Username"],
-                    _config["EmailSettings:Password"]),
-                EnableSsl = true
-            };
-
-            var message = new MailMessage
-            {
-                From = new MailAddress(_config["EmailSettings:Username"]),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = false
-            };
-
-            message.To.Add(to);
-            await smtpClient.SendMailAsync(message);
+            MailMessage message = new MailMessage();
+            SmtpClient smtp = new SmtpClient();
+            message.From = new MailAddress(_mailConfig.FromEmail);
+            message.To.Add(new MailAddress(ToEmail));
+            message.Subject = Subject;
+            message.IsBodyHtml = true;
+            message.Body = HTMLBody;
+            smtp.Port = _mailConfig.Port;
+            smtp.Host = _mailConfig.Host;
+            smtp.EnableSsl = true;
+            smtp.UseDefaultCredentials = false;
+            smtp.Credentials = new NetworkCredential(_mailConfig.FromEmail, _mailConfig.Password);
+            smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+            await smtp.SendMailAsync(message);
         }
     }
 }

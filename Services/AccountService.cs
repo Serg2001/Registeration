@@ -23,12 +23,5 @@ namespace Registeration.Services
             var result = await response.Content.ReadFromJsonAsync<RegisterationResponse>();
             return result;
         }
-
-        public async Task<RegisterationResponse> SendEmailCodeAsync(MailDTO email)
-        {
-            var response = await httpClient.PostAsJsonAsync("/api/account/send-verification-code", new MailDTO { Email = email });
-            var result = await response.Content.ReadFromJsonAsync<RegisterationResponse>();
-            return result ?? new RegisterationResponse { Flag = false, Message = "Failed to send verification code." };
-        }
     }
 }

@@ -40,5 +40,10 @@ namespace Registeration.Repos
             await appDbContext.SaveChangesAsync();
             return new RegisterationResponse(true, "Success");
         }
+
+        public async Task<bool> SocNumberExistsAsync(string socNumber)
+        {
+            return await appDbContext.Users.AnyAsync(u => u.SocNumber == socNumber);
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace Registeration.Services
 {
     public interface IAccountService
     {
+        Task<bool> SocNumberExistsAsync(string socNumber);
         Task<RegisterationResponse> RegisterAsync(RegisterDTO model);
     }
 }

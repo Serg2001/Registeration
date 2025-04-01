@@ -1,6 +1,8 @@
 ﻿@page "/register"
 @using MailKit
 @using Registeration.DTOs
+@using Registeration.Data
+@using Registeration.Models
 @using Registeration.Services
 @using System.ComponentModel.DataAnnotations
 @using static Registeration.Responses.CustomResponses
@@ -146,29 +148,21 @@
     {
         try
         {
-            var response = await accountService.RegisterAsync(Register);
+            bool exists = await accountService.SocNumberExistsAsync(Register.SocNumber);
 
-            if (response is null)
+            if (exists)
             {
-                await js.InvokeVoidAsync("alert", "No response received from the server.");
+                VerificationResult = "Այս սոցիալական համարը արդեն գրանցված է։";
+                await js.InvokeVoidAsync("alert", VerificationResult);
                 return;
             }
 
-            await js.InvokeVoidAsync("alert", $"Response: {response.Message}");
-
-            if (response.Flag)
-            {
-                Register = new();
-                _state = 1;
-            }
-            else
-            {
-                await js.InvokeVoidAsync("alert", "Registration failed. Server returned false.");
-            }
+            VerificationResult = null;
+            _state = 1; // Move to next registration step
         }
         catch (Exception ex)
         {
-            await js.InvokeVoidAsync("alert", $"Exception: {ex.Message}");
+            VerificationResult = $"Սխալ տեղի ունեցավ: {ex.Message}";
         }
     }
 

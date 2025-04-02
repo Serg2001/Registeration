@@ -22,11 +22,12 @@ namespace Registeration.Controllers
 
 
         [HttpPost("register")]
-        public async Task<ActionResult<RegisterationResponse>> RegisterAsync(RegisterDTO model)
+        public async Task<ActionResult<RegisterationResponse>> RegisterAsync([FromBody] RegisterWithMailDTO model)
         {
-            var result = await accountrepo.RegisterAsync(model);
+            var result = await accountrepo.RegisterAsync(model.Register, model.Mail);
             return Ok(result);
         }
+
 
         [HttpGet("exists/{socNumber}")]
         public async Task<ActionResult<bool>> CheckSocNumberExists(string socNumber)

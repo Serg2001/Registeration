@@ -6,6 +6,6 @@ namespace Registeration.Repos
     public interface IAccount
     {
         Task<bool> SocNumberExistsAsync(string socNumber);
-        Task<RegisterationResponse> RegisterAsync(RegisterDTO model);
+        Task<RegisterationResponse> RegisterAsync(RegisterDTO model, MailDTO mail);
     }
 }

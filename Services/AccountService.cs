@@ -27,13 +27,14 @@ namespace Registeration.Services
         //}
 
 
-        public async Task<RegisterationResponse> RegisterAsync(RegisterDTO model, MailDTO mail)
+        public async Task<RegisterationResponse> RegisterAsync(RegisterDTO model, MailDTO mail, UserDTO user)
         {
 
             var payload = new RegisterWithMailDTO
             {
                 Register = model,
-                Mail = mail
+                Mail = mail,
+                User = user
             };
 
             var response = await httpClient.PostAsJsonAsync("/api/account/register", payload);

@@ -131,18 +131,37 @@
 
 @if (_state == 4)
 {
-    <div class="d-flex gap-3 mt-4">
-        <MudButton ButtonType="ButtonType.Submit"
-        Color="Color.Primary"
-        OnClick="Submit">
-            Submit
-        </MudButton>
-    </div>
+    <EditForm Model="User" OnValidSubmit="Submit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="username">Username</label>
+            <InputText id="username" class="form-control" @bind-Value="User.UserName" />
+            <ValidationMessage For="@(() => User.UserName)" />
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="password">Password</label>
+            <InputText id="password" type="password" class="form-control" @bind-Value="User.Password" />
+            <ValidationMessage For="@(() => User.Password)" />
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="confirmPassword">Confirm Password</label>
+            <InputText id="confirmPassword" type="password" class="form-control" @bind-Value="User.ConfirmPassword" />
+            <ValidationMessage For="@(() => User.ConfirmPassword)" />
+        </div>
+
+        <button type="submit" class="btn btn-success mt-4">Register</button>
+    </EditForm>
+
 }
 
 @code {
     public RegisterDTO Register = new();
     public MailDTO Mail = new();
+    public UserDTO User = new();
     private int _state = 0;
     private bool isAgreed;
     private bool isDisagreed;
@@ -231,7 +250,7 @@
 
     private async Task Submit()
     {
-        RegisterationResponse response = await accountService.RegisterAsync(Register, Mail);
+        RegisterationResponse response = await accountService.RegisterAsync(Register, Mail, User);
         if (!response.Flag)
         {
             await js.InvokeVoidAsync("alert", response.Message);

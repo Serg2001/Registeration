@@ -23,14 +23,16 @@ namespace Registeration.Repos
         private async Task<ApplicationUser> GetUser(string socqart)
             => await appDbContext.Users.FirstOrDefaultAsync(e => e.SocNumber == socqart);
 
-        public async Task<RegisterationResponse> RegisterAsync(RegisterDTO model, MailDTO mail)
+        public async Task<RegisterationResponse> RegisterAsync(RegisterDTO model, MailDTO mail, UserDTO user)
         {
             appDbContext.Users.Add(
                 new ApplicationUser()
                 {
                     SocNumber = model.SocNumber,
                     Passport = model.Passport,
-                    Email = mail.Email
+                    Email = mail.Email,
+                    UserName = user.UserName,
+                    Password = user.Password
                     //Password = BCrypt.Net.BCrypt.HashPassword(model.Password)
                 });
 

@@ -24,7 +24,7 @@ namespace Registeration.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<RegisterationResponse>> RegisterAsync([FromBody] RegisterWithMailDTO model)
         {
-            var result = await accountrepo.RegisterAsync(model.Register, model.Mail);
+            var result = await accountrepo.RegisterAsync(model.Register, model.Mail, model.User);
             return Ok(result);
         }
 

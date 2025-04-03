@@ -62,6 +62,7 @@ builder.Services.AddScoped<PupilService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPupilService, PupilService>();
 
 
 

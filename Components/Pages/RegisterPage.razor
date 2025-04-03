@@ -9,6 +9,7 @@
 @inject IJSRuntime js
 @inject IAccountService accountService
 @inject IEmailService emailService
+@inject IPupilService pupilService
 
 
 @if (_state == 0)
@@ -55,11 +56,11 @@
     <div class="container mt-4">
         <div class="row">
             <div class="col-md-6 offset-md-3">
-                <MudTextField @bind-Value="Surname" Label="Ա․ Ա․ Հ․" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="Region" Label="Մարզ" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="School" Label="Դպրոց" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="Grade" Label="Դասարան" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="DateOfBirth" Label="Ծննդյան օր" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Pupil.Name" Label="Ա․ Ա․ Հ․" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Pupil.SurName" Label="Մարզ" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Pupil.SchoolName" Label="Դպրոց" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Pupil.Grade" Label="Դասարան" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Pupil.Birthday" Label="Ծննդյան օր" ReadOnly="true" Variant="Variant.Filled" />
 
                 <div class="d-flex align-center gap-4 mt-4">
                     <MudCheckBox T="bool" Label="I agree!" @bind-Value="isAgreed" Color="Color.Success" />
@@ -162,6 +163,7 @@
     public RegisterDTO Register = new();
     public MailDTO Mail = new();
     public UserDTO User = new();
+    private PupilInfo Pupil = new();
     private int _state = 0;
     private bool isAgreed;
     private bool isDisagreed;
@@ -186,6 +188,8 @@
                 await js.InvokeVoidAsync("alert", VerificationResult);
                 return;
             }
+
+            Pupil = await pupilService.GetPupilBySocNumber(Register.SocNumber);
 
             VerificationResult = null;
             _state = 1; // Move to next registration step

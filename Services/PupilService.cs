@@ -4,7 +4,7 @@ using Registeration.DTOs;
 
 namespace Registeration.Services
 {
-    public class PupilService
+    public class PupilService : IPupilService
     {
         //private readonly IHttpClientFactory _clientFactory;
         private readonly HttpClient _client;
@@ -16,15 +16,15 @@ namespace Registeration.Services
 
         public async Task<PupilInfo?> GetPupilBySocNumber(string SocNumber)
         {
-         
-            var response = await _client.GetStringAsync($"/api/Platform/GetPupilsBySocNumber?socnumber={SocNumber}");
+
+            var response = await _client.GetFromJsonAsync<PupilInfo>($"/api/Platform/GetPupilsBySocNumber?socnumber={SocNumber}");
 
             //if (response.StatusCode == HttpStatusCode.OK)
             //{
             //    return await response.Content.ReadFromJsonAsync<PupilInfo>();
             //}
 
-            return null; // or throw an exception, or return a default object depending on your use case
+            return response; // or throw an exception, or return a default object depending on your use case
         }
     }
 }

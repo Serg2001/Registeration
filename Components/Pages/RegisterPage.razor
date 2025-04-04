@@ -16,41 +16,41 @@
 
 @if (_state == 0)
 {
-    <EditForm Model="Register" OnValidSubmit="RegisterClicked">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+        <EditForm Model="Register" OnValidSubmit="RegisterClicked">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card mt-4">
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="socNumber">Սոց. Քարտ</label>
-                                <InputText id="socNumber" class="form-control" @bind-Value="Register.SocNumber" />
-                                <ValidationMessage For="@(() => Register.SocNumber)" />
-                                <small class="form-text text-muted">Min 4, Max. 15 characters</small>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="socNumber">Սոց. Քարտ</label>
+                                    <InputText id="socNumber" class="form-control" @bind-Value="Register.SocNumber" />
+                                    <ValidationMessage For="@(() => Register.SocNumber)" />
+                                    <small class="form-text text-muted">Min 4, Max. 15 characters</small>
+                                </div>
+
+                                <div class="form-group mt-3">
+                                    <label for="passport">Անձնագիր/Ծննդյան Վկայական</label>
+                                    <InputText id="passport" class="form-control" @bind-Value="Register.Passport" />
+                                    <ValidationMessage For="@(() => Register.Passport)" />
+                                </div>
                             </div>
 
-                            <div class="form-group mt-3">
-                                <label for="passport">Անձնագիր/Ծննդյան Վկայական</label>
-                                <InputText id="passport" class="form-control" @bind-Value="Register.Passport" />
-                                <ValidationMessage For="@(() => Register.Passport)" />
+                            <div class="card-footer text-end">
+                                <button type="submit" class="btn btn-primary">Next</button>
                             </div>
                         </div>
 
-                        <div class="card-footer text-end">
-                            <button type="submit" class="btn btn-primary">Next</button>
-                        </div>
+                        <p class="text-center mt-3 text-muted">
+                            Լրացրեք բոլոր տվյալները հաջորդ քայլին անցնելու համար:
+                        </p>
                     </div>
-
-                    <p class="text-center mt-3 text-muted">
-                        Լրացրեք բոլոր տվյալները հաջորդ քայլին անցնելու համար:
-                    </p>
                 </div>
             </div>
-        </div>
-    </EditForm>
+        </EditForm>
 }
 
 @if (_state == 1)
@@ -61,6 +61,7 @@
                 <MudTextField @bind-Value="Pupil.Name" Label="Անուն" ReadOnly="true" Variant="Variant.Filled" />
                 <MudTextField @bind-Value="Pupil.SurName" Label="Ազգանուն" ReadOnly="true" Variant="Variant.Filled" />
                 <MudTextField @bind-Value="Pupil.MiddleName" Label="Հայրանուն" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Pupil.RegionName" Label="Մարզ" ReadOnly="true" Variant="Variant.Filled" />
                 <MudTextField @bind-Value="Pupil.SchoolName" Label="Դպրոց" ReadOnly="true" Variant="Variant.Filled" />
                 <MudTextField @bind-Value="Pupil.Grade" Label="Դասարան" ReadOnly="true" Variant="Variant.Filled" />
                 <MudTextField @bind-Value="Pupil.Birthday" Label="Ծննդյան օր" ReadOnly="true" Variant="Variant.Filled" />
@@ -72,18 +73,18 @@
 
                 <div class="d-flex gap-3 mt-4">
                     <MudButton ButtonType="ButtonType.Submit"
-                    Disabled="@(!isAgreed || isDisagreed)"
-                    Variant="Variant.Filled"
-                    Color="Color.Primary"
-                    OnClick="OnNextClicked">
+                               Disabled="@(!isAgreed || isDisagreed)"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="OnNextClicked">
                         NEXT
                     </MudButton>
 
                     <MudButton ButtonType="ButtonType.Submit"
-                    Disabled="@(isAgreed || !isDisagreed)"
-                    Variant="Variant.Filled"
-                    Color="Color.Primary"
-                    OnClick="ContactUs">
+                               Disabled="@(isAgreed || !isDisagreed)"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="ContactUs">
                         Contact Us
                     </MudButton>
                 </div>
@@ -124,7 +125,13 @@
             <InputText id="inputCodeModel" class="form-control text-center" @bind-Value="inputCodeModel.Code" maxlength="6" />
         </div>
 
-        <button type="submit" class="btn btn-success mt-3">Verify</button>
+        <div class="d-flex gap-3 mt-3">
+            <button type="submit" class="btn btn-success">Verify</button>
+
+            <button type="button" class="btn btn-outline-secondary" @onclick="SendEmailVerificationCode">
+                ReSend Code
+            </button>
+        </div>
     </EditForm>
 
     @if (!string.IsNullOrEmpty(VerificationResult))
@@ -132,6 +139,7 @@
         <p class="text-info mt-3">@VerificationResult</p>
     }
 }
+
 
 @if (_state == 4)
 {
@@ -208,46 +216,54 @@
         try
         {
             // Generate random 6-digit code
-
             code = new Random().Next(100000, 999999).ToString();
 
-            // Store it temporarily (in memory, state, or send to server later)
-            VerificationResult = $"Sent verification code to {Mail.Email}";
-
-            // Build the email body (HTML)
+            // Build the email body
             string emailBody = $@"
-            <h3>DSHH Verification Code</h3>
-            <p>Your code is: <strong>{code}</strong></p>
-            <p>This code will expire in 5 minutes.</p>";
+        <h3>DSHH Verification Code</h3>
+        <p>Your code is: <strong>{code}</strong></p>
+        <p>This code will expire in 5 minutes.</p>";
 
             // Send the email
             await emailService.SendEmailAsync(Mail.Email, "Your DSHH Verification Code", emailBody);
 
-            await js.InvokeVoidAsync("alert", "Verification code sent!");
-            _state = 3;
+            VerificationResult = $"📧 Verification code has been sent to {Mail.Email}";
+            _state = 3; // Stay on the same step
         }
         catch (Exception ex)
         {
-            VerificationResult = "Error sending verification code.";
-            await js.InvokeVoidAsync("alert", $"Error: {ex.Message}");
+            VerificationResult = $"❌ Error sending verification code: {ex.Message}";
         }
     }
+
 
 
     private async Task VerifyCode()
     {
-        if (inputCodeModel.Code == code)
+        try
         {
-            VerificationResult = "✅ Code verified successfully!";
-            await js.InvokeVoidAsync("alert", VerificationResult);
-            _state = 4;
+            if (string.IsNullOrWhiteSpace(inputCodeModel.Code))
+            {
+                VerificationResult = "❗ Please enter the code.";
+                return;
+            }
+
+            if (inputCodeModel.Code == code)
+            {
+                VerificationResult = "✅ Code verified successfully!";
+                _state = 4;
+            }
+            else
+            {
+                VerificationResult = "❌ Invalid code. Please try again.";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            VerificationResult = "❌ Invalid code. Please try again.";
-            await js.InvokeVoidAsync("alert", VerificationResult);
+            VerificationResult = $"❌ Error verifying code: {ex.Message}";
         }
     }
+
 
 
     private async Task Submit()

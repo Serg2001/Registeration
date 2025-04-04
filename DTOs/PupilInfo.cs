@@ -8,6 +8,7 @@ namespace Registeration.DTOs
         public string Name { get; set; } = string.Empty;
         public string SurName { get; set; } = string.Empty;
         public string MiddleName { get; set; } = string.Empty;
+        public string RegionName { get; set; } = string.Empty;
         public string Birthday { get; set; } = string.Empty;
         public string Gender { get; set; } = string.Empty;
         public string SchoolName { get; set; } = string.Empty;

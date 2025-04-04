@@ -11,6 +11,8 @@
 @inject IEmailService emailService
 @inject IPupilService pupilService
 
+@inject IDialogService DialogService
+
 
 @if (_state == 0)
 {
@@ -56,8 +58,9 @@
     <div class="container mt-4">
         <div class="row">
             <div class="col-md-6 offset-md-3">
-                <MudTextField @bind-Value="Pupil.Name" Label="Ա․ Ա․ Հ․" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="Pupil.SurName" Label="Մարզ" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Pupil.Name" Label="Անուն" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Pupil.SurName" Label="Ազգանուն" ReadOnly="true" Variant="Variant.Filled" />
+                <MudTextField @bind-Value="Pupil.MiddleName" Label="Հայրանուն" ReadOnly="true" Variant="Variant.Filled" />
                 <MudTextField @bind-Value="Pupil.SchoolName" Label="Դպրոց" ReadOnly="true" Variant="Variant.Filled" />
                 <MudTextField @bind-Value="Pupil.Grade" Label="Դասարան" ReadOnly="true" Variant="Variant.Filled" />
                 <MudTextField @bind-Value="Pupil.Birthday" Label="Ծննդյան օր" ReadOnly="true" Variant="Variant.Filled" />
@@ -170,11 +173,6 @@
     private string? VerificationResult;
     public string code;
     private CodeModel inputCodeModel = new();
-    public string Surname { get; set; } = "Ռոզի Մինասյան";
-    public string Region { get; set; } = "Էջմիածին";
-    public string School { get; set; } = "Էռռռնեկկյաննն";
-    public string Grade { get; set; } = "4-րդ դասարան";
-    public string DateOfBirth { get; set; } = "11/05/2006";
 
     public async Task RegisterClicked()
     {
@@ -264,10 +262,13 @@
         return;
     }
 
-    private async void ContactUs()
+    private void ContactUs()
     {
-        await js.InvokeVoidAsync("alert", "Please contact us for assistance.");
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        DialogService.Show<ContactDialog>("📞 Contact Us", options);
     }
+
+
 
     public class CodeModel
     {

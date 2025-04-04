@@ -16,7 +16,6 @@ namespace Registeration.Services
 
         public async Task<PupilInfo?> GetPupilBySocNumber(string SocNumber)
         {
-
             var response = await _client.GetFromJsonAsync<PupilInfo>($"/api/Platform/GetPupilsBySocNumber?socnumber={SocNumber}");
 
             //if (response.StatusCode == HttpStatusCode.OK)

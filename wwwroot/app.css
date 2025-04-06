@@ -4,6 +4,7 @@
     min-height: 100vh;
 }
 
+/* Link & Button Styling */
 a, .btn-link {
     color: #006bb7;
 }
@@ -14,6 +15,21 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
+.btn-outline-primary {
+    color: #1b6ec2;
+    border-color: #1b6ec2;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+}
+
 .btn:focus,
 .btn:active:focus,
 .btn-link.nav-link:focus,
@@ -22,6 +38,7 @@ a, .btn-link {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
+/* Validation and general text */
 .content {
     padding-top: 1.1rem;
 }
@@ -42,6 +59,7 @@ h1:focus {
     color: #e50000;
 }
 
+/* Error boundary */
 .blazor-error-boundary {
     background: url(data:image/svg+xml;base64,...[unchanged base64 svg]...) no-repeat 1rem/1.8rem, #b32121;
     padding: 1rem 1rem 1rem 3.7rem;
@@ -56,12 +74,14 @@ h1:focus {
     border-color: #929292;
 }
 
+/* Page background */
 body {
-    background-color: #f2f2f2; /* soft neutral background */
-    background-image: none; /* removed large background */
+    background-color: #f2f2f2;
+    background-image: none;
     font-family: 'Segoe UI', sans-serif;
 }
 
+/* Centering container used for all steps */
 .register-container {
     display: flex;
     justify-content: center;
@@ -70,20 +90,85 @@ body {
     min-height: 100vh;
 }
 
+/* Reusable card layout */
 .register-card {
-    background-color: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(6px);
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     padding: 30px;
     width: 100%;
     max-width: 600px;
 }
 
-/* 🔹 Small logo above the form */
+/* Logo image above form */
 .logo-img-small {
     max-width: 100px;
     height: auto;
     display: block;
     margin: 0 auto 20px auto;
+}
+
+/* Section title */
+.register-card h5 {
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Full width buttons */
+button.w-100 {
+    width: 100%;
+}
+
+/* Verification code input */
+.code-input {
+    font-size: 1.5rem;
+    text-align: center;
+    letter-spacing: 8px;
+    padding: 10px 20px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+}
+
+    .code-input:focus {
+        border-color: #1b6ec2;
+        outline: none;
+        box-shadow: 0 0 0 0.25rem rgba(27, 110, 194, 0.25);
+    }
+
+/* Message icon */
+.text-info i {
+    margin-right: 6px;
+    color: #0d6efd;
+}
+
+/* Password input styling */
+.password-input {
+    font-size: 1rem;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .d-flex.align-items-center {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .d-flex.justify-content-end,
+    .d-flex.justify-content-center {
+        justify-content: center;
+    }
+
+    .register-card {
+        padding: 20px;
+    }
+
+    .logo-img-small {
+        max-width: 80px;
+        margin-bottom: 16px;
+    }
 }

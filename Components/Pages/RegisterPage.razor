@@ -55,120 +55,155 @@
 
 @if (_state == 1)
 {
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-6 offset-md-3">
-                <MudTextField @bind-Value="Pupil.Name" Label="Անուն" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="Pupil.SurName" Label="Ազգանուն" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="Pupil.MiddleName" Label="Հայրանուն" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="Pupil.RegionName" Label="Մարզ" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="Pupil.SchoolName" Label="Դպրոց" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="Pupil.Grade" Label="Դասարան" ReadOnly="true" Variant="Variant.Filled" />
-                <MudTextField @bind-Value="Pupil.Birthday" Label="Ծննդյան օր" ReadOnly="true" Variant="Variant.Filled" />
+    <div class="register-container">
+        <div class="register-card">
+            <div class="form-logo text-center mb-3">
+                <img src="images/logo.jpg" alt="Logo" class="logo-img-small" />
+            </div>
 
-                <div class="d-flex align-center gap-4 mt-4">
-                    <MudCheckBox T="bool" Label="I agree!" @bind-Value="isAgreed" Color="Color.Success" />
-                    <MudCheckBox T="bool" Label="I disagree!" @bind-Value="isDisagreed" Color="Color.Error" />
-                </div>
+            <MudTextField @bind-Value="Pupil.Name" Label="Անուն" ReadOnly="true" Variant="Variant.Filled" />
+            <MudTextField @bind-Value="Pupil.SurName" Label="Ազգանուն" ReadOnly="true" Variant="Variant.Filled" />
+            <MudTextField @bind-Value="Pupil.MiddleName" Label="Հայրանուն" ReadOnly="true" Variant="Variant.Filled" />
+            <MudTextField @bind-Value="Pupil.RegionName" Label="Մարզ" ReadOnly="true" Variant="Variant.Filled" />
+            <MudTextField @bind-Value="Pupil.SchoolName" Label="Դպրոց" ReadOnly="true" Variant="Variant.Filled" />
+            <MudTextField @bind-Value="Pupil.Grade" Label="Դասարան" ReadOnly="true" Variant="Variant.Filled" />
+            <MudTextField @bind-Value="Pupil.Birthday" Label="Ծննդյան օր" ReadOnly="true" Variant="Variant.Filled" />
 
-                <div class="d-flex gap-3 mt-4">
-                    <MudButton ButtonType="ButtonType.Submit"
-                               Disabled="@(!isAgreed || isDisagreed)"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="OnNextClicked">
-                        NEXT
-                    </MudButton>
+            <div class="d-flex align-items-center gap-4 mt-4">
+                <MudCheckBox T="bool" Label="I agree!" @bind-Value="isAgreed" Color="Color.Success" />
+                <MudCheckBox T="bool" Label="I disagree!" @bind-Value="isDisagreed" Color="Color.Error" />
+            </div>
 
-                    <MudButton ButtonType="ButtonType.Submit"
-                               Disabled="@(isAgreed || !isDisagreed)"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="ContactUs">
-                        Contact Us
-                    </MudButton>
-                </div>
+            <div class="d-flex gap-3 mt-4 justify-content-end">
+                <MudButton ButtonType="ButtonType.Submit"
+                           Disabled="@(!isAgreed || isDisagreed)"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="OnNextClicked">
+                    NEXT
+                </MudButton>
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Disabled="@(isAgreed || !isDisagreed)"
+                           Variant="Variant.Outlined"
+                           Color="Color.Secondary"
+                           OnClick="ContactUs">
+                    CONTACT US
+                </MudButton>
             </div>
         </div>
     </div>
 }
 
+
 @if (_state == 2)
 {
-    <EditForm Model="Mail" OnValidSubmit=SendEmailVerificationCode>
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <div class="register-container">
+        <div class="register-card">
+            <div class="form-logo text-center mb-3">
+                <img src="images/logo.jpg" alt="Logo" class="logo-img-small" />
+            </div>
 
-        <div class="form-group mt-3">
-            <label for="email">Email Address</label>
-            <InputText id="email" class="form-control" @bind-Value="Mail.Email" />
-            <ValidationMessage For="@(() => Mail.Email)" />
+            <EditForm Model="Mail" OnValidSubmit="SendEmailVerificationCode">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <InputText id="email" class="form-control" @bind-Value="Mail.Email" />
+                    <ValidationMessage For="@(() => Mail.Email)" />
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3 w-100">Send Code</button>
+            </EditForm>
+
+            @if (!string.IsNullOrEmpty(VerificationResult))
+            {
+                <p class="text-success mt-3 text-center">@VerificationResult</p>
+            }
         </div>
-
-        <button type="submit" class="btn btn-outline-primary mt-2">Send Code</button>
-    </EditForm>
-
-    @if (!string.IsNullOrEmpty(VerificationResult))
-    {
-        <p class="text-success mt-2">@VerificationResult</p>
-    }
+    </div>
 }
+
 
 @if (_state == 3)
 {
-    <EditForm Model="inputCodeModel" OnValidSubmit="VerifyCode">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <div class="register-container">
+        <div class="register-card text-center">
+            <div class="form-logo mb-3">
+                <img src="images/logo.jpg" alt="Logo" class="logo-img-small" />
+            </div>
 
-        <div class="form-group mt-3">
-            <label for="inputCodeModel">Enter the 6-digit code sent to your email</label>
-            <InputText id="inputCodeModel" class="form-control text-center" @bind-Value="inputCodeModel.Code" maxlength="6" />
+            <h5 class="mb-3">Enter the 6-digit code sent to your email</h5>
+
+            <EditForm Model="inputCodeModel" OnValidSubmit="VerifyCode">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <InputText id="inputCodeModel" class="form-control code-input" @bind-Value="inputCodeModel.Code" maxlength="6" />
+                    <ValidationMessage For="@(() => inputCodeModel.Code)" />
+                </div>
+
+                <div class="d-flex gap-3 justify-content-center mt-3">
+                    <button type="submit" class="btn btn-success">Verify</button>
+
+                    <button type="button" class="btn btn-outline-secondary" @onclick="SendEmailVerificationCode">
+                        ReSend Code
+                    </button>
+                </div>
+            </EditForm>
+
+            @if (!string.IsNullOrEmpty(VerificationResult))
+            {
+                <p class="text-info mt-3">
+                    <i class="fas fa-envelope"></i> @VerificationResult
+                </p>
+            }
         </div>
-
-        <div class="d-flex gap-3 mt-3">
-            <button type="submit" class="btn btn-success">Verify</button>
-
-            <button type="button" class="btn btn-outline-secondary" @onclick="SendEmailVerificationCode">
-                ReSend Code
-            </button>
-        </div>
-    </EditForm>
-
-    @if (!string.IsNullOrEmpty(VerificationResult))
-    {
-        <p class="text-info mt-3">@VerificationResult</p>
-    }
+    </div>
 }
+
 
 
 @if (_state == 4)
 {
-    <EditForm Model="User" OnValidSubmit="Submit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <div class="register-container">
+        <div class="register-card">
+            <div class="form-logo text-center mb-3">
+                <img src="images/logo.jpg" alt="Logo" class="logo-img-small" />
+            </div>
 
-        <div class="form-group">
-            <label for="username">Username</label>
-            <InputText id="username" class="form-control" @bind-Value="User.UserName" />
-            <ValidationMessage For="@(() => User.UserName)" />
+            <h5 class="text-center mb-4">Create Your Account</h5>
+
+            <EditForm Model="User" OnValidSubmit="Submit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <InputText id="username" class="form-control" @bind-Value="User.UserName" />
+                    <ValidationMessage For="@(() => User.UserName)" />
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="password">Password</label>
+                    <InputText id="password" type="password" class="form-control password-input" @bind-Value="User.Password" />
+                    <ValidationMessage For="@(() => User.Password)" />
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <InputText id="confirmPassword" type="password" class="form-control password-input" @bind-Value="User.ConfirmPassword" />
+                    <ValidationMessage For="@(() => User.ConfirmPassword)" />
+                </div>
+
+                <button type="submit" class="btn btn-success mt-4 w-100">Register</button>
+            </EditForm>
         </div>
-
-        <div class="form-group mt-3">
-            <label for="password">Password</label>
-            <InputText id="password" type="password" class="form-control" @bind-Value="User.Password" />
-            <ValidationMessage For="@(() => User.Password)" />
-        </div>
-
-        <div class="form-group mt-3">
-            <label for="confirmPassword">Confirm Password</label>
-            <InputText id="confirmPassword" type="password" class="form-control" @bind-Value="User.ConfirmPassword" />
-            <ValidationMessage For="@(() => User.ConfirmPassword)" />
-        </div>
-
-        <button type="submit" class="btn btn-success mt-4">Register</button>
-    </EditForm>
-
+    </div>
 }
+
 
 @code {
     public RegisterDTO Register = new();

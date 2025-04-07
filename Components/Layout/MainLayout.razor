@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+﻿@* @inherits LayoutComponentBase
 @inject NavigationManager Nav
 
 <MudThemeProvider />
@@ -28,6 +28,101 @@
         </article>
     </main>
 </div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+ *@
+
+
+ @inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@implements IDisposable
+@inject NavigationManager NavigationManager
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudDialog />
+
+@code {
+    private string? currentUrl;
+    private bool HideSidebar => NavigationManager.Uri.Contains("/register", StringComparison.OrdinalIgnoreCase);
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
+
+<MudLayout>
+    <MudAppBar Color="Color.Transparent">
+        <MudLink Href="https://dshh.am" Target="_blank">
+            <MudImage Src="images/logo.jpg" Alt="Logo" Height="60" />
+        </MudLink>
+
+        <MudSpacer />
+        <MudText Typo="Typo.h5">ԴԱՍԱԳՐՔԵՐԻ ԹՎԱՅՆԱՑՄԱՆ ԾՐԱԳԻՐ</MudText>
+        <MudSpacer />
+
+        <AuthorizeView>
+            <Authorized>
+                <MudButton Variant="Variant.Filled" Style="background-color: white; color: rebeccapurple; width: 500px; height: 40px;">
+                    <NavLink class="nav-link" href="Account/Manage">
+                        @context.User.Identity?.Name
+                    </NavLink>
+                </MudButton>
+
+                <form action="Account/Logout" method="post">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                    <MudButton Variant="Variant.Filled"
+                               Style="background-color: white; color: rebeccapurple; width: 150px; height: 40px;"
+                               ButtonType="ButtonType.Submit">
+                        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Դուրս գալ
+                    </MudButton>
+                </form>
+            </Authorized>
+            <NotAuthorized>
+                <MudButton Variant="Variant.Filled" Style="background-color: white; color: rebeccapurple; width: 150px; height: 40px;">
+                    <NavLink class="nav-link" href="/register">
+                        Աշակերտ
+                    </NavLink>
+                </MudButton>
+                <MudButton Variant="Variant.Filled" Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;">
+                    <NavLink class="nav-link" href="/registerteacher">
+                        Ուսուցիչ
+                    </NavLink>
+                </MudButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudAppBar>
+
+    <MudMainContent>
+        <div class="page">
+            <main>
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
+        </div>
+    </MudMainContent>
+</MudLayout>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.

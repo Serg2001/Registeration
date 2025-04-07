@@ -247,6 +247,7 @@
     {
         try
         {
+            inputCodeModel.Code = string.Empty;
             // Generate random 6-digit code
             code = new Random().Next(100000, 999999).ToString();
 
@@ -282,12 +283,12 @@
 
             if (inputCodeModel.Code == code)
             {
-                VerificationResult = "✅ Code verified successfully!";
+                VerificationResult = "✅ Կոդը հաջողությամբ վերիֆիկացվեց!";
                 _state = 4;
             }
             else
             {
-                VerificationResult = "❌ Invalid code. Please try again.";
+                VerificationResult = "❌ Սխալ Կոդ, փորձեք կրկին.";
             }
         }
         catch (Exception ex)

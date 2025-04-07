@@ -25,6 +25,12 @@ namespace Registeration.Repos
 
         public async Task<RegisterationResponse> RegisterAsync(RegisterDTO model, MailDTO mail, UserDTO user)
         {
+
+            if (await UsernameExistsAsync(user.UserName))
+            {
+                return new RegisterationResponse(false, "Այս անունով օգտատեր արդեն գոյություն ունի։");
+            }
+
             appDbContext.Users.Add(
                 new ApplicationUser()
                 {
@@ -40,9 +46,17 @@ namespace Registeration.Repos
             return new RegisterationResponse(true, "Success");
         }
 
-        public async Task<bool> SocNumberExistsAsync(string socNumber)
+        public async Task<bool> SocNumberAndPassportExistsAsync(string socNumber, string passport)
         {
-            return await appDbContext.Users.AnyAsync(u => u.SocNumber == socNumber);
+            return await appDbContext.Users.AnyAsync(u =>
+                u.SocNumber == socNumber || u.Passport == passport);
         }
+
+        public async Task<bool> UsernameExistsAsync(string username)
+        {
+            return await appDbContext.Users.AnyAsync(u => u.UserName == username);
+        }
+
+
     }
 }

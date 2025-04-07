@@ -29,14 +29,27 @@ namespace Registeration.Controllers
         }
 
 
-        [HttpGet("exists/{socNumber}")]
-        public async Task<ActionResult<bool>> CheckSocNumberExists(string socNumber)
+        [HttpGet("exists")]
+        public async Task<ActionResult<bool>> CheckSocNumberAndPassportExists(
+    [FromQuery] string socNumber,
+    [FromQuery] string passport)
         {
-            if (string.IsNullOrWhiteSpace(socNumber))
-                return BadRequest("Invalid social number.");
+            if (string.IsNullOrWhiteSpace(socNumber) || string.IsNullOrWhiteSpace(passport))
+                return BadRequest("Invalid input.");
 
-            bool exists = await accountrepo.SocNumberExistsAsync(socNumber);
+            bool exists = await accountrepo.SocNumberAndPassportExistsAsync(socNumber, passport);
             return Ok(exists);
         }
+
+        [HttpGet("username-exists/{username}")]
+        public async Task<ActionResult<bool>> CheckUsernameExists(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return BadRequest("Invalid Username.");
+
+            bool exists = await accountrepo.UsernameExistsAsync(username);
+            return Ok(exists);
+        }
+
     }
 }

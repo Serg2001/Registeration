@@ -62,17 +62,31 @@ namespace Registeration.Services
         }
 
 
-        public async Task<bool> SocNumberExistsAsync(string socNumber)
+        public async Task<bool> SocNumberAndPassportExistsAsync(string socNumber, string passport)
         {
             try
             {
-                return await httpClient.GetFromJsonAsync<bool>($"/api/account/exists/{socNumber}");
+                var query = $"?socNumber={socNumber}&passport={passport}";
+                return await httpClient.GetFromJsonAsync<bool>($"/api/account/exists{query}");
             }
             catch
             {
-                // You can log or handle error here if needed
                 return false;
             }
         }
+
+        public async Task<bool> UsernameExistsAsync(string username)
+        {
+            try
+            {
+                return await httpClient.GetFromJsonAsync<bool>($"/api/account/username-exists/{username}");
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
     }
 }

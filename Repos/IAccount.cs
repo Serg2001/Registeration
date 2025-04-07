@@ -5,7 +5,8 @@ namespace Registeration.Repos
 {
     public interface IAccount
     {
-        Task<bool> SocNumberExistsAsync(string socNumber);
+        Task<bool> SocNumberAndPassportExistsAsync(string socNumber, string passport);
+        Task<bool> UsernameExistsAsync(string username);
         Task<RegisterationResponse> RegisterAsync(RegisterDTO model, MailDTO mail, UserDTO user);
     }
 }

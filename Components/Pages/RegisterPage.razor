@@ -218,11 +218,11 @@
     {
         try
         {
-            bool exists = await accountService.SocNumberExistsAsync(Register.SocNumber);
+            bool exists = await accountService.SocNumberAndPassportExistsAsync(Register.SocNumber, Register.Passport);
 
             if (exists)
             {
-                VerificationResult = "Այս սոցիալական համարը արդեն գրանցված է։";
+                VerificationResult = "Այս սոցիալական քարտը կամ ծննդյան վկայականը/անձնագիրը արդեն գրանցված է։";
                 await js.InvokeVoidAsync("alert", VerificationResult);
                 return;
             }
@@ -300,6 +300,7 @@
 
     private async Task Submit()
     {
+
         RegisterationResponse response = await accountService.RegisterAsync(Register, Mail, User);
         if (!response.Flag)
         {

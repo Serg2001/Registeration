@@ -235,6 +235,8 @@
         }
         catch (Exception ex)
         {
+            VerificationResult = "Տվյալ սոցիալական քարտով սովորող չի գտնվել։";
+            await js.InvokeVoidAsync("alert", VerificationResult);
             VerificationResult = $"Սխալ տեղի ունեցավ: {ex.Message}";
         }
     }

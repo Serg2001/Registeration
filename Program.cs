@@ -59,6 +59,7 @@ builder.Services.AddScoped<Registeration.Repos.IAccount, Account>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7266") });
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<PupilService>();
+builder.Services.AddScoped<ITeacherService, TeacherService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();

@@ -11,6 +11,8 @@
 @inject IAccountService accountService
 @inject IEmailService emailService
 @inject ITeacherService teacherService
+@inject NavigationManager Navigation
+
 
 @inject IDialogService DialogService
 
@@ -205,13 +207,29 @@
                 </div>
 
                 <div class="form-group mt-3">
-                    <label for="password">Գաղտնաբառ</label>
-                    <InputText id="password" type="password" class="form-control password-input" @bind-Value="User.Password" />
+                    <label>Գաղտնաբառ</label>
+                    <MudTextField @bind-Value="User.Password"
+                                  Label=""
+                                  Variant="Variant.Filled"
+                                  InputType="@passwordInputType"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@TogglePasswordIcon"
+                                  OnAdornmentClick="TogglePasswordVisibility"
+                                  Immediate="true"
+                                  Margin="Margin.Dense" />
                 </div>
 
                 <div class="form-group mt-3">
-                    <label for="confirmPassword">Կրկնեք Գաղտնաբառը</label>
-                    <InputText id="confirmPassword" type="password" class="form-control password-input" @bind-Value="User.ConfirmPassword" />
+                    <label>Կրկնեք Գաղտնաբառը</label>
+                    <MudTextField @bind-Value="User.ConfirmPassword"
+                                  Label=""
+                                  Variant="Variant.Filled"
+                                  InputType="@passwordInputType"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@TogglePasswordIcon"
+                                  OnAdornmentClick="TogglePasswordVisibility"
+                                  Immediate="true"
+                                  Margin="Margin.Dense" />
                 </div>
 
                 <button type="submit" class="btn btn-success mt-4 w-100">Գրանցվել</button>
@@ -334,11 +352,11 @@
         RegisterationResponse response = await accountService.RegisterAsync(Register, Mail, User);
         if (!response.Flag)
         {
-            await js.InvokeVoidAsync("alert", response.Message);
+            //await js.InvokeVoidAsync("alert", response.Message);
             return;
         }
-        await js.InvokeVoidAsync("alert", response.Message);
-        return;
+        // Navigate to another page after successful registration
+        Navigation.NavigateTo("/success"); // Change "/success" to your desired route
     }
 
     private void ContactUs()
@@ -356,5 +374,25 @@
         [RegularExpression("^[0-9]{6}$", ErrorMessage = "Կոդը բաղկացած է միայն թվերց։")]
         public string Code { get; set; } = string.Empty;
     }
+
+    private bool showPassword = false;
+    private bool showConfirm = false;
+
+    private InputType passwordInputType => showPassword ? InputType.Text : InputType.Password;
+    private InputType confirmInputType => showConfirm ? InputType.Text : InputType.Password;
+
+    private string TogglePasswordIcon => showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility;
+    private string ToggleConfirmIcon => showConfirm ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility;
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private void ToggleConfirmVisibility()
+    {
+        showConfirm = !showConfirm;
+    }
+
 }
 

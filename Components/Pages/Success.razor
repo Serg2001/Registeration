@@ -1,0 +1,35 @@
+﻿@page "/success"
+
+<style>
+    .welcome-message {
+        font-size: 3rem;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 100px;
+        opacity: 0;
+        transition: opacity 2s ease-in-out;
+    }
+
+    .fade-in {
+        opacity: 1;
+    }
+</style>
+
+<div class="welcome-message @fadeClass">
+    Բարի Գալուստ
+</div>
+
+@code {
+    private string fadeClass = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Trigger fade-in after first render
+            await Task.Delay(100); // slight delay to allow DOM to settle
+            fadeClass = "fade-in";
+            StateHasChanged();
+        }
+    }
+}

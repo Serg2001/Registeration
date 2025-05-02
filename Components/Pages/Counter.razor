@@ -1,19 +1,110 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
 
-<PageTitle>Counter</PageTitle>
+@using System.Threading
+@using System.Net.Http.Json
+@using MudBlazor
+@using Registeration.DTOs
 
-<h1>Counter</h1>
+<PageTitle>Մարզի Ընտրություն</PageTitle>
 
-<p role="status">Current count: @currentCount</p>
+<h1>Ընտրեք Մարզ, Դպրոց և Հասցե</h1>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<MudGrid>
+    <MudItem xs="12">
+        <MudAutocomplete T="string"
+                         Label="Մարզ"
+                         @bind-Value="_selectedRegionName"
+                         SearchFunc="@SearchRegions"
+                         Variant="Variant.Outlined"
+                         ShowProgressIndicator="true"
+                         ToStringFunc="r => r"
+                         OnBlur="@OnRegionChanged" />
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudAutocomplete T="string"
+                         Label="Դպրոց"
+                         @bind-Value="_selectedSchoolName"
+                         SearchFunc="@SearchSchools"
+                         Variant="Variant.Outlined"
+                         ShowProgressIndicator="true"
+                         ToStringFunc="s => s"
+                         Disabled="@(_regionId == null)" />
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudAutocomplete T="string"
+                         Label="Հասցե"
+                         @bind-Value="_selectedAddress"
+                         SearchFunc="@SearchAddresses"
+                         Variant="Variant.Outlined"
+                         ShowProgressIndicator="true"
+                         ToStringFunc="a => a"
+                         Disabled="@(_regionId == null)" />
+    </MudItem>
+</MudGrid>
 
 @code {
-    private int currentCount = 0;
+    [Inject] private HttpClient HttpClient { get; set; }
 
-    private void IncrementCount()
+    private string _selectedRegionName;
+    private string _selectedSchoolName;
+    private string _selectedAddress;
+
+    private int? _regionId;
+    private List<RegionDTO> _regionList = new();
+    private List<SchoolDTO> _schoolList = new();
+
+    // Fetch region names
+    private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
-        currentCount++;
+        if (_regionList.Count == 0)
+        {
+            _regionList = await HttpClient.GetFromJsonAsync<List<RegionDTO>>("api/regions/all-full", token);
+        }
+
+        var regionNames = _regionList.Select(r => r.Name);
+
+        return string.IsNullOrWhiteSpace(value)
+            ? regionNames
+            : regionNames.Where(r => r.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    // Fetch schools from region
+    private async Task OnRegionChanged()
+    {
+        _selectedSchoolName = null;
+        _selectedAddress = null;
+        _schoolList.Clear();
+
+        var region = _regionList.FirstOrDefault(r => r.Name == _selectedRegionName);
+        _regionId = region?.Id;
+
+        if (_regionId != null)
+        {
+            _schoolList = await HttpClient.GetFromJsonAsync<List<SchoolDTO>>(
+                $"api/regions/{_regionId}/schools-full");
+        }
+    }
+
+    // Filter school names
+    private Task<IEnumerable<string>> SearchSchools(string value, CancellationToken token)
+    {
+        var names = _schoolList.Select(s => s.Name).Distinct();
+
+        return string.IsNullOrWhiteSpace(value)
+            ? Task.FromResult(names)
+            : Task.FromResult(names.Where(n => n.Contains(value, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    // Filter addresses
+    private Task<IEnumerable<string>> SearchAddresses(string value, CancellationToken token)
+    {
+        var addresses = _schoolList.Select(s => s.Address).Distinct();
+
+        return string.IsNullOrWhiteSpace(value)
+            ? Task.FromResult(addresses)
+            : Task.FromResult(addresses.Where(a => a.Contains(value, StringComparison.OrdinalIgnoreCase)));
     }
 }

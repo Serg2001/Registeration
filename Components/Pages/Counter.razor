@@ -6,58 +6,86 @@
 @using MudBlazor
 @using Registeration.DTOs
 
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient
+
 <PageTitle>Մարզի Ընտրություն</PageTitle>
 
 <h1>Ընտրեք Մարզ, Դպրոց և Հասցե</h1>
 
-<MudGrid>
-    <MudItem xs="12">
-        <MudAutocomplete T="string"
-                         Label="Մարզ"
-                         @bind-Value="_selectedRegionName"
-                         SearchFunc="@SearchRegions"
-                         Variant="Variant.Outlined"
-                         ShowProgressIndicator="true"
-                         ToStringFunc="r => r"
-                         OnBlur="@OnRegionChanged" />
-    </MudItem>
+<MudForm @ref="_form" Model="_model">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudAutocomplete T="string"
+                             Label="Մարզ"
+                             Value="_model.RegionName"
+                             ValueChanged="async val => await OnRegionChanged(val)"
+                             SearchFunc="@SearchRegions"
+                             Variant="Variant.Outlined"
+                             Required="true"
+                             For="@(() => _model.RegionName)" />
+        </MudItem>
 
-    <MudItem xs="12">
-        <MudAutocomplete T="string"
-                         Label="Դպրոց"
-                         @bind-Value="_selectedSchoolName"
-                         SearchFunc="@SearchSchools"
-                         Variant="Variant.Outlined"
-                         ShowProgressIndicator="true"
-                         ToStringFunc="s => s"
-                         Disabled="@(_regionId == null)" />
-    </MudItem>
+        <MudItem xs="12">
+            <MudAutocomplete T="string"
+                             Label="Դպրոց"
+                             @bind-Value="_model.SchoolName"
+                             SearchFunc="@SearchSchools"
+                             Variant="Variant.Outlined"
+                             Required="true"
+                             Disabled="@(_regionId == null)"
+                             For="@(() => _model.SchoolName)" />
+        </MudItem>
 
-    <MudItem xs="12">
-        <MudAutocomplete T="string"
-                         Label="Հասցե"
-                         @bind-Value="_selectedAddress"
-                         SearchFunc="@SearchAddresses"
-                         Variant="Variant.Outlined"
-                         ShowProgressIndicator="true"
-                         ToStringFunc="a => a"
-                         Disabled="@(_regionId == null)" />
-    </MudItem>
+        <MudItem xs="12">
+            <MudAutocomplete T="string"
+                             Label="Հասցե"
+                             @bind-Value="_model.Address"
+                             SearchFunc="@SearchAddresses"
+                             Variant="Variant.Outlined"
+                             Required="true"
+                             Disabled="@(_regionId == null)"
+                             For="@(() => _model.Address)" />
+        </MudItem>
 
-</MudGrid>
+        <MudItem xs="12">
+            <MudTextField T="string"
+                          Label="Անուն / Ազգանուն"
+                          @bind-Value="_model.FullName"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          For="@(() => _model.FullName)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField T="string"
+                          Label="Էլ․ Հասցե"
+                          @bind-Value="_model.Email"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Email"
+                          Required="true"
+                          For="@(() => _model.Email)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudButton OnClick="ValidateForm"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-4">
+                Հաջորդը
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudForm>
 
 @code {
-    [Inject] private HttpClient HttpClient { get; set; }
-
-    private string _selectedRegionName;
-    private string _selectedSchoolName;
-    private string _selectedAddress;
-
+    private MudForm _form;
+    private RegistrationFormDTO _model = new();
     private int? _regionId;
+
     private List<RegionDTO> _regionList = new();
     private List<SchoolDTO> _schoolList = new();
 
-    // Fetch region names
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
         if (_regionList.Count == 0)
@@ -66,20 +94,19 @@
         }
 
         var regionNames = _regionList.Select(r => r.Name);
-
         return string.IsNullOrWhiteSpace(value)
             ? regionNames
             : regionNames.Where(r => r.Contains(value, StringComparison.OrdinalIgnoreCase));
     }
 
-    // Fetch schools from region
-    private async Task OnRegionChanged()
+    private async Task OnRegionChanged(string selectedRegionName)
     {
-        _selectedSchoolName = null;
-        _selectedAddress = null;
+        _model.RegionName = selectedRegionName;
+        _model.SchoolName = null;
+        _model.Address = null;
         _schoolList.Clear();
 
-        var region = _regionList.FirstOrDefault(r => r.Name == _selectedRegionName);
+        var region = _regionList.FirstOrDefault(r => r.Name == selectedRegionName);
         _regionId = region?.Id;
 
         if (_regionId != null)
@@ -89,23 +116,29 @@
         }
     }
 
-    // Filter school names
     private Task<IEnumerable<string>> SearchSchools(string value, CancellationToken token)
     {
         var names = _schoolList.Select(s => s.Name).Distinct();
-
         return string.IsNullOrWhiteSpace(value)
             ? Task.FromResult(names)
             : Task.FromResult(names.Where(n => n.Contains(value, StringComparison.OrdinalIgnoreCase)));
     }
 
-    // Filter addresses
     private Task<IEnumerable<string>> SearchAddresses(string value, CancellationToken token)
     {
         var addresses = _schoolList.Select(s => s.Address).Distinct();
-
         return string.IsNullOrWhiteSpace(value)
             ? Task.FromResult(addresses)
             : Task.FromResult(addresses.Where(a => a.Contains(value, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private async Task ValidateForm()
+    {
+        await _form.Validate();
+
+        if (_form.IsValid)
+        {
+            Navigation.NavigateTo("/nextstep");
+        }
     }
 }

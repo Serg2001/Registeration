@@ -2,6 +2,12 @@
 @rendermode InteractiveServer
 
 @using MudBlazor
+@using Registeration.DTOs
+@using Registeration.Services
+
+@inject IEmailService EmailService
+@inject FormStateService FormStateService
+@inject NavigationManager Navigation
 
 <PageTitle>Հաստատում</PageTitle>
 
@@ -20,3 +26,37 @@
         Վերադառնալ Գլխավոր Էջ
     </MudButton>
 </MudPaper>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+
+        var model = FormStateService.FormModel;
+
+        if (model == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var baseUrl = Navigation.BaseUri.TrimEnd('/');
+            var confirmationLink = $"{baseUrl}/confirm?email={Uri.EscapeDataString(model.Email)}";
+
+            string emailBody = $@"
+                <h3>Բարև Ձեզ, {model.FullName}</h3>
+                <p>Շնորհակալություն գրանցման համար։</p>
+                <p>Դիտել ձեր գրանցման տվյալները՝ <a href=""{confirmationLink}"">Հաստատման էջ</a></p>";
+
+            Console.WriteLine("📧 Sending to: " + model.Email);
+            await EmailService.SendEmailAsync(model.Email, "Գրանցման Հաստատում", emailBody);
+            Console.WriteLine("✅ Email sent successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error sending confirmation email: " + ex.Message);
+            if (ex.InnerException != null)
+                Console.WriteLine("Inner: " + ex.InnerException.Message);
+        }
+    }
+}

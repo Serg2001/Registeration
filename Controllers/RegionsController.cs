@@ -86,5 +86,81 @@ namespace Registeration.Controllers
 
             return Ok(regions);
         }
+
+        [HttpPost("save")]
+        public async Task<IActionResult> SaveForm([FromBody] RegistrationFormDTO dto)
+        {
+            if (dto == null)
+                return BadRequest("Form data is missing.");
+
+            if (string.IsNullOrWhiteSpace(dto.RegionName) ||
+                string.IsNullOrWhiteSpace(dto.SchoolName) ||
+                string.IsNullOrWhiteSpace(dto.Address))
+            {
+                return BadRequest("Region, School, and Address fields are required.");
+            }
+
+            var region = await _context.Regions
+                .FirstOrDefaultAsync(r => r.Name == dto.RegionName);
+
+            if (region == null)
+                return NotFound($"Region '{dto.RegionName}' not found.");
+
+            var school = await _context.Schools
+                .FirstOrDefaultAsync(s =>
+                    s.Name == dto.SchoolName &&
+                    s.Address == dto.Address &&
+                    s.RegionId == region.Id);
+
+            if (school == null)
+                return NotFound($"School '{dto.SchoolName}' with address '{dto.Address}' not found in region '{dto.RegionName}'.");
+
+            var registration = new Registration
+            {
+                FullName = dto.FullName,
+                Email = dto.Email,
+                RegionId = region.Id,
+                SchoolId = school.Id,
+                SelectedAddress = dto.Address
+            };
+
+            _context.Registrations.Add(registration);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(SaveForm), new { id = registration.Id }, new
+            {
+                message = "Registration saved successfully.",
+                registration.Id
+            });
+        }
+
+
+
+        [HttpGet("by-email/{email}")]
+        public async Task<ActionResult<RegistrationFormDTO>> GetByEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return BadRequest("Email is required.");
+
+            var reg = await _context.Registrations
+                .Include(r => r.Region)
+                .Include(r => r.School)
+                .FirstOrDefaultAsync(r => r.Email.ToLower() == email.ToLower());
+
+            if (reg == null)
+                return NotFound("Registration not found for the given email.");
+
+            var dto = new RegistrationFormDTO
+            {
+                RegionName = reg.Region.Name,
+                SchoolName = reg.School.Name,
+                Address = reg.SelectedAddress,
+                FullName = reg.FullName,
+                Email = reg.Email
+            };
+
+            return Ok(dto);
+        }
+
     }
 }

@@ -11,8 +11,8 @@ using Registeration.Data;
 namespace Registeration.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250506065451_AddRegistrationTable")]
-    partial class AddRegistrationTable
+    [Migration("20250507060250_InitWithRegistrations")]
+    partial class InitWithRegistrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

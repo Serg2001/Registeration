@@ -1,0 +1,50 @@
+﻿@page "/confirm"
+@using Registeration.DTOs
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+
+<MudPaper Elevation="3" Class="p-6 mx-auto mt-6" Style="max-width:600px;">
+    <MudForm @ref="_form" Model="_model">
+        <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
+
+        <MudTextField T="string" Label="Մարզ" @bind-Value="_model.RegionName" Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Դպրոց" @bind-Value="_model.SchoolName" Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Հասցե" @bind-Value="_model.Address" Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Անուն / Ազգանուն" @bind-Value="_model.FullName" Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Էլ․ Հասցե" @bind-Value="_model.Email" Variant="Variant.Outlined" Disabled="true" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GoBack" Class="mt-4">
+            Վերադառնալ
+        </MudButton>
+    </MudForm>
+</MudPaper>
+
+@code {
+    private MudForm _form;
+    private RegistrationFormDTO _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var email = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("email");
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            try
+            {
+                var result = await HttpClient.GetFromJsonAsync<RegistrationFormDTO>($"api/regions/by-email/{email}");
+                if (result != null)
+                    _model = result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Failed to load registration: " + ex.Message);
+            }
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/counter");
+    }
+}

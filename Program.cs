@@ -64,6 +64,8 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPupilService, PupilService>();
+builder.Services.AddSingleton<FormStateService>();
+
 
 
 

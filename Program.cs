@@ -67,6 +67,25 @@ builder.Services.AddScoped<IPupilService, PupilService>();
 builder.Services.AddSingleton<FormStateService>();
 
 
+builder.Services.AddHttpClient("ExternalRegions", client =>
+{
+    client.BaseAddress = new Uri("https://crm.dshh.am:1400/");
+});
+
+
+builder.Services.AddHttpClient("CrmApi", client =>
+{
+    client.BaseAddress = new Uri("https://crm.dshh.am:1400/");
+    client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+
+
+builder.Services.AddScoped<CrmRegionService>();
+builder.Services.AddScoped<CrmSchoolService>();
+builder.Services.AddScoped<RegistrationService>();
+
+
+
 
 
 builder.Services.AddMudServices();

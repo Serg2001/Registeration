@@ -1,0 +1,18 @@
+﻿@page "/retry"
+
+<MudPaper Elevation="4" Class="p-6 mx-auto mt-10 text-center" Style="max-width:500px;">
+    <MudText Typo="Typo.h4" Color="Color.Error" Class="mb-3">
+        Կրկին փորձեք գրանցվել
+    </MudText>
+    <MudText Typo="Typo.subtitle1">
+        Ձեր գրանցումը մերժվել է։ Խնդրում ենք նորից փորձել։
+    </MudText>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" OnClick="@(() => Navigation.NavigateTo("/"))">
+        Վերադառնալ Գլխավոր
+    </MudButton>
+</MudPaper>
+
+@code {
+    [Inject] NavigationManager Navigation { get; set; }
+}

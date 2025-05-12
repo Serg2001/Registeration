@@ -13,8 +13,12 @@
         <MudTextField T="string" Label="Անուն / Ազգանուն" @bind-Value="_model.FullName" Variant="Variant.Outlined" Disabled="true" />
         <MudTextField T="string" Label="Էլ․ Հասցե" @bind-Value="_model.Email" Variant="Variant.Outlined" Disabled="true" />
 
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GoBack" Class="mt-4">
-            Վերադառնալ
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
+            Հաստատել
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
+            Մերժել
         </MudButton>
     </MudForm>
 </MudPaper>
@@ -43,8 +47,34 @@
         }
     }
 
-    private void GoBack()
+
+    private async Task OnConfirm()
     {
-        Navigation.NavigateTo("/counter");
+        // Confirmation logic goes here
+        Console.WriteLine("✅ Հաստատվել է");
     }
+
+    private async Task OnReject()
+    {
+        if (string.IsNullOrWhiteSpace(_model.Email))
+            return;
+
+        try
+        {
+            var response = await HttpClient.DeleteAsync($"api/regions/by-email/{_model.Email}");
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/retry");
+            }
+            else
+            {
+                Console.WriteLine("❌ Failed to delete registration.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error during deletion: " + ex.Message);
+        }
+    }
+
 }

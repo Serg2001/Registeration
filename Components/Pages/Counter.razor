@@ -10,7 +10,6 @@
 @inject FormStateService FormStateService
 @inject ISnackbar Snackbar
 
-
 @using System.Net.Http.Json
 @using MudBlazor
 @using Registeration.DTOs
@@ -92,6 +91,7 @@
     private RegistrationFormDTO _model = new();
     private string? _selectedRegionId;
     private List<ExternalRegionDTO> _regionList = new();
+    private List<CrmSchoolDTO> _currentRegionSchools = new();
 
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
@@ -122,6 +122,7 @@
         _model.RegionName = selectedRegionName;
         _model.SchoolName = null;
         _model.Address = null;
+        _currentRegionSchools.Clear();
 
         var selectedRegion = _regionList.FirstOrDefault(r => r.Name == selectedRegionName);
         _selectedRegionId = selectedRegion?.Id;
@@ -129,32 +130,26 @@
 
     private async Task<IEnumerable<string>> SearchSchools(string value, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(_selectedRegionId))
+        if (string.IsNullOrWhiteSpace(_selectedRegionId) || !Guid.TryParse(_selectedRegionId, out var regionGuid))
             return Enumerable.Empty<string>();
 
-        if (!Guid.TryParse(_selectedRegionId, out var regionGuid))
-            return Enumerable.Empty<string>();
+        _currentRegionSchools = await CrmSchoolService.GetSchoolsByRegionAsync(regionGuid);
 
-        var schools = await CrmSchoolService.GetSchoolsByRegionAsync(regionGuid);
         var filtered = string.IsNullOrWhiteSpace(value)
-            ? schools
-            : schools.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
+            ? _currentRegionSchools
+            : _currentRegionSchools.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase));
 
         return filtered.Select(s => s.Name).Distinct();
     }
 
     private async Task<IEnumerable<string>> SearchAddresses(string value, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(_selectedRegionId))
+        if (string.IsNullOrWhiteSpace(_selectedRegionId) || _currentRegionSchools.Count == 0)
             return Enumerable.Empty<string>();
 
-        if (!Guid.TryParse(_selectedRegionId, out var regionGuid))
-            return Enumerable.Empty<string>();
-
-        var schools = await CrmSchoolService.GetSchoolsByRegionAsync(regionGuid);
         var filtered = string.IsNullOrWhiteSpace(value)
-            ? schools
-            : schools.Where(s => s.Address.Contains(value, StringComparison.OrdinalIgnoreCase));
+            ? _currentRegionSchools
+            : _currentRegionSchools.Where(s => s.Address.Contains(value, StringComparison.OrdinalIgnoreCase));
 
         return filtered.Select(s => s.Address).Distinct();
     }
@@ -166,6 +161,16 @@
         if (!_form.IsValid)
         {
             Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
+            return;
+        }
+
+        // Validate that school and address match
+        var matchedSchool = _currentRegionSchools
+            .FirstOrDefault(s => s.Name == _model.SchoolName && s.Address == _model.Address);
+
+        if (matchedSchool == null)
+        {
+            Snackbar.Add("Նշված հասցեն չի համապատասխանում ընտրած դպրոցին։", Severity.Error);
             return;
         }
 

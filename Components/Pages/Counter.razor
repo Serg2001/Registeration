@@ -15,76 +15,116 @@
 @using Registeration.DTOs
 @using Registeration.Services
 
-<PageTitle>Մարզի Ընտրություն</PageTitle>
+<PageTitle>Գրանցում</PageTitle>
 
-<h1>Ընտրեք Մարզ, Դպրոց և Հասցե</h1>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(circle at top left, #f7e9ff, #f4f5ff, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        font-family: 'Segoe UI', sans-serif;
+        overflow-x: hidden;
+    }
 
-<MudForm @ref="_form" Model="_model">
-    <MudGrid>
-        <MudItem xs="12">
-            <MudAutocomplete T="string"
-                             Label="Մարզ"
-                             Value="_model.RegionName"
-                             ValueChanged="async val => await OnRegionChanged(val)"
-                             SearchFunc="@SearchRegions"
-                             Variant="Variant.Outlined"
-                             Required="true"
-                             For="@(() => _model.RegionName)" />
-        </MudItem>
+    .centered-container {
+        position: relative;
+        z-index: 1; /* Ensures form stays layered properly */
+    }
 
-        <MudItem xs="12">
-            <MudAutocomplete T="string"
-                             Label="Դպրոց"
-                             @bind-Value="_model.SchoolName"
-                             SearchFunc="@SearchSchools"
-                             Variant="Variant.Outlined"
-                             Required="true"
-                             Disabled="@string.IsNullOrWhiteSpace(_selectedRegionId)"
-                             For="@(() => _model.SchoolName)"
-                             MaxItems="null" />
-        </MudItem>
 
-        <MudItem xs="12">
-            <MudAutocomplete T="string"
-                             Label="Հասցե"
-                             @bind-Value="_model.Address"
-                             SearchFunc="@SearchAddresses"
-                             Variant="Variant.Outlined"
-                             Required="true"
-                             Disabled="@string.IsNullOrWhiteSpace(_selectedRegionId)"
-                             For="@(() => _model.Address)"
-                             MaxItems="null" />
-        </MudItem>
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 90vh;
+        padding: 2rem;
+    }
 
-        <MudItem xs="12">
-            <MudTextField T="string"
-                          Label="Անուն / Ազգանուն"
-                          @bind-Value="_model.FullName"
-                          Variant="Variant.Outlined"
-                          Required="true"
-                          For="@(() => _model.FullName)" />
-        </MudItem>
+    .form-box {
+        background-color: white;
+        padding: 3rem;
+        border-radius: 16px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
 
-        <MudItem xs="12">
-            <MudTextField T="string"
-                          Label="Էլ․ հասցե"
-                          @bind-Value="_model.Email"
-                          Variant="Variant.Outlined"
-                          InputType="InputType.Email"
-                          Required="true"
-                          For="@(() => _model.Email)" />
-        </MudItem>
+    .form-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6a1b9a;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
 
-        <MudItem xs="12">
-            <MudButton OnClick="ValidateForm"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       Class="mt-4">
-                Հաջորդը
-            </MudButton>
-        </MudItem>
-    </MudGrid>
-</MudForm>
+    .form-button {
+        background-color: #6a1b9a;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<div class="centered-container">
+    <div class="form-box">
+        <div class="form-title">Գրանցում</div>
+
+        <MudForm @ref="_form" Model="_model">
+            <MudStack Spacing="2">
+                <MudAutocomplete T="string"
+                                 Label="Մարզ"
+                                 Value="_model.RegionName"
+                                 ValueChanged="async val => await OnRegionChanged(val)"
+                                 SearchFunc="@SearchRegions"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 For="@(() => _model.RegionName)" />
+
+                <MudAutocomplete T="string"
+                                 Label="Դպրոց"
+                                 @bind-Value="_model.SchoolName"
+                                 SearchFunc="@SearchSchools"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 Disabled="@string.IsNullOrWhiteSpace(_selectedRegionId)"
+                                 For="@(() => _model.SchoolName)"
+                                 MaxItems="null" />
+
+                <MudAutocomplete T="string"
+                                 Label="Հասցե"
+                                 @bind-Value="_model.Address"
+                                 SearchFunc="@SearchAddresses"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 Disabled="@string.IsNullOrWhiteSpace(_selectedRegionId)"
+                                 For="@(() => _model.Address)"
+                                 MaxItems="null" />
+
+                <MudTextField T="string"
+                              Label="Անուն / Ազգանուն"
+                              @bind-Value="_model.FullName"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              For="@(() => _model.FullName)" />
+
+                <MudTextField T="string"
+                              Label="Էլ․ հասցե"
+                              @bind-Value="_model.Email"
+                              Variant="Variant.Outlined"
+                              InputType="InputType.Email"
+                              Required="true"
+                              For="@(() => _model.Email)" />
+
+                <MudButton OnClick="ValidateForm"
+                           Variant="Variant.Filled"
+                           Class="mt-4 form-button">
+                    Գրանցվել
+                </MudButton>
+            </MudStack>
+        </MudForm>
+    </div>
+</div>
 
 @code {
     private MudForm _form;
@@ -101,7 +141,6 @@
             {
                 var client = HttpClientFactory.CreateClient("ExternalRegions");
                 var response = await client.GetFromJsonAsync<List<ExternalRegionDTO>>("api/Platform/GetAllRegions", token);
-
                 if (response != null)
                     _regionList = response;
             }
@@ -164,7 +203,6 @@
             return;
         }
 
-        // Validate that school and address match
         var matchedSchool = _currentRegionSchools
             .FirstOrDefault(s => s.Name == _model.SchoolName && s.Address == _model.Address);
 

@@ -30,18 +30,15 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
-
         var model = FormStateService.FormModel;
 
-        if (model == null)
-        {
+        if (model == null || model.Id == Guid.Empty)
             return;
-        }
 
         try
         {
             var baseUrl = Navigation.BaseUri.TrimEnd('/');
-            var confirmationLink = $"{baseUrl}/confirm?email={Uri.EscapeDataString(model.Email)}";
+            var confirmationLink = $"{baseUrl}/confirm?id={model.Id}";
 
             string emailBody = $@"
                 <h3>Բարև Ձեզ, {model.FullName}</h3>

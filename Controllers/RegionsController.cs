@@ -27,18 +27,19 @@ public class RegionRegistrationController : ControllerBase
         };
 
         await _service.SaveAsync(model);
-        return Ok(new { Message = "Saved successfully" });
+        return Ok(new { Message = "Saved successfully", model.Id });
     }
 
-    [HttpGet("by-email/{email}")]
-    public async Task<ActionResult<RegistrationFormDTO>> GetByEmail(string email)
+    [HttpGet("by-id/{id}")]
+    public async Task<ActionResult<RegistrationFormDTO>> GetById(Guid id)
     {
-        var registration = await _service.GetByEmailAsync(email);
+        var registration = await _service.GetByIdAsync(id);
         if (registration == null)
             return NotFound(new { Message = "Registration not found" });
 
         var dto = new RegistrationFormDTO
         {
+            Id = registration.Id,
             RegionName = registration.RegionName,
             SchoolName = registration.SchoolName,
             Address = registration.Address,
@@ -49,15 +50,13 @@ public class RegionRegistrationController : ControllerBase
         return Ok(dto);
     }
 
-    [HttpDelete("by-email/{email}")]
-    public async Task<IActionResult> DeleteByEmail(string email)
+    [HttpDelete("by-id/{id}")]
+    public async Task<IActionResult> DeleteById(Guid id)
     {
-        var success = await _service.DeleteByEmailAsync(email);
-        if (!success)
-            return NotFound(new { Message = "No records found to delete." });
+        var result = await _service.DeleteByIdAsync(id);
+        if (!result)
+            return NotFound(new { Message = "Registration not found" });
 
-        return Ok(new { Message = "Deleted successfully." });
+        return Ok(new { Message = "Deleted successfully" });
     }
-
-
 }

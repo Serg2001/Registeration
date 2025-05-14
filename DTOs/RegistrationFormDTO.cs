@@ -1,9 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Registeration.DTOs
 {
     public class RegistrationFormDTO
     {
+        public Guid Id { get; set; }  // Needed for confirmation and deletion
+
         [Required(ErrorMessage = "Մարզը պարտադիր է")]
         public string RegionName { get; set; }
 

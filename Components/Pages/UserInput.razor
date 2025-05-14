@@ -26,17 +26,19 @@
 @code {
     private MudForm _form;
     private RegistrationFormDTO _model = new();
+    private Guid _registrationId;
 
     protected override async Task OnInitializedAsync()
     {
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
-        var email = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("email");
+        var idString = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("id");
 
-        if (!string.IsNullOrWhiteSpace(email))
+        if (Guid.TryParse(idString, out Guid id))
         {
+            _registrationId = id;
             try
             {
-                var result = await HttpClient.GetFromJsonAsync<RegistrationFormDTO>($"api/regions/by-email/{email}");
+                var result = await HttpClient.GetFromJsonAsync<RegistrationFormDTO>($"api/regions/by-id/{id}");
                 if (result != null)
                     _model = result;
             }
@@ -47,21 +49,19 @@
         }
     }
 
-
     private async Task OnConfirm()
     {
-        // Confirmation logic goes here
         Console.WriteLine("✅ Հաստատվել է");
     }
 
     private async Task OnReject()
     {
-        if (string.IsNullOrWhiteSpace(_model.Email))
+        if (_registrationId == Guid.Empty)
             return;
 
         try
         {
-            var response = await HttpClient.DeleteAsync($"api/regions/by-email/{_model.Email}");
+            var response = await HttpClient.DeleteAsync($"api/regions/by-id/{_registrationId}");
             if (response.IsSuccessStatusCode)
             {
                 Navigation.NavigateTo("/retry");
@@ -76,5 +76,4 @@
             Console.WriteLine("❌ Error during deletion: " + ex.Message);
         }
     }
-
 }

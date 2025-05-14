@@ -218,15 +218,17 @@
 
             if (response.IsSuccessStatusCode)
             {
+                var content = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+                if (content != null && content.TryGetValue("id", out var idObj) && Guid.TryParse(idObj?.ToString(), out Guid returnedId))
+                {
+                    _model.Id = returnedId;
+                }
+
                 Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
                 FormStateService.FormModel = _model;
                 Navigation.NavigateTo("/nextstep");
             }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                Snackbar.Add($"API սխալ: {error}", Severity.Error);
-            }
+
         }
         catch (Exception ex)
         {

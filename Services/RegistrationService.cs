@@ -19,26 +19,23 @@ namespace Registeration.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Registration?> GetByEmailAsync(string email)
+        public async Task<Registration?> GetByIdAsync(Guid id)
         {
             return await _context.Registrations
-                                 .FirstOrDefaultAsync(r => r.Email == email);
+                                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-
-        public async Task<bool> DeleteByEmailAsync(string email)
+        public async Task<bool> DeleteByIdAsync(Guid id)
         {
-            var registrations = await _context.Registrations
-                .Where(r => r.Email == email)
-                .ToListAsync();
+            var registration = await _context.Registrations
+                                             .FirstOrDefaultAsync(r => r.Id == id);
 
-            if (!registrations.Any())
+            if (registration == null)
                 return false;
 
-            _context.Registrations.RemoveRange(registrations);
+            _context.Registrations.Remove(registration);
             await _context.SaveChangesAsync();
             return true;
         }
-
     }
 }

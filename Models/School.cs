@@ -1,12 +1,25 @@
-﻿namespace Registeration.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Registeration.Models
 {
     public class School
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public int RegionId { get; set; }
-        public Region Region { get; set; }
+        [Key]
+        public Guid Id { get; set; }
 
+        [Required]
+        [StringLength(150)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(200)]
+        public string Address { get; set; } = string.Empty;
+
+        [Required]
+        public Guid RegionId { get; set; }
+
+        [ForeignKey(nameof(RegionId))]
+        public Region Region { get; set; } = null!;
     }
 }

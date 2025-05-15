@@ -15,21 +15,21 @@ namespace Registeration.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<List<CrmSchoolDTO>> GetSchoolsByRegionAsync(Guid regionId)
+        public async Task<List<SchoolDTO>> GetSchoolsByRegionAsync(Guid regionId)
         {
             var client = _httpClientFactory.CreateClient("CrmApi");
 
             try
             {
-                var schools = await client.GetFromJsonAsync<List<CrmSchoolDTO>>(
+                var schools = await client.GetFromJsonAsync<List<SchoolDTO>>(
                     $"api/Platform/GetSchoolsByRegion?regionid={regionId}");
 
-                return schools ?? new List<CrmSchoolDTO>();
+                return schools ?? new List<SchoolDTO>();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("❌ Failed to load schools: " + ex.Message);
-                return new List<CrmSchoolDTO>();
+                return new List<SchoolDTO>();
             }
         }
     }

@@ -11,7 +11,10 @@ namespace Registeration.Data
         }
 
         public DbSet<ApplicationUser> Users { get; set; }
+        public DbSet<Region> Regions { get; set; }
+        public DbSet<School> Schools { get; set; }
         public DbSet<Registration> Registrations { get; set; }
+        public DbSet<OtherPupil> OtherPupil { get; set; }
 
     }
 }

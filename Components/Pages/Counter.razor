@@ -29,12 +29,6 @@
     }
 
     .centered-container {
-        position: relative;
-        z-index: 1; /* Ensures form stays layered properly */
-    }
-
-
-    .centered-container {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -72,6 +66,8 @@
 
         <MudForm @ref="_form" Model="_model">
             <MudStack Spacing="2">
+
+                <!-- Region -->
                 <MudAutocomplete T="string"
                                  Label="Մարզ"
                                  Value="_model.RegionName"
@@ -81,6 +77,7 @@
                                  Required="true"
                                  For="@(() => _model.RegionName)" />
 
+                <!-- School -->
                 <MudAutocomplete T="string"
                                  Label="Դպրոց"
                                  @bind-Value="_model.SchoolName"
@@ -91,6 +88,7 @@
                                  For="@(() => _model.SchoolName)"
                                  MaxItems="null" />
 
+                <!-- Address -->
                 <MudAutocomplete T="string"
                                  Label="Հասցե"
                                  @bind-Value="_model.Address"
@@ -101,6 +99,7 @@
                                  For="@(() => _model.Address)"
                                  MaxItems="null" />
 
+                <!-- Full Name -->
                 <MudTextField T="string"
                               Label="Անուն / Ազգանուն"
                               @bind-Value="_model.FullName"
@@ -108,6 +107,7 @@
                               Required="true"
                               For="@(() => _model.FullName)" />
 
+                <!-- Email -->
                 <MudTextField T="string"
                               Label="Էլ․ հասցե"
                               @bind-Value="_model.Email"
@@ -116,6 +116,7 @@
                               Required="true"
                               For="@(() => _model.Email)" />
 
+                <!-- Submit -->
                 <MudButton OnClick="ValidateForm"
                            Variant="Variant.Filled"
                            Class="mt-4 form-button">
@@ -127,12 +128,14 @@
 </div>
 
 @code {
-    private MudForm _form;
+    private MudForm _form = new();
     private RegistrationFormDTO _model = new();
     private string? _selectedRegionId;
-    private List<ExternalRegionDTO> _regionList = new();
-    private List<CrmSchoolDTO> _currentRegionSchools = new();
 
+    private List<ExternalRegionDTO> _regionList = new();
+    private List<SchoolDTO> _currentRegionSchools = new();
+
+    // REGION AUTOCOMPLETE
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
         if (_regionList.Count == 0)
@@ -150,12 +153,12 @@
             }
         }
 
-        var regionNames = _regionList.Select(r => r.Name);
         return string.IsNullOrWhiteSpace(value)
-            ? regionNames
-            : regionNames.Where(r => r.Contains(value, StringComparison.OrdinalIgnoreCase));
+            ? _regionList.Select(r => r.Name)
+            : _regionList.Where(r => r.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(r => r.Name);
     }
 
+    // ON REGION CHANGE
     private async Task OnRegionChanged(string selectedRegionName)
     {
         _model.RegionName = selectedRegionName;
@@ -167,6 +170,7 @@
         _selectedRegionId = selectedRegion?.Id;
     }
 
+    // SCHOOL AUTOCOMPLETE
     private async Task<IEnumerable<string>> SearchSchools(string value, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(_selectedRegionId) || !Guid.TryParse(_selectedRegionId, out var regionGuid))
@@ -181,6 +185,7 @@
         return filtered.Select(s => s.Name).Distinct();
     }
 
+    // ADDRESS AUTOCOMPLETE
     private async Task<IEnumerable<string>> SearchAddresses(string value, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(_selectedRegionId) || _currentRegionSchools.Count == 0)
@@ -193,6 +198,7 @@
         return filtered.Select(s => s.Address).Distinct();
     }
 
+    // FORM SUBMIT
     private async Task ValidateForm()
     {
         await _form.Validate();
@@ -228,7 +234,6 @@
                 FormStateService.FormModel = _model;
                 Navigation.NavigateTo("/nextstep");
             }
-
         }
         catch (Exception ex)
         {

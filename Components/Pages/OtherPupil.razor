@@ -1,0 +1,221 @@
+﻿@page "/otherpupil"
+@using Registeration.DTOs
+@using Registeration.Enums
+@using Registeration.Services
+@using MudBlazor
+
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
+@inject CrmSchoolService CrmSchoolService
+@inject CrmRegionService CrmRegionService
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8 d-flex justify-center">
+    <MudPaper Elevation="4" Class="pa-6 rounded-lg" Style="width: 100%; max-width: 600px;">
+        <MudForm @ref="_form" Model="_model">
+            @if (_step == 1)
+            {
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">
+                    Նշեք՝ ՀՀ Բնակիչ եք, թե ոչ
+                </MudText>
+
+                <MudRadioGroup T="bool"
+                               @bind-SelectedValue="_model.IsArmenianCitizen"
+                               Required="true"
+                               RequiredError="Խնդրում ենք ընտրել։"
+                               Class="my-4">
+                    <MudRadio T="bool" Value="true" Label="Այո, ՀՀ Բնակիչ եմ։" />
+                    <MudRadio T="bool" Value="false" Label="Ոչ, ՀՀ Բնակիչ Չեմ։" />
+                </MudRadioGroup>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" FullWidth="true">
+                    Հաջորդը
+                </MudButton>
+            }
+            else if (_step == 2)
+            {
+                <MudStack Spacing="3">
+                    <!-- Region -->
+                    <MudAutocomplete T="string"
+                                     Label="Մարզ"
+                                     Value="_selectedRegionName"
+                                     ValueChanged="OnRegionChanged"
+                                     SearchFunc="@SearchRegions"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     MaxItems="null" />
+
+                    <!-- School -->
+                    <MudAutocomplete T="string"
+                                     Label="Դպրոց"
+                                     Value="_selectedSchoolName"
+                                     ValueChanged="OnSchoolChanged"
+                                     SearchFunc="@SearchSchools"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     Disabled="@(_model.Region.Id == Guid.Empty)"
+                                     MaxItems="null" />
+
+                    <!-- Grade -->
+                    <MudSelect T="GradeLevel"
+                               Label="Դասարան"
+                               @bind-Value="_model.Grade"
+                               Required="true"
+                               Variant="Variant.Outlined"
+                               Dense="true"
+                               For="@(() => _model.Grade)">
+                        @foreach (var grade in Enum.GetValues(typeof(GradeLevel)).Cast<GradeLevel>())
+                        {
+                            <MudSelectItem Value="@grade">@GetDisplayName(grade)</MudSelectItem>
+                        }
+                    </MudSelect>
+
+
+                    <!-- Full name -->
+                    <MudTextField T="string"
+                                  Label="Անուն Ազգանուն"
+                                  @bind-Value="_model.FullName"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  For="@(() => _model.FullName)" />
+
+                    <!-- Social Number -->
+                    <MudTextField T="string"
+                                  Label="Սոցիալական համար"
+                                  @bind-Value="_model.SocNumber"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  For="@(() => _model.SocNumber)" />
+
+                    <!-- Parent Email -->
+                    <MudTextField T="string"
+                                  Label="Ծնողի էլ. հասցե"
+                                  @bind-Value="_model.ParentsEmail"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  For="@(() => _model.ParentsEmail)" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="Submit"
+                               FullWidth="true">
+                        Հաջորդը
+                    </MudButton>
+                </MudStack>
+            }
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm _form = new();
+    private OtherPupilDTO _model = new() { Id = Guid.NewGuid() };
+    private int _step = 1;
+
+    private string _selectedRegionName = string.Empty;
+    private string _selectedSchoolName = string.Empty;
+
+    private List<RegionDTO> _regionList = new();
+    private List<SchoolDTO> _schoolList = new();
+
+    private async Task NextStep()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            _step = 2;
+            StateHasChanged();
+        }
+        else
+        {
+            Snackbar.Add("Խնդրում ենք ընտրել պատասխանը։", Severity.Error);
+        }
+    }
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            Snackbar.Add("Հաջողությամբ լրացվեց։", Severity.Success);
+            // TODO: Save to DB or navigate next
+        }
+        else
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր դաշտերը։", Severity.Error);
+        }
+    }
+
+    private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
+    {
+        if (_regionList.Count == 0)
+        {
+            try
+            {
+                var client = HttpClientFactory.CreateClient("ExternalRegions");
+                var response = await client.GetFromJsonAsync<List<RegionDTO>>("api/Platform/GetAllRegions", token);
+                if (response != null)
+                    _regionList = response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Failed to fetch regions: " + ex.Message);
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(value)
+            ? _regionList.Select(r => r.Name)
+            : _regionList.Where(r => r.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(r => r.Name);
+    }
+
+
+    private async Task OnRegionChanged(string selectedName)
+    {
+        _selectedRegionName = selectedName;
+
+        var selected = _regionList.FirstOrDefault(r => r.Name == selectedName);
+        _model.Region = selected ?? new RegionDTO();
+        _model.School = new SchoolDTO();
+        _selectedSchoolName = string.Empty;
+        _schoolList.Clear();
+
+        if (selected?.Id != Guid.Empty)
+        {
+            _schoolList = await CrmSchoolService.GetSchoolsByRegionAsync(selected.Id);
+        }
+    }
+
+    private async Task<IEnumerable<string>> SearchSchools(string value, CancellationToken token)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? _schoolList.Select(s => s.Name)
+            : _schoolList.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(s => s.Name);
+    }
+
+    private async Task OnSchoolChanged(string selectedName)
+    {
+        _selectedSchoolName = selectedName;
+        var selected = _schoolList.FirstOrDefault(s => s.Name == selectedName);
+        _model.School = selected ?? new SchoolDTO();
+    }
+
+
+    private string GetDisplayName(GradeLevel grade)
+    {
+        return grade switch
+        {
+            GradeLevel.Grade1 => "I",
+            GradeLevel.Grade2 => "II",
+            GradeLevel.Grade3 => "III",
+            GradeLevel.Grade4 => "IV",
+            GradeLevel.Grade5 => "V",
+            GradeLevel.Grade6 => "VI",
+            GradeLevel.Grade7 => "VII",
+            GradeLevel.Grade8 => "VIII",
+            GradeLevel.Grade9 => "IX",
+            GradeLevel.Grade10 => "X",
+            GradeLevel.Grade11 => "XI",
+            GradeLevel.Grade12 => "XII",
+            _ => grade.ToString()
+        };
+    }
+}

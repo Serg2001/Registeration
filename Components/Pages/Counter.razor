@@ -198,7 +198,8 @@
         return filtered.Select(s => s.Address).Distinct();
     }
 
-    // FORM SUBMIT
+    //Form SUBMIT
+
     private async Task ValidateForm()
     {
         await _form.Validate();
@@ -220,7 +221,18 @@
 
         try
         {
-            var response = await HttpClient.PostAsJsonAsync("api/regions/save", _model);
+            var payload = new
+            {
+                formType = "Registration", // Change to "OtherPupil" for the other page
+                id = _model.Id,
+                regionName = _model.RegionName,
+                schoolName = _model.SchoolName,
+                address = _model.Address,
+                fullName = _model.FullName,
+                email = _model.Email
+            };
+
+            var response = await HttpClient.PostAsJsonAsync("api/registration/save", payload);
 
             if (response.IsSuccessStatusCode)
             {
@@ -234,10 +246,15 @@
                 FormStateService.FormModel = _model;
                 Navigation.NavigateTo("/nextstep");
             }
+            else
+            {
+                Snackbar.Add("Սխալ տեղի ունեցավ տվյալների պահպանման ընթացքում։", Severity.Error);
+            }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Ճանապարհը ձախողվեց․ {ex.Message}", Severity.Error);
         }
     }
+
 }

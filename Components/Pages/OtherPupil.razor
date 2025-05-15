@@ -8,6 +8,9 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject CrmSchoolService CrmSchoolService
 @inject CrmRegionService CrmRegionService
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8 d-flex justify-center">
     <MudPaper Elevation="4" Class="pa-6 rounded-lg" Style="width: 100%; max-width: 600px;">
@@ -134,10 +137,41 @@
     private async Task Submit()
     {
         await _form.Validate();
+
         if (_form.IsValid)
         {
-            Snackbar.Add("Հաջողությամբ լրացվեց։", Severity.Success);
-            // TODO: Save to DB or navigate next
+            try
+            {
+                // Create payload with formType + model
+                var payload = new
+                {
+                    formType = "OtherPupil",
+                    id = _model.Id,
+                    isArmenianCitizen = _model.IsArmenianCitizen,
+                    region = _model.Region,
+                    school = _model.School,
+                    grade = _model.Grade,
+                    fullName = _model.FullName,
+                    socNumber = _model.SocNumber,
+                    parentsEmail = _model.ParentsEmail
+                };
+
+                var response = await HttpClient.PostAsJsonAsync("api/registration/save", payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Հաջողությամբ լրացվեց և պահպանվեց։", Severity.Success);
+                    Navigation.NavigateTo("/nextstep");
+                }
+                else
+                {
+                    Snackbar.Add("Սխալ տեղի ունեցավ պահպանման ընթացքում։", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
+            }
         }
         else
         {

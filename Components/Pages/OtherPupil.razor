@@ -11,7 +11,6 @@
 @inject HttpClient HttpClient
 @inject NavigationManager Navigation
 
-
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8 d-flex justify-center">
     <MudPaper Elevation="4" Class="pa-6 rounded-lg" Style="width: 100%; max-width: 600px;">
         <MudForm @ref="_form" Model="_model">
@@ -71,7 +70,6 @@
                             <MudSelectItem Value="@grade">@GetDisplayName(grade)</MudSelectItem>
                         }
                     </MudSelect>
-
 
                     <!-- Full name -->
                     <MudTextField T="string"
@@ -138,44 +136,30 @@
     {
         await _form.Validate();
 
-        if (_form.IsValid)
-        {
-            try
-            {
-                // Create payload with formType + model
-                var payload = new
-                {
-                    formType = "OtherPupil",
-                    id = _model.Id,
-                    isArmenianCitizen = _model.IsArmenianCitizen,
-                    region = _model.Region,
-                    school = _model.School,
-                    grade = _model.Grade,
-                    fullName = _model.FullName,
-                    socNumber = _model.SocNumber,
-                    parentsEmail = _model.ParentsEmail
-                };
-
-                var response = await HttpClient.PostAsJsonAsync("api/registration/save", payload);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Snackbar.Add("Հաջողությամբ լրացվեց և պահպանվեց։", Severity.Success);
-                    Navigation.NavigateTo("/nextstep");
-                }
-                else
-                {
-                    Snackbar.Add("Սխալ տեղի ունեցավ պահպանման ընթացքում։", Severity.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
-            }
-        }
-        else
+        if (!_form.IsValid)
         {
             Snackbar.Add("Խնդրում ենք լրացնել բոլոր դաշտերը։", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync("api/otherpupil/save", _model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Հաջողությամբ պահպանվեց։", Severity.Success);
+                Navigation.NavigateTo("/nextstep");
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Սխալ է առաջացել․ {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
         }
     }
 
@@ -201,21 +185,23 @@
             : _regionList.Where(r => r.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(r => r.Name);
     }
 
-
     private async Task OnRegionChanged(string selectedName)
     {
         _selectedRegionName = selectedName;
 
         var selected = _regionList.FirstOrDefault(r => r.Name == selectedName);
-        _model.Region = selected ?? new RegionDTO();
-        _model.School = new SchoolDTO();
-        _selectedSchoolName = string.Empty;
-        _schoolList.Clear();
-
-        if (selected?.Id != Guid.Empty)
+        if (selected != null)
         {
+            _model.Region = new RegionDTO { Id = selected.Id, Name = selected.Name };
             _schoolList = await CrmSchoolService.GetSchoolsByRegionAsync(selected.Id);
         }
+        else
+        {
+            _model.Region = new RegionDTO(); // fallback
+        }
+
+        _model.School = new SchoolDTO();
+        _selectedSchoolName = string.Empty;
     }
 
     private async Task<IEnumerable<string>> SearchSchools(string value, CancellationToken token)
@@ -231,7 +217,6 @@
         var selected = _schoolList.FirstOrDefault(s => s.Name == selectedName);
         _model.School = selected ?? new SchoolDTO();
     }
-
 
     private string GetDisplayName(GradeLevel grade)
     {

@@ -65,6 +65,8 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPupilService, PupilService>();
 builder.Services.AddSingleton<FormStateService>();
+builder.Services.AddScoped<OtherPupilService>();
+
 
 
 builder.Services.AddHttpClient("ExternalRegions", client =>
@@ -119,5 +121,11 @@ app.MapRazorComponents<App>()
 app.MapControllers();
 app.UseAuthentication();
 app.UseAuthorization();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync(); // Applies any pending migrations
+}
 
 app.Run();

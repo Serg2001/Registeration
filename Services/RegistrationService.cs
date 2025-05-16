@@ -19,29 +19,6 @@ namespace Registeration.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task SaveOtherPupilAsync(OtherPupil otherPupil)
-        {
-            _context.OtherPupil.Add(otherPupil);
-            await _context.SaveChangesAsync();
-        }
-
-
-        public async Task SaveAsync(object model)
-        {
-            switch (model)
-            {
-                case Registration r:
-                    _context.Registrations.Add(r);
-                    break;
-                case OtherPupil p:
-                    _context.OtherPupil.Add(p);
-                    break;
-                default:
-                    throw new InvalidOperationException("Unsupported model type");
-            }
-
-            await _context.SaveChangesAsync();
-        }
 
         public async Task<Registration?> GetByIdAsync(Guid id)
         {

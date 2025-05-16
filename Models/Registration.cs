@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Registeration.Models
 {
@@ -29,6 +28,5 @@ namespace Registeration.Models
         [EmailAddress]
         [StringLength(100)]
         public string Email { get; set; }
-
     }
 }

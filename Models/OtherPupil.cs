@@ -7,7 +7,7 @@ namespace Registeration.Models
     public class OtherPupil
     {
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();  // Auto-generate in C#
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         public bool IsArmenianCitizen { get; set; }

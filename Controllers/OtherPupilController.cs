@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Registeration.DTOs;
 using Registeration.Models;
@@ -12,10 +11,17 @@ namespace Registeration.Controllers
     public class OtherPupilController : ControllerBase
     {
         private readonly OtherPupilService _service;
+        private readonly CrmRegionService _regionService;
+        private readonly CrmSchoolService _schoolService;
 
-        public OtherPupilController(OtherPupilService service)
+        public OtherPupilController(
+            OtherPupilService service,
+            CrmRegionService regionService,
+            CrmSchoolService schoolService)
         {
             _service = service;
+            _regionService = regionService;
+            _schoolService = schoolService;
         }
 
         [HttpPost("save")]
@@ -24,38 +30,32 @@ namespace Registeration.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (dto.Region == null || dto.School == null ||
-                dto.Region.Id == Guid.Empty || dto.School.Id == Guid.Empty)
-                return BadRequest("Valid Region and School IDs must be provided.");
-
-            var model = new OtherPupil
-            {
-                Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
-                IsArmenianCitizen = dto.IsArmenianCitizen,
-
-                RegionId = dto.Region.Id,
-                Region = new Region
-                {
-                    Id = dto.Region.Id,
-                    Name = dto.Region.Name
-                },
-
-                SchoolId = dto.School.Id,
-                School = new School
-                {
-                    Id = dto.School.Id,
-                    Name = dto.School.Name,
-                    Address = dto.School.Address,
-                    RegionId = dto.School.RegionId
-                },
-                Grade = dto.Grade,
-                FullName = dto.FullName,
-                SocNumber = dto.SocNumber,
-                ParentsEmail = dto.ParentsEmail
-            };
+            if (string.IsNullOrWhiteSpace(dto.Region?.Name) || string.IsNullOrWhiteSpace(dto.School?.Name))
+                return BadRequest("Region and School names must be provided.");
 
             try
             {
+                // Save region if not exists
+                var region = await _regionService.SaveRegionIfNotExistsAsync(dto.Region.Name);
+
+                // Save school if not exists
+                var school = await _schoolService.SaveSchoolIfNotExistsAsync(
+                    dto.School.Name,
+                    dto.School.Address ?? "Not Provided",
+                    region.Id);
+
+                // Build and save OtherPupil
+                var model = new OtherPupil
+                {
+                    Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
+                    IsArmenianCitizen = dto.IsArmenianCitizen,
+                    SchoolId = school.Id,
+                    Grade = dto.Grade,
+                    FullName = dto.FullName,
+                    SocNumber = dto.SocNumber,
+                    ParentsEmail = dto.ParentsEmail
+                };
+
                 await _service.SaveAsync(model);
                 return Ok(new { message = "OtherPupil saved successfully", model.Id });
             }

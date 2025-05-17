@@ -13,12 +13,6 @@ namespace Registeration.Models
         public bool IsArmenianCitizen { get; set; }
 
         [Required]
-        public Guid RegionId { get; set; }
-
-        [ForeignKey(nameof(RegionId))]
-        public Region Region { get; set; } = null!;
-
-        [Required]
         public Guid SchoolId { get; set; }
 
         [ForeignKey(nameof(SchoolId))]

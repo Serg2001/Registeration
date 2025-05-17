@@ -36,7 +36,6 @@
             else if (_step == 2)
             {
                 <MudStack Spacing="3">
-                    <!-- Region -->
                     <MudAutocomplete T="string"
                                      Label="Մարզ"
                                      Value="_selectedRegionName"
@@ -46,7 +45,6 @@
                                      Required="true"
                                      MaxItems="null" />
 
-                    <!-- School -->
                     <MudAutocomplete T="string"
                                      Label="Դպրոց"
                                      Value="_selectedSchoolName"
@@ -57,7 +55,14 @@
                                      Disabled="@(_model.Region.Id == Guid.Empty)"
                                      MaxItems="null" />
 
-                    <!-- Grade -->
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" FullWidth="true">
+                        Հաջորդը
+                    </MudButton>
+                </MudStack>
+            }
+            else if (_step == 3)
+            {
+                <MudStack Spacing="3">
                     <MudSelect T="GradeLevel"
                                Label="Դասարան"
                                @bind-Value="_model.Grade"
@@ -71,7 +76,6 @@
                         }
                     </MudSelect>
 
-                    <!-- Full name -->
                     <MudTextField T="string"
                                   Label="Անուն Ազգանուն"
                                   @bind-Value="_model.FullName"
@@ -79,7 +83,6 @@
                                   Required="true"
                                   For="@(() => _model.FullName)" />
 
-                    <!-- Social Number -->
                     <MudTextField T="string"
                                   Label="Սոցիալական համար"
                                   @bind-Value="_model.SocNumber"
@@ -87,7 +90,6 @@
                                   Required="true"
                                   For="@(() => _model.SocNumber)" />
 
-                    <!-- Parent Email -->
                     <MudTextField T="string"
                                   Label="Ծնողի էլ. հասցե"
                                   @bind-Value="_model.ParentsEmail"
@@ -121,16 +123,29 @@
     private async Task NextStep()
     {
         await _form.Validate();
-        if (_form.IsValid)
+
+        if (!_form.IsValid)
         {
-            _step = 2;
-            StateHasChanged();
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր դաշտերը։", Severity.Error);
+            return;
         }
-        else
+
+        if (_step == 2)
         {
-            Snackbar.Add("Խնդրում ենք ընտրել պատասխանը։", Severity.Error);
+            if (string.IsNullOrWhiteSpace(_selectedRegionName) || string.IsNullOrWhiteSpace(_selectedSchoolName))
+            {
+                Snackbar.Add("Խնդրում ենք ընտրել մարզ և դպրոց։", Severity.Error);
+                return;
+            }
+
+            // This ensures Region/School models are created before proceeding
+            await OnSchoolChanged(_selectedSchoolName);
         }
+
+        _step++;
+        StateHasChanged();
     }
+
 
     private async Task Submit()
     {
@@ -197,7 +212,7 @@
         }
         else
         {
-            _model.Region = new RegionDTO(); // fallback
+            _model.Region = new RegionDTO();
         }
 
         _model.School = new SchoolDTO();
@@ -211,12 +226,24 @@
             : _schoolList.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(s => s.Name);
     }
 
-    private async Task OnSchoolChanged(string selectedName)
+    private async Task OnSchoolChanged(string selectedSchoolName)
     {
-        _selectedSchoolName = selectedName;
-        var selected = _schoolList.FirstOrDefault(s => s.Name == selectedName);
-        _model.School = selected ?? new SchoolDTO();
+        _selectedSchoolName = selectedSchoolName;
+
+        // Save Region
+        var regionDto = await CrmRegionService.SaveRegionIfNotExistsAsync(_selectedRegionName);
+        _model.Region = regionDto;
+
+        // Save School
+        var schoolDto = await CrmSchoolService.SaveSchoolIfNotExistsAsync(
+            selectedSchoolName,
+            address: "Not provided", // or capture from user if needed
+            regionId: regionDto.Id
+        );
+
+        _model.School = schoolDto;
     }
+
 
     private string GetDisplayName(GradeLevel grade)
     {

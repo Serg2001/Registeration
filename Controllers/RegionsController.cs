@@ -30,7 +30,7 @@ public class RegionRegistrationController : ControllerBase
         };
 
         await _service.SaveAsync(model);
-        return Ok(new { Message = "Saved successfully", model.Id });
+        return Ok(new { Message = "Saved successfully"});
     }
 
 

@@ -69,6 +69,7 @@ builder.Services.AddScoped<OtherPupilService>();
 
 
 
+
 builder.Services.AddHttpClient("ExternalRegions", client =>
 {
     client.BaseAddress = new Uri("https://crm.dshh.am:1400/");

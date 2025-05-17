@@ -3,16 +3,21 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Registeration.DTOs;
+using Registeration.Data;
+using Microsoft.EntityFrameworkCore;
+using Registeration.Models;
 
 namespace Registeration.Services
 {
     public class CrmSchoolService
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly AppDbContext _context;
 
-        public CrmSchoolService(IHttpClientFactory httpClientFactory)
+        public CrmSchoolService(IHttpClientFactory httpClientFactory, AppDbContext context)
         {
             _httpClientFactory = httpClientFactory;
+            _context = context;
         }
 
         public async Task<List<SchoolDTO>> GetSchoolsByRegionAsync(Guid regionId)
@@ -32,5 +37,20 @@ namespace Registeration.Services
                 return new List<SchoolDTO>();
             }
         }
+
+        // In CrmSchoolService.cs
+        public async Task<SchoolDTO> SaveSchoolIfNotExistsAsync(string name, string address, Guid regionId)
+        {
+            var existing = await _context.Schools.FirstOrDefaultAsync(s => s.Name == name && s.RegionId == regionId);
+            if (existing != null)
+                return new SchoolDTO { Id = existing.Id, Name = existing.Name, Address = existing.Address, RegionId = existing.RegionId };
+
+            var school = new School { Name = name, Address = address, RegionId = regionId };
+            _context.Schools.Add(school);
+            await _context.SaveChangesAsync();
+
+            return new SchoolDTO { Id = school.Id, Name = school.Name, Address = school.Address, RegionId = school.RegionId };
+        }
+
     }
 }

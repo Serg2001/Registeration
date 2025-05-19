@@ -12,6 +12,7 @@
 @inject NavigationManager Navigation
 @inject IEmailService EmailService
 @inject FormStateService FormStateService
+@inject IDialogService DialogService
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8 d-flex justify-center">
     <MudPaper Elevation="4" Class="pa-6 rounded-lg" Style="width: 100%; max-width: 600px;">
@@ -99,7 +100,21 @@
                                   Required="true"
                                   For="@(() => _model.ParentsEmail)" />
 
+
+                    <div class="d-flex align-items-center gap-4 mt-4">
+                        <MudCheckBox T="bool" @bind-Value="isAgreed" Color="Color.Success">
+                            <LabelContent>
+                                <span class="text-primary text-decoration-underline cursor-pointer" @onclick="OpenContactDialog">
+                                    Ծնողի Համաձայնություն
+                                </span>
+                            </LabelContent>
+                        </MudCheckBox>
+                    </div>
+
+
+
                     <MudButton Variant="Variant.Filled"
+                               Disabled="@(!isAgreed)"
                                Color="Color.Primary"
                                OnClick="Submit"
                                FullWidth="true">
@@ -115,6 +130,7 @@
     private MudForm _form = new();
     private OtherPupilDTO _model = new() { Id = Guid.NewGuid() };
     private int _step = 1;
+    private bool isAgreed;
 
     private string _selectedRegionName = string.Empty;
     private string _selectedSchoolName = string.Empty;
@@ -256,6 +272,13 @@
 
         _model.School = schoolDto;
     }
+
+    private async void OpenContactDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        DialogService.Show<ContactDialog>("Կապ մեզ հետ", options);
+    }
+
 
     private string GetDisplayName(GradeLevel grade)
     {

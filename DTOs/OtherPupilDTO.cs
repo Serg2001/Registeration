@@ -31,5 +31,13 @@ namespace Registeration.DTOs
         [Required(ErrorMessage = "Parent's email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email format.")]
         public string ParentsEmail { get; set; } = string.Empty;
+
+        // ✅ NEW FIELDS
+
+        public string Login { get; set; } = string.Empty;
+
+        public string Password { get; set; } = string.Empty;
+
+        public string AccessCode { get; set; } = string.Empty;
     }
 }

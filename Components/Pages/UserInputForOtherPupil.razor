@@ -12,170 +12,190 @@
 
 
 <MudPaper Elevation="3" Class="p-6 mx-auto mt-6" Style="max-width:600px;">
-	<MudForm @ref="_form" Model="_model">
-		<MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
+    <MudForm @ref="_form" Model="_model">
+        <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
 
-		<MudTextField T="string" Label="Դպրոց"
-					  Text="@_model.School?.Name"
-					  Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Դպրոց"
+                      Text="@_model.School?.Name"
+                      Variant="Variant.Outlined" Disabled="true" />
 
-		<MudTextField T="string" Label="Մարզ"
-					  Text="@_model.Region?.Name"
-					  Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Մարզ"
+                      Text="@_model.Region?.Name"
+                      Variant="Variant.Outlined" Disabled="true" />
 
-		<MudTextField T="string" Label="Անուն / Ազգանուն"
-					  Text="@_model.FullName"
-					  Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Անուն / Ազգանուն"
+                      Text="@_model.FullName"
+                      Variant="Variant.Outlined" Disabled="true" />
 
-		<MudTextField T="string" Label="Սոցիալական համար"
-					  Text="@_model.SocNumber"
-					  Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Սոցիալական համար"
+                      Text="@_model.SocNumber"
+                      Variant="Variant.Outlined" Disabled="true" />
 
-		<MudTextField T="string" Label="Ծնողի էլ․ հասցե"
-					  Text="@_model.ParentsEmail"
-					  Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Ծնողի էլ․ հասցե"
+                      Text="@_model.ParentsEmail"
+                      Variant="Variant.Outlined" Disabled="true" />
 
-		<MudTextField T="string" Label="Դասարան"
-					  Text="@GetGradeDisplay(_model.Grade)"
-					  Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Դասարան"
+                      Text="@GetGradeDisplay(_model.Grade)"
+                      Variant="Variant.Outlined" Disabled="true" />
 
-		<MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
-			Հաստատել
-		</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
+            Հաստատել
+        </MudButton>
 
-		<MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
-			Մերժել
-		</MudButton>
-	</MudForm>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
+            Մերժել
+        </MudButton>
+    </MudForm>
 </MudPaper>
 
 @code {
-	private MudForm _form;
-	private OtherPupilDTO _model = new();
-	private Guid _pupilId;
+    private MudForm _form;
+    private OtherPupilDTO _model = new();
+    private Guid _pupilId;
 
-	protected override async Task OnInitializedAsync()
-	{
-		var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
-		var idString = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("id");
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var idString = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("id");
 
-		if (Guid.TryParse(idString, out Guid id))
-		{
-			_pupilId = id;
-			try
-			{
-				var result = await HttpClient.GetFromJsonAsync<OtherPupilDTO>($"api/otherpupil/by-id/{id}");
-				if (result != null)
-					_model = result;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("❌ Failed to load OtherPupil: " + ex.Message);
-			}
-		}
-	}
+        if (Guid.TryParse(idString, out Guid id))
+        {
+            _pupilId = id;
+            try
+            {
+                var result = await HttpClient.GetFromJsonAsync<OtherPupilDTO>($"api/otherpupil/by-id/{id}");
+                if (result != null)
+                    _model = result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Failed to load OtherPupil: " + ex.Message);
+            }
+        }
+    }
 
-	private async Task OnConfirm()
-	{
-		Console.WriteLine($"✅ Հաստատվել է՝ {_pupilId}");
+    private async Task OnConfirm()
+    {
+        Console.WriteLine($"✅ Հաստատվել է՝ {_pupilId}");
 
-		try
-		{
-			// ✅ Use injected HttpClient directly
-			var identityString = await HttpClient.GetStringAsync($"api/otherpupil/identity-string/{_pupilId}");
+        try
+        {
+            // Step 1: Get unique identity string (used for access code generation)
+            var identityString = await HttpClient.GetStringAsync($"api/otherpupil/identity-string/{_pupilId}");
 
-			string parentPassword = GenerateCode(_model.ParentsEmail);
-			string childAccessCode = GenerateCode(identityString);
+            // Step 2: Generate password and access code
+            string parentPassword = GenerateCode(_model.ParentsEmail);
+            string childAccessCode = GenerateCode(identityString);
 
-			string emailBody = $@"
-            <h3>Բարև Ձեզ, {_model.FullName}</h3>
-            <p>Ձեր գրանցումն հաստատվել է։</p>
-            <p><b>Ծնողի մուտքի տվյալներ՝</b></p>
-            <ul>
-                <li><b>Մուտքանուն:</b> {_model.ParentsEmail}</li>
-                <li><b>Գաղտնաբառ:</b> {parentPassword}</li>
-            </ul>
-            <p><b>Երեխայի մուտքի կոդն է՝</b> {childAccessCode}</p>
-        ";
+            // Step 3: Send password and access code to backend API
+            var confirmData = new
+            {
+                Password = parentPassword,
+                AccessCode = childAccessCode
+            };
 
-			await EmailService.SendEmailAsync(_model.ParentsEmail, "Մուտքի Տվյալներ", emailBody);
-			Console.WriteLine("📧 Email sent with login details.");
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine("❌ Error during confirmation: " + ex.Message);
-			if (ex.InnerException != null)
-				Console.WriteLine("Inner: " + ex.InnerException.Message);
-		}
-	}
+            var updateResponse = await HttpClient.PostAsJsonAsync($"api/otherpupil/confirm/{_pupilId}", confirmData);
+            if (!updateResponse.IsSuccessStatusCode)
+            {
+                Console.WriteLine("❌ Failed to update credentials in database.");
+                return;
+            }
+
+            // Step 4: Send login credentials to parent's email
+            string emailBody = $@"
+			<h3>Բարև Ձեզ, {_model.FullName}</h3>
+			<p>Ձեր գրանցումն հաստատվել է։</p>
+			<p><b>Ծնողի մուտքի տվյալներ՝</b></p>
+			<ul>
+				<li><b>Մուտքանուն:</b> {_model.ParentsEmail}</li>
+				<li><b>Գաղտնաբառ:</b> {parentPassword}</li>
+			</ul>
+			<p><b>Երեխայի մուտքի կոդն է՝</b> {childAccessCode}</p>
+		";
+
+            await EmailService.SendEmailAsync(_model.ParentsEmail, "Մուտքի Տվյալներ", emailBody);
+            Console.WriteLine("📧 Email sent with login details.");
+
+            // Step 5: Navigate to success page
+            Navigation.NavigateTo("/success");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error during confirmation: " + ex.Message);
+            if (ex.InnerException != null)
+                Console.WriteLine("Inner: " + ex.InnerException.Message);
+        }
+    }
 
 
-	private async Task OnReject()
-	{
-		if (_pupilId == Guid.Empty)
-			return;
 
-		try
-		{
-			var response = await HttpClient.DeleteAsync($"api/otherpupil/delete/{_pupilId}");
-			if (response.IsSuccessStatusCode)
-			{
-				Navigation.NavigateTo("/retry");
-			}
-			else
-			{
-				Console.WriteLine("❌ Failed to delete OtherPupil.");
-			}
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine("❌ Error during deletion: " + ex.Message);
-		}
-	}
+    private async Task OnReject()
+    {
+        if (_pupilId == Guid.Empty)
+            return;
 
-	private string GetGradeDisplay(GradeLevel grade)
-	{
-		return grade switch
-		{
-			GradeLevel.Grade1 => "I",
-			GradeLevel.Grade2 => "II",
-			GradeLevel.Grade3 => "III",
-			GradeLevel.Grade4 => "IV",
-			GradeLevel.Grade5 => "V",
-			GradeLevel.Grade6 => "VI",
-			GradeLevel.Grade7 => "VII",
-			GradeLevel.Grade8 => "VIII",
-			GradeLevel.Grade9 => "IX",
-			GradeLevel.Grade10 => "X",
-			GradeLevel.Grade11 => "XI",
-			GradeLevel.Grade12 => "XII",
-			_ => grade.ToString()
-		};
-	}
+        try
+        {
+            var response = await HttpClient.DeleteAsync($"api/otherpupil/delete/{_pupilId}");
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/retry");
+            }
+            else
+            {
+                Console.WriteLine("❌ Failed to delete OtherPupil.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error during deletion: " + ex.Message);
+        }
+    }
 
-	// ✅ Code generator
-	private static string GenerateCode(string input)
-	{
-		using (var sha256 = SHA256.Create())
-		{
-			byte[] bytes = Encoding.UTF8.GetBytes(input);
-			byte[] hash = sha256.ComputeHash(bytes);
+    private string GetGradeDisplay(GradeLevel grade)
+    {
+        return grade switch
+        {
+            GradeLevel.Grade1 => "I",
+            GradeLevel.Grade2 => "II",
+            GradeLevel.Grade3 => "III",
+            GradeLevel.Grade4 => "IV",
+            GradeLevel.Grade5 => "V",
+            GradeLevel.Grade6 => "VI",
+            GradeLevel.Grade7 => "VII",
+            GradeLevel.Grade8 => "VIII",
+            GradeLevel.Grade9 => "IX",
+            GradeLevel.Grade10 => "X",
+            GradeLevel.Grade11 => "XI",
+            GradeLevel.Grade12 => "XII",
+            _ => grade.ToString()
+        };
+    }
 
-			string hex = BitConverter.ToString(hash).Replace("-", "");
-			string digits = new string(hex.Where(char.IsDigit).ToArray()).PadRight(4, '0');
-			string digitPart = digits.Substring(0, 4);
+    // ✅ Code generator
+    private static string GenerateCode(string input)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(input);
+            byte[] hash = sha256.ComputeHash(bytes);
 
-			char[] armenian = new[] {
-				'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
-				'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
-				'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'և', 'Օ', 'Ֆ'
-			};
+            string hex = BitConverter.ToString(hash).Replace("-", "");
+            string digits = new string(hex.Where(char.IsDigit).ToArray()).PadRight(4, '0');
+            string digitPart = digits.Substring(0, 4);
 
-			char[] symbols = new[] { '@', '#', '$', '%', '&', '*' };
-			char arm = armenian[hash[0] % armenian.Length];
-			char sym = symbols[hash[1] % symbols.Length];
+            char[] armenian = new[] {
+                'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
+                'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
+                'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'և', 'Օ', 'Ֆ'
+            };
 
-			return digitPart + arm + sym;
-		}
-	}
+            char[] symbols = new[] { '@', '#', '$', '%', '&', '*' };
+            char arm = armenian[hash[0] % armenian.Length];
+            char sym = symbols[hash[1] % symbols.Length];
+
+            return digitPart + arm + sym;
+        }
+    }
 }

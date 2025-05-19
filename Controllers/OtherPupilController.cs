@@ -133,5 +133,21 @@ namespace Registeration.Controllers
             return Ok(new { identity = result });
         }
 
+
+        [HttpPost("confirm/{id}")]
+        public async Task<IActionResult> Confirm(Guid id, [FromBody] ConfirmCredentialsDTO dto)
+        {
+            var pupil = await _context.OtherPupil.FindAsync(id);
+            if (pupil == null)
+                return NotFound();
+
+            pupil.Login = pupil.ParentsEmail;
+            pupil.Password = dto.Password;
+            pupil.AccessCode = dto.AccessCode;
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
     }
 }

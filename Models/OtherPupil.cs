@@ -33,5 +33,19 @@ namespace Registeration.Models
         [EmailAddress]
         [StringLength(255)]
         public string ParentsEmail { get; set; } = string.Empty;
+
+        // ✅ NEW FIELDS
+
+        [Required]
+        [StringLength(255)]
+        public string Login { get; set; } = string.Empty;  // Usually same as ParentsEmail
+
+        [Required]
+        [StringLength(100)]
+        public string Password { get; set; } = string.Empty;  // Store hashed or generated code
+
+        [Required]
+        [StringLength(10)]
+        public string AccessCode { get; set; } = string.Empty;  // 6-digit symbolic code
     }
 }

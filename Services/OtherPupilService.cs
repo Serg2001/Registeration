@@ -39,32 +39,6 @@ namespace Registeration.Services
         }
 
 
-        //// ✅ Code generator
-        //private static string GenerateCode(string input)
-        //{
-        //    using (var sha256 = SHA256.Create())
-        //    {
-        //        byte[] bytes = Encoding.UTF8.GetBytes(input);
-        //        byte[] hash = sha256.ComputeHash(bytes);
-
-        //        string hex = BitConverter.ToString(hash).Replace("-", "");
-        //        string digits = new string(hex.Where(char.IsDigit).ToArray()).PadRight(4, '0');
-        //        string digitPart = digits.Substring(0, 4);
-
-        //        char[] armenian = new[] {
-        //        'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
-        //        'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
-        //        'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'և', 'Օ', 'Ֆ'
-        //    };
-
-        //        char[] symbols = new[] { '@', '#', '$', '%', '&', '*' };
-        //        char arm = armenian[hash[0] % armenian.Length];
-        //        char sym = symbols[hash[1] % symbols.Length];
-
-        //        return digitPart + arm + sym;
-        //    }
-        //}
-
         public async Task<string?> GetConcatenatedIdentityAsync(Guid id)
         {
             var pupil = await _context.OtherPupil

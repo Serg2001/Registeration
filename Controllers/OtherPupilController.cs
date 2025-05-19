@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Registeration.DTOs;
 using Registeration.Models;
 using Registeration.Services;
+using Registeration.Data;
 
 namespace Registeration.Controllers
 {
@@ -13,17 +14,23 @@ namespace Registeration.Controllers
         private readonly OtherPupilService _service;
         private readonly CrmRegionService _regionService;
         private readonly CrmSchoolService _schoolService;
+        private readonly AppDbContext _context;
 
         public OtherPupilController(
             OtherPupilService service,
             CrmRegionService regionService,
-            CrmSchoolService schoolService)
+            CrmSchoolService schoolService,
+            AppDbContext context)
         {
             _service = service;
             _regionService = regionService;
             _schoolService = schoolService;
+            _context = context;
         }
 
+        /// <summary>
+        /// Save OtherPupil with region and school info.
+        /// </summary>
         [HttpPost("save")]
         public async Task<IActionResult> Save([FromBody] OtherPupilDTO dto)
         {
@@ -35,16 +42,13 @@ namespace Registeration.Controllers
 
             try
             {
-                // Save region if not exists
                 var region = await _regionService.SaveRegionIfNotExistsAsync(dto.Region.Name);
 
-                // Save school if not exists
                 var school = await _schoolService.SaveSchoolIfNotExistsAsync(
                     dto.School.Name,
                     dto.School.Address ?? "Not Provided",
                     region.Id);
 
-                // Build and save OtherPupil
                 var model = new OtherPupil
                 {
                     Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
@@ -52,8 +56,8 @@ namespace Registeration.Controllers
                     SchoolId = school.Id,
                     Grade = dto.Grade,
                     FullName = dto.FullName,
-                    SocNumber = dto.SocNumber,
-                    ParentsEmail = dto.ParentsEmail
+                    SocNumber = dto.SocNumber ?? "", // ensure not null
+                    ParentsEmail = dto.ParentsEmail ?? ""
                 };
 
                 await _service.SaveAsync(model);
@@ -68,5 +72,66 @@ namespace Registeration.Controllers
                 return StatusCode(500, $"Server error: {ex.Message}");
             }
         }
+
+        [HttpGet("by-id/{id}")]
+        public async Task<ActionResult<OtherPupilDTO>> GetById(Guid id)
+        {
+            var pupil = await _service.GetByIdAsync(id);
+
+            if (pupil == null)
+                return NotFound(new { Message = "OtherPupil not found" });
+
+            var dto = new OtherPupilDTO
+            {
+                Id = pupil.Id,
+                IsArmenianCitizen = pupil.IsArmenianCitizen,
+                Region = new RegionDTO
+                {
+                    Id = pupil.School.Region.Id,
+                    Name = pupil.School.Region.Name
+                },
+                School = new SchoolDTO
+                {
+                    Id = pupil.School.Id,
+                    Name = pupil.School.Name,
+                    Address = pupil.School.Address,
+                    RegionId = pupil.School.RegionId
+                },
+                Grade = pupil.Grade,
+                FullName = pupil.FullName,
+                SocNumber = pupil.SocNumber,
+                ParentsEmail = pupil.ParentsEmail
+            };
+
+            return Ok(dto);
+        }
+
+
+
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var pupil = await _context.OtherPupil.FindAsync(id);
+            if (pupil == null)
+                return NotFound();
+
+            _context.OtherPupil.Remove(pupil);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Deleted" });
+        }
+
+
+        [HttpGet("identity-string/{id}")]
+        public async Task<IActionResult> GetIdentityString(Guid id)
+        {
+            var result = await _service.GetConcatenatedIdentityAsync(id);
+
+            if (string.IsNullOrWhiteSpace(result))
+                return NotFound(new { message = "OtherPupil not found." });
+
+            return Ok(new { identity = result });
+        }
+
     }
 }

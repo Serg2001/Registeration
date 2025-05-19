@@ -10,6 +10,8 @@
 @inject CrmRegionService CrmRegionService
 @inject HttpClient HttpClient
 @inject NavigationManager Navigation
+@inject IEmailService EmailService
+@inject FormStateService FormStateService
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8 d-flex justify-center">
     <MudPaper Elevation="4" Class="pa-6 rounded-lg" Style="width: 100%; max-width: 600px;">
@@ -138,14 +140,12 @@
                 return;
             }
 
-            // This ensures Region/School models are created before proceeding
             await OnSchoolChanged(_selectedSchoolName);
         }
 
         _step++;
         StateHasChanged();
     }
-
 
     private async Task Submit()
     {
@@ -163,8 +163,22 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Snackbar.Add("Հաջողությամբ պահպանվեց։", Severity.Success);
-                Navigation.NavigateTo("/nextstep");
+                var result = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+
+                if (result != null &&
+                    result.TryGetValue("id", out var idObj) &&
+                    Guid.TryParse(idObj?.ToString(), out Guid id))
+                {
+                    _model.Id = id; // ✅ ensure model ID is in sync with DB
+                    FormStateService.OtherPupilFormModel = _model;
+
+                    Snackbar.Add("Հաջողությամբ պահպանվեց։", Severity.Success);
+                    Navigation.NavigateTo("/nextstep-otherpupil");
+                }
+                else
+                {
+                    Snackbar.Add("Չհաջողվեց ստանալ գրանցման նույնացուցիչը։", Severity.Error);
+                }
             }
             else
             {
@@ -177,6 +191,7 @@
             Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
         }
     }
+
 
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
@@ -230,20 +245,17 @@
     {
         _selectedSchoolName = selectedSchoolName;
 
-        // Save Region
         var regionDto = await CrmRegionService.SaveRegionIfNotExistsAsync(_selectedRegionName);
         _model.Region = regionDto;
 
-        // Save School
         var schoolDto = await CrmSchoolService.SaveSchoolIfNotExistsAsync(
             selectedSchoolName,
-            address: "Not provided", // or capture from user if needed
+            address: "Not provided",
             regionId: regionDto.Id
         );
 
         _model.School = schoolDto;
     }
-
 
     private string GetDisplayName(GradeLevel grade)
     {

@@ -84,6 +84,13 @@ builder.Services.AddHttpClient("CrmApi", client =>
 });
 
 
+builder.Services.AddHttpClient("RestCountries", client =>
+{
+    client.BaseAddress = new Uri("https://restcountries.com/v3.1/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddMudServices();
+
 builder.Services.AddScoped<CrmRegionService>();
 builder.Services.AddScoped<CrmSchoolService>();
 builder.Services.AddScoped<RegistrationService>();

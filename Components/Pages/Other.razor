@@ -3,41 +3,77 @@
 @using MudBlazor
 @using System.Net.Http.Json
 @inject IHttpClientFactory HttpClientFactory
-@inherits MudAutocomplete<string>
+@inject IConfiguration Configuration
 
-<MudAutocomplete T="string" 
-                 Label="Select Country" 
-                 Value="@Value"
-                 ValueChanged="@OnValueChanged"
-                 SearchFunc="@Search"
-                 Dense="true"
-                 Variant="Variant.Outlined"
-                 Clearable="true"
-                 Placeholder="Type to search countries..."
-                 ResetValueOnEmptyText="true"
-                 DebounceInterval="500"
-                 MaxItems="null"
-                 Loading="@isLoading">
-    <LoadingContent>
-        <MudProgressCircular Indeterminate="true" Size="Size.Small" />
-    </LoadingContent>
-</MudAutocomplete>
+<MudContainer>
+    <MudAutocomplete T="string" 
+                     Label="Select Country" 
+                     Value="@selectedCountry"
+                     ValueChanged="@OnCountryChanged"
+                     SearchFunc="@SearchCountries"
+                     Dense="true"
+                     Variant="Variant.Outlined"
+                     Clearable="true"
+                     Placeholder="Type to search countries..."
+                     ResetValueOnEmptyText="true"
+                     DebounceInterval="500"
+                     MaxItems="null"
+                     Loading="@isCountryLoading">
+        <LoadingContent>
+            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+        </LoadingContent>
+    </MudAutocomplete>
+
+    <MudAutocomplete T="string" 
+                     Label="Select City" 
+                     Value="@selectedCity"
+                     ValueChanged="@OnCityChanged"
+                     SearchFunc="@SearchCities"
+                     Dense="true"
+                     Variant="Variant.Outlined"
+                     Clearable="true"
+                     Placeholder="Type to search cities..."
+                     ResetValueOnEmptyText="true"
+                     DebounceInterval="500"
+                     MaxItems="null"
+                     Loading="@isCityLoading"
+                     Disabled="@string.IsNullOrEmpty(selectedCountryCode)">
+        <LoadingContent>
+            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+        </LoadingContent>
+    </MudAutocomplete>
+</MudContainer>
 
 @code {
     private List<Country> _countries = new();
-    private bool isLoading = false;
+    private List<City> _cities = new();
+    private bool isCountryLoading = false;
+    private bool isCityLoading = false;
+    private string selectedCountry = string.Empty;
+    private string selectedCountryCode = string.Empty;
+    private string selectedCity = string.Empty;
+    private string _lastCountryCode = string.Empty;
 
-    private async Task<IEnumerable<string>> Search(string value, CancellationToken token)
+    private async Task<IEnumerable<string>> SearchCountries(string value, CancellationToken token)
     {
         if (_countries.Count == 0)
         {
             try
             {
-                isLoading = true;
-                using var client = HttpClientFactory.CreateClient("RestCountries");
-                var response = await client.GetFromJsonAsync<List<Country>>("all?fields=name", token);
-                if (response != null)
-                    _countries = response.OrderBy(c => c.Name.Common).ToList();
+                isCountryLoading = true;
+                using var client = HttpClientFactory.CreateClient("CountriesNow");
+                var response = await client.GetFromJsonAsync<CountriesNowResponse>("api/v0.1/countries", token);
+                if (response?.Data != null)
+                {
+                    _countries = response.Data.Select(c => new Country
+                    {
+                        Name = new Name { Common = c.Country },
+                        Cca2 = c.Iso2,
+                        Capital = c.Cities?.Take(1).ToList() ?? new List<string>(),
+                        Cities = c.Cities ?? new List<string>()
+                    }).OrderBy(c => c.Name.Common).ToList();
+                    Console.WriteLine($"Fetched {_countries.Count} countries from CountriesNow");
+                }
             }
             catch (Exception ex)
             {
@@ -46,12 +82,11 @@
             }
             finally
             {
-                isLoading = false;
+                isCountryLoading = false;
                 await InvokeAsync(StateHasChanged);
             }
         }
 
-        // Add slight delay to stabilize rapid input
         await Task.Delay(100, token);
 
         return string.IsNullOrWhiteSpace(value)
@@ -60,20 +95,146 @@
                         .Select(c => c.Name.Common);
     }
 
-    private Task OnValueChanged(string value)
+    private async Task<IEnumerable<string>> SearchCities(string value, CancellationToken token)
     {
-        Value = value;
-        ValueChanged.InvokeAsync(value);
-        return Task.CompletedTask;
+        if (string.IsNullOrEmpty(selectedCountryCode))
+        {
+            return Array.Empty<string>();
+        }
+
+        if (_cities.Count == 0 || _lastCountryCode != selectedCountryCode)
+        {
+            try
+            {
+                isCityLoading = true;
+                using var client = HttpClientFactory.CreateClient("GeoDB");
+                var apiKey = Configuration["GeoDB:ApiKey"];
+                client.DefaultRequestHeaders.Add("x-rapidapi-key", apiKey);
+                client.DefaultRequestHeaders.Add("x-rapidapi-host", "wft-geo-db.p.rapidapi.com");
+                _cities.Clear(); // Clear existing cities before fetching
+                // int offset = 0;
+                // const int limit = 50;
+                bool hasMore = true;
+
+                while (hasMore)
+                {
+                    var response = await client.GetFromJsonAsync<GeoDBResponse>(
+                        $"v1/geo/countries/{selectedCountryCode}/cities",
+                        token);
+                    if (response?.Data != null && response.Data.Any())
+                    {
+                        var newCities = response.Data
+                            .Where(r => !string.IsNullOrEmpty(r.City))
+                            .Select(r => new City { Name = r.City })
+                            .OrderBy(c => c.Name)
+                            .ToList();
+                        _cities.AddRange(newCities);
+                        // offset += limit;
+                        // hasMore = newCities.Count == limit; // Continue if we got a full page
+                        // Console.WriteLine($"Fetched {newCities.Count} cities from GeoDB, offset {offset - limit}, total {_cities.Count}");
+                    }
+                    else
+                    {
+                        hasMore = false;
+                    }
+                }
+
+                if (!_cities.Any())
+                {
+                    Console.WriteLine("GeoDB returned no cities, falling back to CountriesNow");
+                    var selected = _countries.FirstOrDefault(c => c.Name.Common == selectedCountry);
+                    _cities = selected?.Cities != null && selected.Cities.Any()
+                        ? selected.Cities.Select(c => new City { Name = c }).OrderBy(c => c.Name).ToList()
+                        : selected?.Capital != null && selected.Capital.Any()
+                            ? selected.Capital.Select(c => new City { Name = c }).OrderBy(c => c.Name).ToList()
+                            : new List<City>();
+                    Console.WriteLine($"Fallback: {_cities.Count} cities from CountriesNow");
+                }
+                _lastCountryCode = selectedCountryCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Failed to fetch cities from GeoDB: " + ex.Message);
+                var selected = _countries.FirstOrDefault(c => c.Name.Common == selectedCountry);
+                _cities = selected?.Cities != null && selected.Cities.Any()
+                    ? selected.Cities.Select(c => new City { Name = c }).OrderBy(c => c.Name).ToList()
+                    : selected?.Capital != null && selected.Capital.Any()
+                        ? selected.Capital.Select(c => new City { Name = c }).OrderBy(c => c.Name).ToList()
+                        : new List<City>();
+                Console.WriteLine($"Fallback after error: {_cities.Count} cities from CountriesNow");
+            }
+            finally
+            {
+                isCityLoading = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        await Task.Delay(100, token);
+
+        return string.IsNullOrWhiteSpace(value)
+            ? _cities.Select(c => c.Name)
+            : _cities.Where(c => c.Name.Contains(value, StringComparison.OrdinalIgnoreCase))
+                     .Select(c => c.Name);
+    }
+
+    private async Task OnCountryChanged(string value)
+    {
+        selectedCountry = value;
+        var selected = _countries.FirstOrDefault(c => c.Name.Common == value);
+        selectedCountryCode = selected?.Cca2 ?? string.Empty;
+        Console.WriteLine($"Selected country: {selectedCountry}, Code: {selectedCountryCode}");
+        if (selectedCountryCode != _lastCountryCode)
+        {
+            _cities.Clear();
+            selectedCity = string.Empty;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnCityChanged(string value)
+    {
+        selectedCity = value;
+        await InvokeAsync(StateHasChanged);
     }
 
     private class Country
     {
         public Name Name { get; set; } = new();
+        public string Cca2 { get; set; } = string.Empty;
+        public List<string> Capital { get; set; } = new();
+        public List<string> Cities { get; set; } = new();
     }
 
     private class Name
     {
         public string Common { get; set; } = string.Empty;
+    }
+
+    private class City
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private class CountriesNowResponse
+    {
+        public List<CountriesNowCountry> Data { get; set; } = new();
+    }
+
+    private class CountriesNowCountry
+    {
+        public string Country { get; set; } = string.Empty;
+        public string Iso2 { get; set; } = string.Empty;
+        public List<string> Cities { get; set; } = new();
+    }
+
+    private class GeoDBResponse
+    {
+        public List<GeoDBResult> Data { get; set; } = new();
+    }
+
+    private class GeoDBResult
+    {
+        public string City { get; set; } = string.Empty;
     }
 }

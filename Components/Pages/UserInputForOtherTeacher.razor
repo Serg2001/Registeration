@@ -1,19 +1,15 @@
-﻿@page "/confirm-otherpupil"
+﻿@page "/confirm-otherteacher"
 @using Registeration.DTOs
-@using Registeration.Enums
 @using Registeration.Services
 @using System.Security.Cryptography
 @using System.Text
 @inject HttpClient HttpClient
 @inject NavigationManager Navigation
 @inject IEmailService EmailService
-@* @inject IHttpClientFactory HttpClientFactory *@
-
-
 
 <MudPaper Elevation="3" Class="p-6 mx-auto mt-6" Style="max-width:600px;">
     <MudForm @ref="_form" Model="_model">
-        <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
+        <MudText Typo="Typo.h5" Class="mb-4">Ուսուցչի Գրանցման Տվյալների Հաստատում</MudText>
 
         <MudTextField T="string" Label="Դպրոց"
                       Text="@_model.School?.Name"
@@ -27,16 +23,16 @@
                       Text="@_model.FullName"
                       Variant="Variant.Outlined" Disabled="true" />
 
+        <MudTextField T="string" Label="Դասավանդվող առարկա"
+                      Text="@_model.TeachingSubject"
+                      Variant="Variant.Outlined" Disabled="true" />
+
         <MudTextField T="string" Label="Սոցիալական համար"
                       Text="@_model.SocNumber"
                       Variant="Variant.Outlined" Disabled="true" />
 
-        <MudTextField T="string" Label="Ծնողի էլ․ հասցե"
-                      Text="@_model.ParentsEmail"
-                      Variant="Variant.Outlined" Disabled="true" />
-
-        <MudTextField T="string" Label="Դասարան"
-                      Text="@GetGradeDisplay(_model.Grade)"
+        <MudTextField T="string" Label="Էլ․ հասցե"
+                      Text="@_model.Email"
                       Variant="Variant.Outlined" Disabled="true" />
 
         <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
@@ -51,8 +47,8 @@
 
 @code {
     private MudForm _form;
-    private OtherPupilDTO _model = new();
-    private Guid _pupilId;
+    private OtherTeacherDTO _model = new();
+    private Guid _teacherId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,63 +57,56 @@
 
         if (Guid.TryParse(idString, out Guid id))
         {
-            _pupilId = id;
+            _teacherId = id;
             try
             {
-                var result = await HttpClient.GetFromJsonAsync<OtherPupilDTO>($"api/otherpupil/by-id/{id}");
+                var result = await HttpClient.GetFromJsonAsync<OtherTeacherDTO>($"api/otherteacher/by-id/{id}");
                 if (result != null)
                     _model = result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("❌ Failed to load OtherPupil: " + ex.Message);
+                Console.WriteLine("❌ Failed to load OtherTeacher: " + ex.Message);
             }
         }
     }
 
     private async Task OnConfirm()
     {
-        Console.WriteLine($"✅ Հաստատվել է՝ {_pupilId}");
+        Console.WriteLine($"✅ Հաստատվել է՝ {_teacherId}");
 
         try
         {
-            // Step 1: Get unique identity string (used for access code generation)
-            var identityString = await HttpClient.GetStringAsync($"api/otherpupil/identity-string/{_pupilId}");
+            var identityString = await HttpClient.GetStringAsync($"api/otherteacher/identity-string/{_teacherId}");
 
-            // Step 2: Generate password and access code
-            string parentPassword = GenerateCode(_model.ParentsEmail);
-            string childAccessCode = GenerateCode(identityString);
+            string password = GenerateCode(_model.Email);
+            string accessCode = GenerateCode(identityString);
 
-            // Step 3: Send password and access code to backend API
             var confirmData = new
             {
-                Password = parentPassword,
-                AccessCode = childAccessCode
+                Password = password,
+                AccessCode = accessCode
             };
 
-            var updateResponse = await HttpClient.PostAsJsonAsync($"api/otherpupil/confirm/{_pupilId}", confirmData);
+            var updateResponse = await HttpClient.PostAsJsonAsync($"api/otherteacher/confirm/{_teacherId}", confirmData);
             if (!updateResponse.IsSuccessStatusCode)
             {
                 Console.WriteLine("❌ Failed to update credentials in database.");
                 return;
             }
 
-            // Step 4: Send login credentials to parent's email
             string emailBody = $@"
-			<h3>Բարև Ձեզ, {_model.FullName}</h3>
-			<p>Ձեր գրանցումն հաստատվել է։</p>
-			<p><b>Ծնողի մուտքի տվյալներ՝</b></p>
-			<ul>
-				<li><b>Մուտքանուն:</b> {_model.ParentsEmail}</li>
-				<li><b>Գաղտնաբառ:</b> {parentPassword}</li>
-			</ul>
-			<p><b>Երեխայի մուտքի կոդն է՝</b> {childAccessCode}</p>
-		";
+                <h3>Բարև Ձեզ, {_model.FullName}</h3>
+                <p>Ձեր գրանցումն հաստատվել է։</p>
+                <ul>
+                    <li><b>Մուտքանուն:</b> {_model.Email}</li>
+                    <li><b>Գաղտնաբառ:</b> {password}</li>
+                    <li><b>Մուտքի կոդ:</b> {accessCode}</li>
+                </ul>";
 
-            await EmailService.SendEmailAsync(_model.ParentsEmail, "Մուտքի Տվյալներ", emailBody);
+            await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
             Console.WriteLine("📧 Email sent with login details.");
 
-            // Step 5: Navigate to success page
             Navigation.NavigateTo("/success");
         }
         catch (Exception ex)
@@ -128,23 +117,21 @@
         }
     }
 
-
-
     private async Task OnReject()
     {
-        if (_pupilId == Guid.Empty)
+        if (_teacherId == Guid.Empty)
             return;
 
         try
         {
-            var response = await HttpClient.DeleteAsync($"api/otherpupil/delete/{_pupilId}");
+            var response = await HttpClient.DeleteAsync($"api/otherteacher/delete/{_teacherId}");
             if (response.IsSuccessStatusCode)
             {
                 Navigation.NavigateTo("/retry");
             }
             else
             {
-                Console.WriteLine("❌ Failed to delete OtherPupil.");
+                Console.WriteLine("❌ Failed to delete OtherTeacher.");
             }
         }
         catch (Exception ex)
@@ -153,27 +140,6 @@
         }
     }
 
-    private string GetGradeDisplay(GradeLevel grade)
-    {
-        return grade switch
-        {
-            GradeLevel.Grade1 => "I",
-            GradeLevel.Grade2 => "II",
-            GradeLevel.Grade3 => "III",
-            GradeLevel.Grade4 => "IV",
-            GradeLevel.Grade5 => "V",
-            GradeLevel.Grade6 => "VI",
-            GradeLevel.Grade7 => "VII",
-            GradeLevel.Grade8 => "VIII",
-            GradeLevel.Grade9 => "IX",
-            GradeLevel.Grade10 => "X",
-            GradeLevel.Grade11 => "XI",
-            GradeLevel.Grade12 => "XII",
-            _ => grade.ToString()
-        };
-    }
-
-    // ✅ Code generator
     private static string GenerateCode(string input)
     {
         using (var sha256 = SHA256.Create())
@@ -186,16 +152,16 @@
             string digitPart = digitsOnly.Substring(0, 3);
 
             char[] upper = {
-            'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
-            'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
-            'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
-    };
+                'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
+                'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
+                'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
+        };
 
             char[] lower = {
-            'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
-            'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
-            'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
-    };
+                'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
+                'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
+                'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
+        };
 
             Random rand = new Random(hash[0] + hash[1] + hash[2]);
             char letter1 = rand.Next(2) == 0 ? upper[hash[3] % upper.Length] : lower[hash[4] % lower.Length];
@@ -208,5 +174,4 @@
             return new string(codeChars);
         }
     }
-}
 }

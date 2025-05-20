@@ -66,6 +66,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPupilService, PupilService>();
 builder.Services.AddSingleton<FormStateService>();
 builder.Services.AddScoped<OtherPupilService>();
+builder.Services.AddScoped<OtherTeacherService>();
 
 
 

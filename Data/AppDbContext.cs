@@ -15,6 +15,7 @@ namespace Registeration.Data
         public DbSet<School> Schools { get; set; }
         public DbSet<Registration> Registrations { get; set; }
         public DbSet<OtherPupil> OtherPupil { get; set; }
+        public DbSet<OtherTeacher> OtherTeacher { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

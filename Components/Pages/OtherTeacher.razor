@@ -1,6 +1,5 @@
-﻿@page "/otherpupil"
+﻿@page "/otherteacher"
 @using Registeration.DTOs
-@using Registeration.Enums
 @using Registeration.Services
 @using MudBlazor
 
@@ -16,27 +15,7 @@
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8 d-flex justify-center">
     <MudPaper Elevation="4" Class="pa-6 rounded-lg" Style="width: 100%; max-width: 600px;">
-        <MudForm @ref="_form" Model="_model">
             @if (_step == 1)
-            {
-                <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">
-                    Նշեք՝ ՀՀ Բնակիչ եք, թե ոչ
-                </MudText>
-
-                <MudRadioGroup T="bool"
-                               @bind-SelectedValue="_model.IsArmenianCitizen"
-                               Required="true"
-                               RequiredError="Խնդրում ենք ընտրել։"
-                               Class="my-4">
-                    <MudRadio T="bool" Value="true" Label="Այո, ՀՀ Բնակիչ եմ։" />
-                    <MudRadio T="bool" Value="false" Label="Ոչ, ՀՀ Բնակիչ Չեմ։" />
-                </MudRadioGroup>
-
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" FullWidth="true">
-                    Հաջորդը
-                </MudButton>
-            }
-            else if (_step == 2)
             {
                 <MudStack Spacing="3">
                     <MudAutocomplete T="string"
@@ -55,7 +34,7 @@
                                      SearchFunc="@SearchSchools"
                                      Variant="Variant.Outlined"
                                      Required="true"
-                                     Disabled="@(_model.Region.Id == Guid.Empty)"
+                                     Disabled="@(_model.Region?.Id == Guid.Empty)"
                                      MaxItems="null" />
 
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" FullWidth="true">
@@ -63,28 +42,22 @@
                     </MudButton>
                 </MudStack>
             }
-            else if (_step == 3)
+            else if (_step == 2)
             {
                 <MudStack Spacing="3">
-                    <MudSelect T="GradeLevel"
-                               Label="Դասարան"
-                               @bind-Value="_model.Grade"
-                               Required="true"
-                               Variant="Variant.Outlined"
-                               Dense="true"
-                               For="@(() => _model.Grade)">
-                        @foreach (var grade in Enum.GetValues(typeof(GradeLevel)).Cast<GradeLevel>())
-                        {
-                            <MudSelectItem Value="@grade">@GetDisplayName(grade)</MudSelectItem>
-                        }
-                    </MudSelect>
-
                     <MudTextField T="string"
                                   Label="Անուն Ազգանուն"
                                   @bind-Value="_model.FullName"
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   For="@(() => _model.FullName)" />
+
+                    <MudTextField T="string"
+                                  Label="Դասավանդվող Առարկա"
+                                  @bind-Value="_model.TeachingSubject"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  For="@(() => _model.TeachingSubject)" />
 
                     <MudTextField T="string"
                                   Label="Սոցիալական համար"
@@ -94,25 +67,22 @@
                                   For="@(() => _model.SocNumber)" />
 
                     <MudTextField T="string"
-                                  Label="Ծնողի էլ. հասցե"
-                                  @bind-Value="_model.ParentsEmail"
+                                  Label="Էլ. հասցե"
+                                  @bind-Value="_model.Email"
                                   Variant="Variant.Outlined"
                                   Required="true"
-                                  For="@(() => _model.ParentsEmail)" />
-
+                                  For="@(() => _model.Email)" />
 
                     <div class="d-flex align-items-center gap-4 mt-4">
                         <MudCheckBox T="bool" @bind-Value="isAgreed" Color="Color.Success">
                             <LabelContent>
                                 <span class="text-primary text-decoration-underline cursor-pointer" @onclick="OpenContactDialog">
-                                    Ծնողի Համաձայնություն
+                                    Ուսուցչի Համաձայնություն
                                 </span>
                             </LabelContent>
                         </MudCheckBox>
                     </div>
-
-
-
+                   
                     <MudButton Variant="Variant.Filled"
                                Disabled="@(!isAgreed)"
                                Color="Color.Primary"
@@ -121,14 +91,13 @@
                         Հաջորդը
                     </MudButton>
                 </MudStack>
-            }
-        </MudForm>
+                }
     </MudPaper>
 </MudContainer>
 
 @code {
     private MudForm _form = new();
-    private OtherPupilDTO _model = new() { Id = Guid.NewGuid() };
+    private OtherTeacherDTO _model = new() { Id = Guid.NewGuid() };
     private int _step = 1;
     private bool isAgreed;
 
@@ -175,7 +144,7 @@
 
         try
         {
-            var response = await HttpClient.PostAsJsonAsync("api/otherpupil/save", _model);
+            var response = await HttpClient.PostAsJsonAsync("api/otherteacher/save", _model);
 
             if (response.IsSuccessStatusCode)
             {
@@ -185,11 +154,11 @@
                     result.TryGetValue("id", out var idObj) &&
                     Guid.TryParse(idObj?.ToString(), out Guid id))
                 {
-                    _model.Id = id; // ✅ ensure model ID is in sync with DB
-                    FormStateService.OtherPupilFormModel = _model;
+                    _model.Id = id;
+                    FormStateService.OtherTeacherFormModel = _model;
 
                     Snackbar.Add("Հաջողությամբ պահպանվեց։", Severity.Success);
-                    Navigation.NavigateTo("/nextstep-otherpupil");
+                    Navigation.NavigateTo("/nextstep-otherteacher");
                 }
                 else
                 {
@@ -207,7 +176,6 @@
             Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
         }
     }
-
 
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
@@ -277,26 +245,5 @@
     {
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         DialogService.Show<ContactDialog>("Համաձայն եմ", options);
-    }
-
-
-    private string GetDisplayName(GradeLevel grade)
-    {
-        return grade switch
-        {
-            GradeLevel.Grade1 => "I",
-            GradeLevel.Grade2 => "II",
-            GradeLevel.Grade3 => "III",
-            GradeLevel.Grade4 => "IV",
-            GradeLevel.Grade5 => "V",
-            GradeLevel.Grade6 => "VI",
-            GradeLevel.Grade7 => "VII",
-            GradeLevel.Grade8 => "VIII",
-            GradeLevel.Grade9 => "IX",
-            GradeLevel.Grade10 => "X",
-            GradeLevel.Grade11 => "XI",
-            GradeLevel.Grade12 => "XII",
-            _ => grade.ToString()
-        };
     }
 }

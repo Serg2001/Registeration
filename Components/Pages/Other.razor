@@ -1,93 +1,271 @@
 ﻿@page "/other"
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+@inject OtherService OtherService
+@inject ISnackbar Snackbar
+@inject HttpClient HttpClient
 
 @using MudBlazor
 @using System.Net.Http.Json
-@inject IHttpClientFactory HttpClientFactory
-@inject IConfiguration Configuration
+@using Registeration.DTOs
+@using Registeration.Services
 
-<MudContainer>
-    <MudAutocomplete T="string" 
-                     Label="Select Country" 
-                     Value="@selectedCountry"
-                     ValueChanged="@OnCountryChanged"
-                     SearchFunc="@SearchCountries"
-                     Dense="true"
-                     Variant="Variant.Outlined"
-                     Clearable="true"
-                     Placeholder="Type to search countries..."
-                     ResetValueOnEmptyText="true"
-                     DebounceInterval="500"
-                     MaxItems="null"
-                     Loading="@isCountryLoading">
-        <LoadingContent>
-            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
-        </LoadingContent>
-    </MudAutocomplete>
+<PageTitle>Գրանցում</PageTitle>
 
-    <MudAutocomplete T="string" 
-                     Label="Select City" 
-                     Value="@selectedCity"
-                     ValueChanged="@OnCityChanged"
-                     SearchFunc="@SearchCities"
-                     Dense="true"
-                     Variant="Variant.Outlined"
-                     Clearable="true"
-                     Placeholder="Type to search cities..."
-                     ResetValueOnEmptyText="true"
-                     DebounceInterval="500"
-                     MaxItems="null"
-                     Loading="@isCityLoading"
-                     Disabled="@string.IsNullOrEmpty(selectedCountryCode)">
-        <LoadingContent>
-            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
-        </LoadingContent>
-    </MudAutocomplete>
-</MudContainer>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(circle at top left, #f7e9ff, #f4f5ff, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        font-family: 'Segoe UI', sans-serif;
+        overflow-x: hidden;
+    }
+
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 90vh;
+        padding: 2rem;
+    }
+
+    .form-box {
+        background-color: white;
+        padding: 3rem;
+        border-radius: 16px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6a1b9a;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .form-button {
+        background-color: #6a1b9a;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<div class="centered-container">
+    <div class="form-box">
+        <div class="form-title">Գրանցում</div>
+
+        @if (_state == 1)
+        {
+            <MudForm @ref="_form" Model="_formModel">
+                <MudStack Spacing="2">
+                    <MudAutocomplete T="string" 
+                                     Label="Select Country" 
+                                     Value="@_formModel.Country"
+                                     ValueChanged="@OnCountryChanged"
+                                     SearchFunc="@SearchCountries"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     For="@(() => _formModel.Country)"
+                                     Dense="true"
+                                     Clearable="true"
+                                     Placeholder="Type to search countries..."
+                                     ResetValueOnEmptyText="true"
+                                     DebounceInterval="500"
+                                     MaxItems="null"
+                                     Loading="@isCountryLoading">
+                        <LoadingContent>
+                            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                        </LoadingContent>
+                    </MudAutocomplete>
+
+                    <MudAutocomplete T="string" 
+                                     Label="Select City" 
+                                     Value="@_formModel.City"
+                                     ValueChanged="@OnCityChanged"
+                                     SearchFunc="@SearchCities"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     For="@(() => _formModel.City)"
+                                     Dense="true"
+                                     Clearable="true"
+                                     Placeholder="Type to search cities..."
+                                     ResetValueOnEmptyText="true"
+                                     DebounceInterval="500"
+                                     MaxItems="null"
+                                     Loading="@isCityLoading"
+                                     Disabled="@string.IsNullOrEmpty(selectedCountryCode)">
+                        <LoadingContent>
+                            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                        </LoadingContent>
+                    </MudAutocomplete>
+
+                    <MudButton Variant="Variant.Filled" 
+                               Class="mt-4 form-button"
+                               OnClick="@HandleNextInState1">
+                        Հաջորդը
+                    </MudButton>
+                </MudStack>
+            </MudForm>
+        }
+        else if (_state == 2)
+        {
+            <MudForm @ref="_form" Model="_formModel">
+                <MudStack Spacing="2">
+                    <MudTextField T="string" 
+                                  Label="Անուն Ազգանուն" 
+                                  @bind-Value="_formModel.NameSurname"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  For="@(() => _formModel.NameSurname)" />
+
+                    <MudAutocomplete T="string" 
+                                     Label="Մասնագիտություն" 
+                                     Value="@_formModel.Profession"
+                                     ValueChanged="@OnProfessionChanged"
+                                     SearchFunc="@SearchProfessions"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     For="@(() => _formModel.Profession)"
+                                     Dense="true"
+                                     Clearable="true"
+                                     Placeholder="Select profession..."
+                                     ResetValueOnEmptyText="true"
+                                     DebounceInterval="500"
+                                     MaxItems="null" />
+
+                    @if (_formModel.Profession == "Այլ")
+                    {
+                        <MudTextField T="string" 
+                                      Label="Մասնագիտություն (Նշեք)" 
+                                      @bind-Value="_formModel.CustomProfession"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.CustomProfession)" />
+                    }
+
+                    <MudButton Variant="Variant.Filled" 
+                               Class="mt-4 form-button"
+                               OnClick="@HandleNextInState2">
+                        Հաջորդը
+                    </MudButton>
+                </MudStack>
+            </MudForm>
+        }
+        else if (_state == 3)
+        {
+            <MudForm @ref="_form" Model="_formModel">
+                <MudStack Spacing="2">
+                    <MudTextField T="int?" 
+                                  Label="Տարիք" 
+                                  @bind-Value="_formModel.Age"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  For="@(() => _formModel.Age)" />
+
+                    @if (_formModel.Country != "Armenia" && _formModel.Profession == "Աշակերտ")
+                    {
+                        <MudTextField T="string" 
+                                      Label="Էլ․ Հասցե" 
+                                      @bind-Value="_formModel.Email"
+                                      Variant="Variant.Outlined"
+                                      InputType="InputType.Email"
+                                      Required="true"
+                                      For="@(() => _formModel.Email)" />
+                        <MudTextField T="string" 
+                                      Label="Հեռ․ Համար" 
+                                      @bind-Value="_formModel.Phone"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.Phone)" />
+                    }
+                    else if (_formModel.Country != "Armenia" && _formModel.Profession == "Ուսուցիչ")
+                    {
+                        <MudTextField T="string" 
+                                      Label="Դասավանդման Վայր" 
+                                      @bind-Value="_formModel.TeachingPlace"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.TeachingPlace)" />
+                        <MudTextField T="string" 
+                                      Label="Դասավանդման առարկա" 
+                                      @bind-Value="_formModel.TeachingSubject"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.TeachingSubject)" />
+                        <MudTextField T="string" 
+                                      Label="Հեռ․ Համար" 
+                                      @bind-Value="_formModel.Phone"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.Phone)" />
+                        <MudTextField T="string" 
+                                      Label="Էլ․ Հասցե" 
+                                      @bind-Value="_formModel.Email"
+                                      Variant="Variant.Outlined"
+                                      InputType="InputType.Email"
+                                      Required="true"
+                                      For="@(() => _formModel.Email)" />
+                    }
+                    else if (_formModel.Profession == "Այլ" || _formModel.Country != "Armenia")
+                    {
+                        <MudTextField T="string" 
+                                      Label="Էլ․ Հասցե" 
+                                      @bind-Value="_formModel.Email"
+                                      Variant="Variant.Outlined"
+                                      InputType="InputType.Email"
+                                      Required="true"
+                                      For="@(() => _formModel.Email)" />
+                        <MudTextField T="string" 
+                                      Label="Հեռ․ Համար" 
+                                      @bind-Value="_formModel.Phone"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.Phone)" />
+                        <MudTextField T="string" 
+                                      Label="Նպատակ" 
+                                      @bind-Value="_formModel.Purpose"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.Purpose)" />
+                    }
+
+                    <MudButton Variant="Variant.Filled" 
+                               Class="mt-4 form-button"
+                               OnClick="@HandleNextInState3">
+                        Հաջորդը
+                    </MudButton>
+                </MudStack>
+            </MudForm>
+        }
+    </div>
+</div>
 
 @code {
+    private int _state = 1; // 1: Select country/city, 2: Enter name/profession, 3: Enter age and additional parameters
+    private MudForm _form = new();
+    private OtherDTO _formModel = new();
     private List<Country> _countries = new();
     private List<City> _cities = new();
     private bool isCountryLoading = false;
     private bool isCityLoading = false;
-    private string selectedCountry = string.Empty;
     private string selectedCountryCode = string.Empty;
-    private string selectedCity = string.Empty;
     private string _lastCountryCode = string.Empty;
 
-    private async Task<IEnumerable<string>> SearchCountries(string value, CancellationToken token)
+    private async Task<IEnumerable<string>> SearchCountries(string value, CancellationToken cancellationToken)
     {
         if (_countries.Count == 0)
         {
-            try
-            {
-                isCountryLoading = true;
-                using var client = HttpClientFactory.CreateClient("CountriesNow");
-                var response = await client.GetFromJsonAsync<CountriesNowResponse>("api/v0.1/countries", token);
-                if (response?.Data != null)
-                {
-                    _countries = response.Data.Select(c => new Country
-                    {
-                        Name = new Name { Common = c.Country },
-                        Cca2 = c.Iso2,
-                        Capital = c.Cities?.Take(1).ToList() ?? new List<string>(),
-                        Cities = c.Cities ?? new List<string>()
-                    }).OrderBy(c => c.Name.Common).ToList();
-                    Console.WriteLine($"Fetched {_countries.Count} countries from CountriesNow");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Failed to fetch countries: " + ex.Message);
-                _countries = new List<Country>();
-            }
-            finally
-            {
-                isCountryLoading = false;
-                await InvokeAsync(StateHasChanged);
-            }
+            isCountryLoading = true;
+            _countries = await OtherService.GetAllCountriesAsync(cancellationToken);
+            isCountryLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
-
-        await Task.Delay(100, token);
 
         return string.IsNullOrWhiteSpace(value)
             ? _countries.Select(c => c.Name.Common)
@@ -95,7 +273,7 @@
                         .Select(c => c.Name.Common);
     }
 
-    private async Task<IEnumerable<string>> SearchCities(string value, CancellationToken token)
+    private async Task<IEnumerable<string>> SearchCities(string value, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(selectedCountryCode))
         {
@@ -104,73 +282,12 @@
 
         if (_cities.Count == 0 || _lastCountryCode != selectedCountryCode)
         {
-            try
-            {
-                isCityLoading = true;
-                using var client = HttpClientFactory.CreateClient("GeoDB");
-                var apiKey = Configuration["GeoDB:ApiKey"];
-                client.DefaultRequestHeaders.Add("x-rapidapi-key", apiKey);
-                client.DefaultRequestHeaders.Add("x-rapidapi-host", "wft-geo-db.p.rapidapi.com");
-                _cities.Clear(); // Clear existing cities before fetching
-                // int offset = 0;
-                // const int limit = 50;
-                bool hasMore = true;
-
-                while (hasMore)
-                {
-                    var response = await client.GetFromJsonAsync<GeoDBResponse>(
-                        $"v1/geo/countries/{selectedCountryCode}/cities",
-                        token);
-                    if (response?.Data != null && response.Data.Any())
-                    {
-                        var newCities = response.Data
-                            .Where(r => !string.IsNullOrEmpty(r.City))
-                            .Select(r => new City { Name = r.City })
-                            .OrderBy(c => c.Name)
-                            .ToList();
-                        _cities.AddRange(newCities);
-                        // offset += limit;
-                        // hasMore = newCities.Count == limit; // Continue if we got a full page
-                        // Console.WriteLine($"Fetched {newCities.Count} cities from GeoDB, offset {offset - limit}, total {_cities.Count}");
-                    }
-                    else
-                    {
-                        hasMore = false;
-                    }
-                }
-
-                if (!_cities.Any())
-                {
-                    Console.WriteLine("GeoDB returned no cities, falling back to CountriesNow");
-                    var selected = _countries.FirstOrDefault(c => c.Name.Common == selectedCountry);
-                    _cities = selected?.Cities != null && selected.Cities.Any()
-                        ? selected.Cities.Select(c => new City { Name = c }).OrderBy(c => c.Name).ToList()
-                        : selected?.Capital != null && selected.Capital.Any()
-                            ? selected.Capital.Select(c => new City { Name = c }).OrderBy(c => c.Name).ToList()
-                            : new List<City>();
-                    Console.WriteLine($"Fallback: {_cities.Count} cities from CountriesNow");
-                }
-                _lastCountryCode = selectedCountryCode;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Failed to fetch cities from GeoDB: " + ex.Message);
-                var selected = _countries.FirstOrDefault(c => c.Name.Common == selectedCountry);
-                _cities = selected?.Cities != null && selected.Cities.Any()
-                    ? selected.Cities.Select(c => new City { Name = c }).OrderBy(c => c.Name).ToList()
-                    : selected?.Capital != null && selected.Capital.Any()
-                        ? selected.Capital.Select(c => new City { Name = c }).OrderBy(c => c.Name).ToList()
-                        : new List<City>();
-                Console.WriteLine($"Fallback after error: {_cities.Count} cities from CountriesNow");
-            }
-            finally
-            {
-                isCityLoading = false;
-                await InvokeAsync(StateHasChanged);
-            }
+            isCityLoading = true;
+            _cities = await OtherService.GetCitiesByCountryAsync(selectedCountryCode, cancellationToken);
+            _lastCountryCode = selectedCountryCode;
+            isCityLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
-
-        await Task.Delay(100, token);
 
         return string.IsNullOrWhiteSpace(value)
             ? _cities.Select(c => c.Name)
@@ -178,63 +295,159 @@
                      .Select(c => c.Name);
     }
 
+    private async Task<IEnumerable<string>> SearchProfessions(string value, CancellationToken cancellationToken)
+    {
+        var professions = new List<string> { "Աշակերտ", "Ուսուցիչ", "Ուսանող", "Դասախոս", "Այլ" };
+        await Task.Delay(100, cancellationToken);
+
+        return string.IsNullOrWhiteSpace(value)
+            ? professions
+            : professions.Where(p => p.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
     private async Task OnCountryChanged(string value)
     {
-        selectedCountry = value;
+        _formModel.Country = value;
         var selected = _countries.FirstOrDefault(c => c.Name.Common == value);
         selectedCountryCode = selected?.Cca2 ?? string.Empty;
-        Console.WriteLine($"Selected country: {selectedCountry}, Code: {selectedCountryCode}");
+        Console.WriteLine($"Selected country: {_formModel.Country}, Code: {selectedCountryCode}");
         if (selectedCountryCode != _lastCountryCode)
         {
             _cities.Clear();
-            selectedCity = string.Empty;
+            _formModel.City = string.Empty;
         }
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task OnCityChanged(string value)
     {
-        selectedCity = value;
+        _formModel.City = value;
         await InvokeAsync(StateHasChanged);
     }
 
-    private class Country
+    private async Task OnProfessionChanged(string value)
     {
-        public Name Name { get; set; } = new();
-        public string Cca2 { get; set; } = string.Empty;
-        public List<string> Capital { get; set; } = new();
-        public List<string> Cities { get; set; } = new();
+        _formModel.Profession = value;
+        if (_formModel.Profession != "Այլ")
+        {
+            _formModel.CustomProfession = string.Empty;
+        }
+        await InvokeAsync(StateHasChanged);
     }
 
-    private class Name
+    private async Task HandleNextInState1()
     {
-        public string Common { get; set; } = string.Empty;
+        await _form.Validate();
+        Console.WriteLine($"State 1 - Form Valid: {_form.IsValid}");
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
+            return;
+        }
+        _state = 2;
+        await InvokeAsync(StateHasChanged);
     }
 
-    private class City
+    private async Task HandleNextInState2()
     {
-        public string Name { get; set; } = string.Empty;
+        await _form.Validate();
+        Console.WriteLine($"State 2 - Form Valid: {_form.IsValid}");
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
+            return;
+        }
+
+        // Check navigation conditions for Armenia
+        if (_formModel.Country == "Armenia" && _formModel.Profession == "Աշակերտ")
+        {
+            try
+            {
+                var response = await HttpClient.PostAsJsonAsync("api/other/save", _formModel);
+                Console.WriteLine($"API Response Status: {response.StatusCode}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
+                    NavigationManager.NavigateTo("/otherpupil");
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API Error: {error}");
+                    Snackbar.Add($"API սխալ: {error}", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                Snackbar.Add($"Ճանապարհը ձախողվեց․ {ex.Message}", Severity.Error);
+            }
+        }
+        else if (_formModel.Country == "Armenia" && _formModel.Profession == "Ուսուցիչ")
+        {
+            try
+            {
+                var response = await HttpClient.PostAsJsonAsync("api/other/save", _formModel);
+                Console.WriteLine($"API Response Status: {response.StatusCode}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
+                    NavigationManager.NavigateTo("/otherteacher");
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API Error: {error}");
+                    Snackbar.Add($"API սխալ: {error}", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                Snackbar.Add($"Ճանապարհը ձախողվեց․ {ex.Message}", Severity.Error);
+            }
+        }
+        else
+        {
+            // Transition to state 3 for additional fields
+            _state = 3;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
-    private class CountriesNowResponse
+    private async Task HandleNextInState3()
     {
-        public List<CountriesNowCountry> Data { get; set; } = new();
-    }
+        await _form.Validate();
+        Console.WriteLine($"State 3 - Form Valid: {_form.IsValid}");
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
+            return;
+        }
 
-    private class CountriesNowCountry
-    {
-        public string Country { get; set; } = string.Empty;
-        public string Iso2 { get; set; } = string.Empty;
-        public List<string> Cities { get; set; } = new();
-    }
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync("api/other/save", _formModel);
+            Console.WriteLine($"API Response Status: {response.StatusCode}");
 
-    private class GeoDBResponse
-    {
-        public List<GeoDBResult> Data { get; set; } = new();
-    }
-
-    private class GeoDBResult
-    {
-        public string City { get; set; } = string.Empty;
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
+                NavigationManager.NavigateTo("/final");
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"API Error: {error}");
+                Snackbar.Add($"API սխալ: {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+            Snackbar.Add($"Ճանապարհը ձախողվեց․ {ex.Message}", Severity.Error);
+        }
     }
 }

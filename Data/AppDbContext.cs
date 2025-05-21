@@ -17,6 +17,8 @@ namespace Registeration.Data
         public DbSet<OtherPupil> OtherPupil { get; set; }
         public DbSet<OtherTeacher> OtherTeacher { get; set; }
 
+        public DbSet<Other> Others { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

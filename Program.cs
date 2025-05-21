@@ -84,18 +84,27 @@ builder.Services.AddHttpClient("CrmApi", client =>
 });
 
 
-builder.Services.AddHttpClient("CountriesNow", client =>
+//builder.Services.AddHttpClient("CountriesNow", client =>
+//{
+//    client.BaseAddress = new Uri("https://countriesnow.space/");
+//    client.Timeout = TimeSpan.FromSeconds(30);
+//});
+//builder.Services.AddHttpClient("GeoDB", client =>
+//{
+//    client.BaseAddress = new Uri("https://wft-geo-db.p.rapidapi.com/");
+//    client.Timeout = TimeSpan.FromSeconds(30);
+//});
+//builder.Services.AddMudServices();
+//builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+
+
+builder.Services.AddScoped<OtherService>();
+builder.Services.AddHttpClient("CountryStateCity", client =>
 {
-    client.BaseAddress = new Uri("https://countriesnow.space/");
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
-builder.Services.AddHttpClient("GeoDB", client =>
-{
-    client.BaseAddress = new Uri("https://wft-geo-db.p.rapidapi.com/");
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.BaseAddress = new Uri("https://api.countrystatecity.in/v1/");
+    client.Timeout = TimeSpan.FromSeconds(60);
 });
 builder.Services.AddMudServices();
-builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 
 builder.Services.AddScoped<CrmRegionService>();

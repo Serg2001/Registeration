@@ -30,7 +30,8 @@ public class OtherController : ControllerBase
             Phone = dto.Phone,
             TeachingPlace = dto.TeachingPlace,
             TeachingSubject = dto.TeachingSubject,
-            Purpose = dto.Purpose
+            Purpose = dto.Purpose,
+            StudyPlace = dto.StudyPlace
         };
 
         await _service.SaveAsync(model);

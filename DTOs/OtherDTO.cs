@@ -30,6 +30,7 @@ namespace Registeration.DTOs
         public string TeachingPlace { get; set; } = string.Empty;
 
         public string TeachingSubject { get; set; } = string.Empty;
+        public string StudyPlace { get; set; } = string.Empty;
 
         public string Purpose { get; set; } = string.Empty;
     }

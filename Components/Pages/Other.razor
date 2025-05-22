@@ -1,6 +1,6 @@
 ﻿@page "/other"
 @rendermode InteractiveServer
-@inject NavigationManager NavigationManager
+@inject NavigationManager Navigation
 @inject IHttpClientFactory HttpClientFactory
 @inject OtherService OtherService
 @inject ISnackbar Snackbar
@@ -168,23 +168,56 @@
                                   Required="true"
                                   For="@(() => _formModel.Age)" />
 
-                    @if (_formModel.Country != "Armenia" && _formModel.Profession == "Աշակերտ")
+                    @if (_formModel.Country == "Armenia" && _formModel.Profession == "Ուսանող")
+                    {
+                        <MudAutocomplete T="string" 
+                                         Label="Սովորելու վայր" 
+                                         Value="@_formModel.StudyPlace"
+                                         ValueChanged="@(value => _formModel.StudyPlace = value)"
+                                         SearchFunc="@SearchUniversities"
+                                         Variant="Variant.Outlined"
+                                         Required="true"
+                                         For="@(() => _formModel.StudyPlace)"
+                                         Dense="true"
+                                         Clearable="true"
+                                         Placeholder="Select university..."
+                                         ResetValueOnEmptyText="true"
+                                         DebounceInterval="500"
+                                         MaxItems="null" />
+                    }
+                    else if (_formModel.Country != "Armenia" && _formModel.Profession == "Ուսանող")
                     {
                         <MudTextField T="string" 
-                                      Label="Էլ․ Հասցե" 
-                                      @bind-Value="_formModel.Email"
-                                      Variant="Variant.Outlined"
-                                      InputType="InputType.Email"
-                                      Required="true"
-                                      For="@(() => _formModel.Email)" />
-                        <MudTextField T="string" 
-                                      Label="Հեռ․ Համար" 
-                                      @bind-Value="_formModel.Phone"
+                                      Label="Սովորելու վայր" 
+                                      @bind-Value="_formModel.StudyPlace"
                                       Variant="Variant.Outlined"
                                       Required="true"
-                                      For="@(() => _formModel.Phone)" />
+                                      For="@(() => _formModel.StudyPlace)" />
                     }
-                    else if (_formModel.Country != "Armenia" && _formModel.Profession == "Ուսուցիչ")
+                    else if (_formModel.Country == "Armenia" && _formModel.Profession == "Դասախոս")
+                    {
+                        <MudAutocomplete T="string" 
+                                         Label="Դասավանդման Վայր" 
+                                         Value="@_formModel.TeachingPlace"
+                                         ValueChanged="@(value => _formModel.TeachingPlace = value)"
+                                         SearchFunc="@SearchUniversities"
+                                         Variant="Variant.Outlined"
+                                         Required="true"
+                                         For="@(() => _formModel.TeachingPlace)"
+                                         Dense="true"
+                                         Clearable="true"
+                                         Placeholder="Select university..."
+                                         ResetValueOnEmptyText="true"
+                                         DebounceInterval="500"
+                                         MaxItems="null" />
+                        <MudTextField T="string" 
+                                      Label="Դասավանդման առարկա" 
+                                      @bind-Value="_formModel.TeachingSubject"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.TeachingSubject)" />
+                    }
+                    else if (_formModel.Country != "Armenia" && _formModel.Profession == "Դասախոս")
                     {
                         <MudTextField T="string" 
                                       Label="Դասավանդման Վայր" 
@@ -198,41 +231,14 @@
                                       Variant="Variant.Outlined"
                                       Required="true"
                                       For="@(() => _formModel.TeachingSubject)" />
-                        <MudTextField T="string" 
-                                      Label="Հեռ․ Համար" 
-                                      @bind-Value="_formModel.Phone"
-                                      Variant="Variant.Outlined"
-                                      Required="true"
-                                      For="@(() => _formModel.Phone)" />
-                        <MudTextField T="string" 
-                                      Label="Էլ․ Հասցե" 
-                                      @bind-Value="_formModel.Email"
-                                      Variant="Variant.Outlined"
-                                      InputType="InputType.Email"
-                                      Required="true"
-                                      For="@(() => _formModel.Email)" />
                     }
-                    else if (_formModel.Profession == "Այլ" || _formModel.Country != "Armenia")
+                    else if (_formModel.Country != "Armenia" && _formModel.Profession == "Աշակերտ")
                     {
-                        <MudTextField T="string" 
-                                      Label="Էլ․ Հասցե" 
-                                      @bind-Value="_formModel.Email"
-                                      Variant="Variant.Outlined"
-                                      InputType="InputType.Email"
-                                      Required="true"
-                                      For="@(() => _formModel.Email)" />
-                        <MudTextField T="string" 
-                                      Label="Հեռ․ Համար" 
-                                      @bind-Value="_formModel.Phone"
-                                      Variant="Variant.Outlined"
-                                      Required="true"
-                                      For="@(() => _formModel.Phone)" />
-                        <MudTextField T="string" 
-                                      Label="Նպատակ" 
-                                      @bind-Value="_formModel.Purpose"
-                                      Variant="Variant.Outlined"
-                                      Required="true"
-                                      For="@(() => _formModel.Purpose)" />
+                        Navigation.NavigateTo("/otherpupil");
+                    }
+                    else if (_formModel.Country == "Armenia" && _formModel.Profession == "Ուսուցիչ")
+                    {
+                        Navigation.NavigateTo("/otherteacher");
                     }
 
                     <MudButton Variant="Variant.Filled" 
@@ -243,11 +249,43 @@
                 </MudStack>
             </MudForm>
         }
+        else if (_state == 4)
+        {
+            <MudForm @ref="_form" Model="_formModel">
+                <MudStack Spacing="2">
+                    <MudTextField T="string" 
+                                  Label="Էլ․ Հասցե" 
+                                  @bind-Value="_formModel.Email"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Email"
+                                  Required="true"
+                                  For="@(() => _formModel.Email)" />
+                    <MudTextField T="string" 
+                                  Label="Հեռ․ Համար" 
+                                  @bind-Value="_formModel.Phone"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  For="@(() => _formModel.Phone)" />
+                    <MudTextField T="string" 
+                                  Label="Նպատակ" 
+                                  @bind-Value="_formModel.Purpose"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  For="@(() => _formModel.Purpose)" />
+
+                    <MudButton Variant="Variant.Filled" 
+                               Class="mt-4 form-button"
+                               OnClick="@HandleNextInState4">
+                        Հաստատել
+                    </MudButton>
+                </MudStack>
+            </MudForm>
+        }
     </div>
 </div>
 
 @code {
-    private int _state = 1; // 1: Select country/city, 2: Enter name/profession, 3: Enter age and additional parameters
+    private int _state = 1; // 1: Select country/city, 2: Enter name/profession, 3: Enter age and additional parameters, 4: Enter email/phone/purpose
     private MudForm _form = new();
     private OtherDTO _formModel = new();
     private List<Country> _countries = new();
@@ -256,6 +294,63 @@
     private bool isCityLoading = false;
     private string selectedCountryCode = string.Empty;
     private string _lastCountryCode = string.Empty;
+
+    private readonly List<string> _universities = new()
+    {
+        "Երևանի պետական համալսարան",
+        "Հայաստանի ազգային ագրարային համալսարան",
+        "Երևանի պետական բժշկական համալսարան",
+        "Խաչատուր Աբովյանի անվան հայկական պետական մանկավարժական համալսարան",
+        "Երևանի Կոմիտասի անվան պետական կոնսերվատորիա",
+        "Հայաստանի ազգային պոլիտեխնիկական համալսարան",
+        "Երևանի Վալերի Բրյուսովի անվան պետական լեզվաբանական համալսարան",
+        "Երևանի թատրոնի և կինոյի պետական ինստիտուտ",
+        "Հայկական պետական ֆիզիկական կուլտուրայի և սպորտի ինստիտուտ",
+        "Երևանի գեղարվեստի պետական ակադեմիա",
+        "Հայաստանի պետական տնտեսագիտական համալսարան",
+        "Ամերիկյան համալսարան Հայաստանում",
+        "Հայաստանի ճգնաժամային կառավարման պետական ակադեմիա",
+        "Արմենակ Խանփերյանցի անվան ռազմական ավիացիոն համալսարան",
+        "Հայաստանի պետական կառավարման ակադեմիա",
+        "Վազգեն Սարգսյանի անվան ռազմական համալսարան",
+        "Հայաստանում ֆրանսիական համալսարան",
+        "Ռուս-հայկական (Սլավոնական) համալսարան",
+        "Եվրոպական համալսարան Հայաստանում",
+        "Հայաստանի ազգային ճարտարապետության և շինարարության համալսարան",
+        "Շիրակի պետական համալսարան՝ Միքայել Նալբանդյանի անվան",
+        "Գավառի պետական համալսարան",
+        "Գորիսի պետական համալսարան",
+        "Վանաձորի պետական համալսարան՝ Հովհաննես Թումանյանի անվան",
+        "Գալիք համալսարան",
+        "Երևանի Հայբուսակ համալսարան",
+        "Երևանի Գլաձոր համալսարան",
+        "Երևանի Մեսրոպ Մաշտոցի անվան համալսարան",
+        "ՄՖԲ Ֆինանսների ակադեմիա",
+        "Հայկական բժշկական ինստիտուտ",
+        "Արտավազդ Մկրտչյանի անվան տնտեսագիտության և իրավունքի համալսարան",
+        "Ուրարտու գործնական հոգեբանության և սոցիոլոգիայի համալսարան",
+        "Ավանդական բժշկության համալսարան",
+        "Միջազգային տնտեսական հարաբերությունների համալսարան",
+        "Երևանի գյուղատնտեսական համալսարան",
+        "Սուրբ Թերեզայի անվան բժշկական համալսարան",
+        "Ազպատ-Վետերան դատաբժշկական և հոգեբանության ինստիտուտ",
+        "Անանիա Շիրակացու անվան միջազգային հարաբերությունների համալսարան",
+        "Ազգային գեղարվեստի ակադեմիա",
+        "Եվրասիա միջազգային համալսարան",
+        "Հյուսիսային համալսարան",
+        "Երևանի կառավարման համալսարան",
+        "Մովսես Խորենացու անվան համալսարան",
+        "Երևանի մշակույթի համալսարան",
+        "Միջազգային հաշվապահական ուսուցման կենտրոն",
+        "Գյումրու «Առաջընթաց» համալսարան",
+        "Մխիթար Գոշի անվան հայ-ռուսական միջազգային համալսարան",
+        "Հրազդանի հումանիտար ինստիտուտ",
+        "Վարդենիսի Վիկտոր Համբարձումյանի անվան ուսուցչական ինստիտուտ",
+        "Պլեխանովի անվան ռուսական տնտեսագիտական համալսարանի երևանյան մասնաճյուղ",
+        "Տերնոպիլի ազգային տնտեսագիտական համալսարանի գիտակրթական կենտրոն",
+        "Ռուսաստանի միջազգային զբոսաշրջության ակադեմիայի երևանյան մասնաճյուղ",
+        "Մ.Վ. Լոմոնոսովի անվան Մոսկվայի պետական համալսարանի երևանյան մասնաճյուղ"
+    };
 
     private async Task<IEnumerable<string>> SearchCountries(string value, CancellationToken cancellationToken)
     {
@@ -303,6 +398,14 @@
         return string.IsNullOrWhiteSpace(value)
             ? professions
             : professions.Where(p => p.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private async Task<IEnumerable<string>> SearchUniversities(string value, CancellationToken cancellationToken)
+    {
+        await Task.Delay(100, cancellationToken);
+        return string.IsNullOrWhiteSpace(value)
+            ? _universities
+            : _universities.Where(u => u.Contains(value, StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task OnCountryChanged(string value)
@@ -358,69 +461,28 @@
             return;
         }
 
-        // Check navigation conditions for Armenia
-        if (_formModel.Country == "Armenia" && _formModel.Profession == "Աշակերտ")
-        {
-            try
-            {
-                var response = await HttpClient.PostAsJsonAsync("api/other/save", _formModel);
-                Console.WriteLine($"API Response Status: {response.StatusCode}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
-                    NavigationManager.NavigateTo("/otherpupil");
-                }
-                else
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"API Error: {error}");
-                    Snackbar.Add($"API սխալ: {error}", Severity.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-                Snackbar.Add($"Ճանապարհը ձախողվեց․ {ex.Message}", Severity.Error);
-            }
-        }
-        else if (_formModel.Country == "Armenia" && _formModel.Profession == "Ուսուցիչ")
-        {
-            try
-            {
-                var response = await HttpClient.PostAsJsonAsync("api/other/save", _formModel);
-                Console.WriteLine($"API Response Status: {response.StatusCode}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
-                    NavigationManager.NavigateTo("/otherteacher");
-                }
-                else
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"API Error: {error}");
-                    Snackbar.Add($"API սխալ: {error}", Severity.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-                Snackbar.Add($"Ճանապարհը ձախողվեց․ {ex.Message}", Severity.Error);
-            }
-        }
-        else
-        {
-            // Transition to state 3 for additional fields
-            _state = 3;
-            await InvokeAsync(StateHasChanged);
-        }
+        _state = 3;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleNextInState3()
     {
         await _form.Validate();
         Console.WriteLine($"State 3 - Form Valid: {_form.IsValid}");
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
+            return;
+        }
+
+        _state = 4;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleNextInState4()
+    {
+        await _form.Validate();
+        Console.WriteLine($"State 4 - Form Valid: {_form.IsValid}");
         if (!_form.IsValid)
         {
             Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
@@ -435,7 +497,18 @@
             if (response.IsSuccessStatusCode)
             {
                 Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
-                NavigationManager.NavigateTo("/final");
+                if (_formModel.Country == "Armenia" && _formModel.Profession == "Աշակերտ")
+                {
+                    Navigation.NavigateTo("/otherpupil");
+                }
+                else if (_formModel.Country == "Armenia" && _formModel.Profession == "Ուսուցիչ")
+                {
+                    Navigation.NavigateTo("/otherteacher");
+                }
+                else
+                {
+                    Navigation.NavigateTo("/success");
+                }
             }
             else
             {

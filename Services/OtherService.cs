@@ -215,5 +215,15 @@ namespace Registeration.Services
                 throw;
             }
         }
+
+        public async Task<string?> GetConcatenatedIdentityAsync(Guid id)
+        {
+            var other = await _context.Others
+                .Where(p => p.Id == id)
+                .Select(p => new { p.NameSurname, p.Email })
+                .FirstOrDefaultAsync();
+
+            return other == null ? null : $"{other.NameSurname}{other.Email}";
+        }
     }
 }

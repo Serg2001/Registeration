@@ -84,18 +84,6 @@ builder.Services.AddHttpClient("CrmApi", client =>
 });
 
 
-//builder.Services.AddHttpClient("CountriesNow", client =>
-//{
-//    client.BaseAddress = new Uri("https://countriesnow.space/");
-//    client.Timeout = TimeSpan.FromSeconds(30);
-//});
-//builder.Services.AddHttpClient("GeoDB", client =>
-//{
-//    client.BaseAddress = new Uri("https://wft-geo-db.p.rapidapi.com/");
-//    client.Timeout = TimeSpan.FromSeconds(30);
-//});
-//builder.Services.AddMudServices();
-//builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 
 builder.Services.AddScoped<OtherService>();
@@ -110,6 +98,7 @@ builder.Services.AddMudServices();
 builder.Services.AddScoped<CrmRegionService>();
 builder.Services.AddScoped<CrmSchoolService>();
 builder.Services.AddScoped<RegistrationService>();
+builder.Services.AddScoped<FromStateServiceOther>();
 
 
 

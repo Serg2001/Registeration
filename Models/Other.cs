@@ -36,5 +36,9 @@ namespace Registeration.Models
         public string Purpose { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public string Login { get; set; } = string.Empty;   // Added for confirmation
+        public string Password { get; set; } = string.Empty; // Added for confirmation
+        public string AccessCode { get; set; } = string.Empty; // Added for confirmation
     }
 }

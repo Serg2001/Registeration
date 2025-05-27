@@ -197,16 +197,25 @@
             'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
     };
 
+            char[] symbols = { '!', '@', '#', '$', '%', '&', '*' };
+
             Random rand = new Random(hash[0] + hash[1] + hash[2]);
+
             char letter1 = rand.Next(2) == 0 ? upper[hash[3] % upper.Length] : lower[hash[4] % lower.Length];
             char letter2 = rand.Next(2) == 0 ? upper[hash[5] % upper.Length] : lower[hash[6] % lower.Length];
-            char letter3 = rand.Next(2) == 0 ? upper[hash[7] % upper.Length] : lower[hash[8] % lower.Length];
+            char symbol = symbols[hash[7] % symbols.Length];
 
-            char[] codeChars = new[] { letter1, letter2, letter3, digitPart[0], digitPart[1], digitPart[2] };
+            char[] codeChars = new[] {
+            digitPart[0], digitPart[1], digitPart[2],
+            letter1, letter2,
+            symbol
+        };
+
             codeChars = codeChars.OrderBy(_ => rand.Next()).ToArray();
 
             return new string(codeChars);
         }
     }
+}
 }
 }

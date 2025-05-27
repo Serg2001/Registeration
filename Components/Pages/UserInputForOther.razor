@@ -1,0 +1,261 @@
+﻿@page "/confirm-other"
+@using Registeration.DTOs
+@using Registeration.Services
+@using System.Security.Cryptography
+@using System.Text
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+@inject IEmailService EmailService
+
+<MudPaper Elevation="3" Class="p-6 mx-auto mt-6" Style="max-width:600px;">
+    <MudForm @ref="_form" Model="_model">
+        <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
+
+        @if (!string.IsNullOrWhiteSpace(_model.Country))
+        {
+            <MudTextField T="string" Label="Երկիր"
+                          Text="@_model.Country"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_model.City))
+        {
+            <MudTextField T="string" Label="Քաղաք"
+                          Text="@_model.City"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_model.NameSurname))
+        {
+            <MudTextField T="string" Label="Անուն / Ազգանուն"
+                          Text="@_model.NameSurname"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_model.Profession))
+        {
+            <MudTextField T="string" Label="Մասնագիտություն"
+                          Text="@(_model.Profession == "Այլ" && !string.IsNullOrWhiteSpace(_model.CustomProfession) ? _model.CustomProfession : _model.Profession)"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (_model.Age.HasValue)
+        {
+            <MudTextField T="int?" Label="Տարիք"
+                          Text="@_model.Age.ToString()"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_model.StudyPlace))
+        {
+            <MudTextField T="string" Label="Սովորելու վայր"
+                          Text="@_model.StudyPlace"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_model.TeachingPlace))
+        {
+            <MudTextField T="string" Label="Դասավանդման վայր"
+                          Text="@_model.TeachingPlace"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_model.TeachingSubject))
+        {
+            <MudTextField T="string" Label="Դասավանդման առարկա"
+                          Text="@_model.TeachingSubject"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_model.Email))
+        {
+            <MudTextField T="string" Label="Էլ․ հասցե"
+                          Text="@_model.Email"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_model.Phone))
+        {
+            <MudTextField T="string" Label="Հեռ․ համար"
+                          Text="@_model.Phone"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_model.Purpose))
+        {
+            <MudTextField T="string" Label="Նպատակ"
+                          Text="@_model.Purpose"
+                          Variant="Variant.Outlined" Disabled="true" />
+        }
+
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
+            Հաստատել
+        </MudButton>
+
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
+            Մերժել
+        </MudButton>
+    </MudForm>
+</MudPaper>
+
+@code {
+    private MudForm _form;
+    private OtherDTO _model = new();
+    private Guid _otherId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var idString = System.Web.HttpUtility.ParseQueryString(uri.Query).Get("id");
+
+        if (Guid.TryParse(idString, out Guid id))
+        {
+            _otherId = id;
+            try
+            {
+                var result = await HttpClient.GetFromJsonAsync<OtherDTO>($"api/other/by-id/{id}");
+                if (result != null)
+                    _model = result;
+                else
+                    Console.WriteLine("❌ No OtherDTO found for Id: " + id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Failed to load OtherDTO: " + ex.Message);
+            }
+        }
+        else
+        {
+            Console.WriteLine("❌ Invalid or missing Id in query string");
+        }
+    }
+
+    private async Task OnConfirm()
+    {
+        Console.WriteLine($"✅ Հաստատվել է՝ {_otherId}");
+
+        try
+        {
+            // Step 1: Get identity string from backend
+            var identityResponse = await HttpClient.GetFromJsonAsync<Dictionary<string, string>>($"api/other/identity-string/{_otherId}");
+            if (identityResponse == null || !identityResponse.TryGetValue("identity", out var identityString))
+            {
+                Console.WriteLine("❌ Identity string missing.");
+                return;
+            }
+
+            // Step 2: Generate code from identity string
+            string password = GenerateCode(identityString);
+            string accessCode = Guid.NewGuid().ToString().Substring(0, 8); // Optional
+
+            // Step 3: Confirm via backend
+            var confirmData = new ConfirmCredentialsDTO
+                {
+                    Password = password,
+                    AccessCode = accessCode
+                };
+
+            var updateResponse = await HttpClient.PostAsJsonAsync($"api/other/confirm/{_otherId}", confirmData);
+            if (!updateResponse.IsSuccessStatusCode)
+            {
+                Console.WriteLine("❌ Failed to update credentials.");
+                return;
+            }
+
+            // Step 4: Send email
+            string emailBody = $@"
+            <h3>Բարև Ձեզ, {_model.NameSurname}</h3>
+            <p>Ձեր գրանցումն հաստատվել է։</p>
+            <p><b>Մուտքի տվյալներ՝</b></p>
+            <ul>
+                <li><b>Մուտքանուն:</b> {_model.Email}</li>
+                <li><b>Գաղտնաբառ:</b> {password}</li>
+                <li><b>Մուտքի կոդ:</b> {accessCode}</li>
+            </ul>
+        ";
+
+            await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
+            Console.WriteLine("📧 Email sent.");
+
+            Navigation.NavigateTo("/success");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error: " + ex.Message);
+            if (ex.InnerException != null)
+                Console.WriteLine("Inner: " + ex.InnerException.Message);
+        }
+    }
+
+
+    private async Task OnReject()
+    {
+        if (_otherId == Guid.Empty)
+        {
+            Console.WriteLine("❌ Cannot reject: Invalid Id");
+            return;
+        }
+
+        try
+        {
+            var response = await HttpClient.DeleteAsync($"api/other/delete/{_otherId}");
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/retry");
+            }
+            else
+            {
+                Console.WriteLine("❌ Failed to delete OtherDTO.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error during deletion: " + ex.Message);
+        }
+    }
+
+    // ✅ Code generator
+    private static string GenerateCode(string input)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(input);
+            byte[] hash = sha256.ComputeHash(bytes);
+
+            string hex = BitConverter.ToString(hash).Replace("-", "");
+            string digitsOnly = new string(hex.Where(char.IsDigit).ToArray()).PadRight(3, '0');
+            string digitPart = digitsOnly.Substring(0, 3);
+
+            char[] upper = {
+            'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
+            'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
+            'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
+    };
+
+            char[] lower = {
+            'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
+            'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
+            'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
+    };
+
+            char[] symbols = { '!', '@', '#', '$', '%', '&', '*' };
+
+            Random rand = new Random(hash[0] + hash[1] + hash[2]);
+
+            char letter1 = rand.Next(2) == 0 ? upper[hash[3] % upper.Length] : lower[hash[4] % lower.Length];
+            char letter2 = rand.Next(2) == 0 ? upper[hash[5] % upper.Length] : lower[hash[6] % lower.Length];
+            char symbol = symbols[hash[7] % symbols.Length];
+
+            char[] codeChars = new[] {
+            digitPart[0], digitPart[1], digitPart[2],
+            letter1, letter2,
+            symbol
+        };
+
+            codeChars = codeChars.OrderBy(_ => rand.Next()).ToArray();
+
+            return new string(codeChars);
+        }
+    }
+}
+}

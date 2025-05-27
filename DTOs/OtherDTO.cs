@@ -33,5 +33,9 @@ namespace Registeration.DTOs
         public string StudyPlace { get; set; } = string.Empty;
 
         public string Purpose { get; set; } = string.Empty;
+
+        public string Login { get; set; } = string.Empty;    // Added
+        public string Password { get; set; } = string.Empty; // Added
+        public string AccessCode { get; set; } = string.Empty; // Added
     }
 }

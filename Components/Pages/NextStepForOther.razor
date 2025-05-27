@@ -1,0 +1,71 @@
+﻿@page "/nextstep-for-other"
+@rendermode InteractiveServer
+
+@using MudBlazor
+@using Registeration.DTOs
+@using Registeration.Services
+
+@inject IEmailService EmailService
+@inject FromStateServiceOther FromStateServiceOther
+@inject NavigationManager Navigation
+
+<PageTitle>Հաստատում</PageTitle>
+
+<MudPaper Class="d-flex flex-column justify-center align-center mt-10 pa-6" Elevation="4" Style="max-width: 600px; margin: auto;">
+    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+        ✔ Հաջողությամբ գրանցվեցիք
+    </MudText>
+
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">
+        Հաստատման համար մուտք գործեք ձեր նշած էլ․ հասցեն։
+    </MudText>
+
+    <MudDivider Class="my-4" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">
+        Վերադառնալ Գլխավոր Էջ
+    </MudButton>
+</MudPaper>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var model = FromStateServiceOther.OtherModel;
+
+        // Log model details for debugging
+        if (model == null)
+        {
+            Console.WriteLine("❌ OtherModel is null");
+            return;
+        }
+
+        Console.WriteLine($"📋 Model Details: Id={model.Id}, Email={model.Email}, NameSurname={model.NameSurname}");
+
+        if (string.IsNullOrWhiteSpace(model.Email))
+        {
+            Console.WriteLine("❌ Email is empty or invalid");
+            return;
+        }
+
+        try
+        {
+            var baseUrl = Navigation.BaseUri.TrimEnd('/');
+            var confirmationLink = $"{baseUrl}/confirm-other?id={model.Id}";
+
+            string emailBody = $@"
+                <h3>Բարև Ձեզ, {model.NameSurname}</h3>
+                <p>Շնորհակալություն գրանցման համար։</p>
+                <p>Դիտել ձեր գրանցման տվյալները՝ <a href=""{confirmationLink}"">Հաստատման էջ</a></p>";
+
+            Console.WriteLine("📧 Sending to: " + model.Email);
+            await EmailService.SendEmailAsync(model.Email, "Գրանցման Հաստատում", emailBody);
+            Console.WriteLine("✅ Email sent successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error sending confirmation email: " + ex.Message);
+            if (ex.InnerException != null)
+                Console.WriteLine("Inner: " + ex.InnerException.Message);
+        }
+    }
+}

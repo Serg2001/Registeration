@@ -5,6 +5,7 @@
 @inject OtherService OtherService
 @inject ISnackbar Snackbar
 @inject HttpClient HttpClient
+@inject FromStateServiceOther FromStateServiceOther
 
 @using MudBlazor
 @using System.Net.Http.Json
@@ -222,7 +223,7 @@
                         <MudTextField T="string" 
                                       Label="Դասավանդման Վայր" 
                                       @bind-Value="_formModel.TeachingPlace"
-                                      Variant="Variant.Outlined"
+                                      Variant="Variant.Outlined"  
                                       Required="true"
                                       For="@(() => _formModel.TeachingPlace)" />
                         <MudTextField T="string" 
@@ -232,7 +233,7 @@
                                       Required="true"
                                       For="@(() => _formModel.TeachingSubject)" />
                     }
-                    else if (_formModel.Country != "Armenia" && _formModel.Profession == "Աշակերտ")
+                    else if (_formModel.Country == "Armenia" && _formModel.Profession == "Աշակերտ")
                     {
                         Navigation.NavigateTo("/otherpupil");
                     }
@@ -491,11 +492,13 @@
 
         try
         {
+            _formModel.Id = Guid.NewGuid(); // Set Id before API call
             var response = await HttpClient.PostAsJsonAsync("api/other/save", _formModel);
             Console.WriteLine($"API Response Status: {response.StatusCode}");
 
             if (response.IsSuccessStatusCode)
             {
+                FromStateServiceOther.OtherModel = _formModel; // Save model to service
                 Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
                 if (_formModel.Country == "Armenia" && _formModel.Profession == "Աշակերտ")
                 {
@@ -507,7 +510,7 @@
                 }
                 else
                 {
-                    Navigation.NavigateTo("/success");
+                    Navigation.NavigateTo("/nextstep-for-other");
                 }
             }
             else

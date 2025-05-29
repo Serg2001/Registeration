@@ -101,11 +101,12 @@
                 await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
                 Console.WriteLine("📧 Email sent.");
 
-                Navigation.NavigateTo("/confirmed");
+                Navigation.NavigateTo("/success");
             }
             else
             {
                 Console.WriteLine("⚠️ No pupils returned from CRM.");
+                Navigation.NavigateTo("/success");
             }
         }
         catch (Exception ex)

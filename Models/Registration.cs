@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Registeration.Models
 {
@@ -8,25 +9,36 @@ namespace Registeration.Models
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Required]
-        [StringLength(100)]
-        public string RegionName { get; set; }
 
         [Required]
-        [StringLength(150)]
-        public string SchoolName { get; set; }
+        public Guid SchoolId { get; set; }
+
+        [ForeignKey(nameof(SchoolId))]
+        public School School { get; set; } = null!;
 
         [Required]
         [StringLength(200)]
-        public string Address { get; set; }
+        public string Address { get; set; } = string.Empty;
 
         [Required]
         [StringLength(100)]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
         [StringLength(100)]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(255)]
+        public string Login { get; set; } = string.Empty;  // Usually same as ParentsEmail
+
+        [Required]
+        [StringLength(100)]
+        public string Password { get; set; } = string.Empty;  // Store hashed or generated code
+
+        [Required]
+        [StringLength(10)]
+        public string AccessCode { get; set; } = string.Empty;  // 6-digit symbolic code
     }
 }

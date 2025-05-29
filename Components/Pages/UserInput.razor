@@ -1,14 +1,17 @@
 ﻿@page "/confirm"
 @using Registeration.DTOs
+@using Registeration.Models
+@using Registeration.Services
 @inject HttpClient HttpClient
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Navigation
+@inject IEmailService EmailService
 
 <MudPaper Elevation="3" Class="p-6 mx-auto mt-6" Style="max-width:600px;">
     <MudForm @ref="_form" Model="_model">
         <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
 
-        <MudTextField T="string" Label="Մարզ" @bind-Value="_model.RegionName" Variant="Variant.Outlined" Disabled="true" />
-        <MudTextField T="string" Label="Դպրոց" @bind-Value="_model.SchoolName" Variant="Variant.Outlined" Disabled="true" />
+        <MudTextField T="string" Label="Դպրոց" @bind-Value="_model.School.Name" Variant="Variant.Outlined" Disabled="true" />
         <MudTextField T="string" Label="Հասցե" @bind-Value="_model.Address" Variant="Variant.Outlined" Disabled="true" />
         <MudTextField T="string" Label="Անուն / Ազգանուն" @bind-Value="_model.FullName" Variant="Variant.Outlined" Disabled="true" />
         <MudTextField T="string" Label="Էլ․ Հասցե" @bind-Value="_model.Email" Variant="Variant.Outlined" Disabled="true" />
@@ -51,7 +54,66 @@
 
     private async Task OnConfirm()
     {
-        Console.WriteLine("✅ Հաստատվել է");
+        try
+        {
+            var crmClient = HttpClientFactory.CreateClient("CrmApi");
+
+            var pupils = await crmClient.GetFromJsonAsync<List<CRMPupil>>(
+                $"api/Platform/GetPupilsBySchool?schoolId={_model.School.Id}");
+
+            if (pupils != null && pupils.Any())
+            {
+                var saveResponse = await HttpClient.PostAsJsonAsync("api/pupils", pupils);
+                if (!saveResponse.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("❌ Failed to save pupils.");
+                    return;
+                }
+
+                // Generate login credentials
+                string password = GenerateCode(_model.Email);
+                string accessCode = Guid.NewGuid().ToString().Substring(0, 8);
+
+                var confirmData = new ConfirmCredentialsDTO
+                    {
+                        Password = password,
+                        AccessCode = accessCode
+                    };
+
+                var updateResponse = await HttpClient.PostAsJsonAsync($"api/regions/confirm/{_registrationId}", confirmData);
+                if (!updateResponse.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("❌ Failed to update credentials.");
+                    return;
+                }
+
+                string emailBody = $@"
+                    <h3>Բարև Ձեզ, {_model.FullName}</h3>
+                    <p>Ձեր գրանցումն հաստատվել է։</p>
+                    <p><b>Մուտքի տվյալներ՝</b></p>
+                    <ul>
+                        <li><b>Մուտքանուն:</b> {_model.Email}</li>
+                        <li><b>Գաղտնաբառ:</b> {password}</li>
+                        <li><b>Մուտքի կոդ:</b> {accessCode}</li>
+                    </ul>
+                ";
+
+                await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
+                Console.WriteLine("📧 Email sent.");
+
+                Navigation.NavigateTo("/confirmed");
+            }
+            else
+            {
+                Console.WriteLine("⚠️ No pupils returned from CRM.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error during confirmation: " + ex.Message);
+            if (ex.InnerException != null)
+                Console.WriteLine("Inner: " + ex.InnerException.Message);
+        }
     }
 
     private async Task OnReject()
@@ -75,5 +137,16 @@
         {
             Console.WriteLine("❌ Error during deletion: " + ex.Message);
         }
+    }
+
+    private static string GenerateCode(string input)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = System.Text.Encoding.UTF8.GetBytes(input);
+        var hash = sha256.ComputeHash(bytes);
+
+        var hex = BitConverter.ToString(hash).Replace("-", "");
+        var digitsOnly = new string(hex.Where(char.IsDigit).ToArray()).PadRight(6, '0');
+        return digitsOnly.Substring(0, 6);
     }
 }

@@ -16,37 +16,47 @@ namespace Registeration.Data
         public DbSet<Registration> Registrations { get; set; }
         public DbSet<OtherPupil> OtherPupil { get; set; }
         public DbSet<OtherTeacher> OtherTeacher { get; set; }
-
+        public DbSet<CRMPupil> CRMPupils { get; set; }
         public DbSet<Other> Others { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
-            // Disable cascading delete to prevent multiple cascade paths
+            // Region → School
             modelBuilder.Entity<School>()
                 .HasOne(s => s.Region)
                 .WithMany(r => r.Schools)
                 .HasForeignKey(s => s.RegionId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
+            // School → Registration
+            modelBuilder.Entity<Registration>()
+                .HasOne(r => r.School)
+                .WithMany()
+                .HasForeignKey(r => r.SchoolId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // School → OtherPupil
             modelBuilder.Entity<OtherPupil>()
                 .HasOne(p => p.School)
                 .WithMany()
                 .HasForeignKey(p => p.SchoolId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Registration>()
-                .HasOne<Region>()
+            // School → OtherTeacher
+            modelBuilder.Entity<OtherTeacher>()
+                .HasOne(t => t.School)
                 .WithMany()
-                .HasForeignKey("RegionId")
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(t => t.SchoolId)
+                .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Registration>()
-                .HasOne<School>()
+            // Region → OtherTeacher (if Region is navigated in OtherTeacher)
+            modelBuilder.Entity<OtherTeacher>()
+                .HasOne(t => t.Region)
                 .WithMany()
-                .HasForeignKey("SchoolId")
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(t => t.RegionId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

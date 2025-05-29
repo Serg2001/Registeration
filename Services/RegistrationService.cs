@@ -19,22 +19,38 @@ namespace Registeration.Services
             await _context.SaveChangesAsync();
         }
 
-
         public async Task<Registration?> GetByIdAsync(Guid id)
         {
             return await _context.Registrations
-                                 .FirstOrDefaultAsync(r => r.Id == id);
+                .Include(r => r.School)
+                .ThenInclude(s => s.Region)
+                .FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<bool> DeleteByIdAsync(Guid id)
         {
             var registration = await _context.Registrations
-                                             .FirstOrDefaultAsync(r => r.Id == id);
+                .FirstOrDefaultAsync(r => r.Id == id);
 
             if (registration == null)
                 return false;
 
             _context.Registrations.Remove(registration);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateCredentialsAsync(Guid id, string password, string accessCode)
+        {
+            var registration = await _context.Registrations
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (registration == null)
+                return false;
+
+            registration.Password = password;
+            registration.AccessCode = accessCode;
+
             await _context.SaveChangesAsync();
             return true;
         }

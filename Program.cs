@@ -86,6 +86,7 @@ builder.Services.AddHttpClient("CrmApi", client =>
 
 
 
+
 builder.Services.AddScoped<OtherService>();
 builder.Services.AddHttpClient("CountryStateCity", client =>
 {
@@ -99,6 +100,7 @@ builder.Services.AddScoped<CrmRegionService>();
 builder.Services.AddScoped<CrmSchoolService>();
 builder.Services.AddScoped<RegistrationService>();
 builder.Services.AddScoped<FromStateServiceOther>();
+builder.Services.AddScoped<CRMPupilService>();
 
 
 

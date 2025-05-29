@@ -55,6 +55,27 @@ namespace Registeration.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Registeration.Models.CRMPupil", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Surname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CRMPupils");
+                });
+
             modelBuilder.Entity("Registeration.Models.Other", b =>
                 {
                     b.Property<Guid>("Id")
@@ -253,6 +274,11 @@ namespace Registeration.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AccessCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -268,25 +294,20 @@ namespace Registeration.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid?>("RegionId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Login")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("RegionName")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid?>("SchoolId")
+                    b.Property<Guid>("SchoolId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("SchoolName")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("RegionId");
 
                     b.HasIndex("SchoolId");
 
@@ -324,7 +345,7 @@ namespace Registeration.Migrations
                     b.HasOne("Registeration.Models.School", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("School");
@@ -335,13 +356,13 @@ namespace Registeration.Migrations
                     b.HasOne("Registeration.Models.Region", "Region")
                         .WithMany()
                         .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Registeration.Models.School", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Region");
@@ -351,15 +372,13 @@ namespace Registeration.Migrations
 
             modelBuilder.Entity("Registeration.Models.Registration", b =>
                 {
-                    b.HasOne("Registeration.Models.Region", null)
-                        .WithMany()
-                        .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Registeration.Models.School", null)
+                    b.HasOne("Registeration.Models.School", "School")
                         .WithMany()
                         .HasForeignKey("SchoolId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("School");
                 });
 
             modelBuilder.Entity("Registeration.Models.School", b =>
@@ -367,7 +386,7 @@ namespace Registeration.Migrations
                     b.HasOne("Registeration.Models.Region", "Region")
                         .WithMany("Schools")
                         .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Region");

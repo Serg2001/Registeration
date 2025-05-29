@@ -70,33 +70,32 @@
                 <!-- Region -->
                 <MudAutocomplete T="string"
                                  Label="Մարզ"
-                                 Value="_model.RegionName"
+                                 Value="_selectedRegionName"
                                  ValueChanged="async val => await OnRegionChanged(val)"
                                  SearchFunc="@SearchRegions"
                                  Variant="Variant.Outlined"
-                                 Required="true"
-                                 For="@(() => _model.RegionName)" />
+                                 Required="true" />
 
                 <!-- School -->
                 <MudAutocomplete T="string"
                                  Label="Դպրոց"
-                                 @bind-Value="_model.SchoolName"
+                                 Value="_selectedSchoolName"
+                                 ValueChanged="OnSchoolSelected"
                                  SearchFunc="@SearchSchools"
                                  Variant="Variant.Outlined"
                                  Required="true"
                                  Disabled="@string.IsNullOrWhiteSpace(_selectedRegionId)"
-                                 For="@(() => _model.SchoolName)"
                                  MaxItems="null" />
 
                 <!-- Address -->
                 <MudAutocomplete T="string"
                                  Label="Հասցե"
-                                 @bind-Value="_model.Address"
+                                 Value="_selectedAddress"
+                                 ValueChanged="val => _selectedAddress = val"
                                  SearchFunc="@SearchAddresses"
                                  Variant="Variant.Outlined"
                                  Required="true"
                                  Disabled="@string.IsNullOrWhiteSpace(_selectedRegionId)"
-                                 For="@(() => _model.Address)"
                                  MaxItems="null" />
 
                 <!-- Full Name -->
@@ -104,8 +103,7 @@
                               Label="Անուն / Ազգանուն"
                               @bind-Value="_model.FullName"
                               Variant="Variant.Outlined"
-                              Required="true"
-                              For="@(() => _model.FullName)" />
+                              Required="true" />
 
                 <!-- Email -->
                 <MudTextField T="string"
@@ -113,8 +111,7 @@
                               @bind-Value="_model.Email"
                               Variant="Variant.Outlined"
                               InputType="InputType.Email"
-                              Required="true"
-                              For="@(() => _model.Email)" />
+                              Required="true" />
 
                 <!-- Submit -->
                 <MudButton OnClick="ValidateForm"
@@ -131,11 +128,14 @@
     private MudForm _form = new();
     private RegistrationFormDTO _model = new();
     private string? _selectedRegionId;
+    private string? _selectedRegionName;
+    private string? _selectedSchoolName;
+    private string? _selectedAddress;
+    private Guid? _selectedSchoolId;
 
     private List<ExternalRegionDTO> _regionList = new();
     private List<SchoolDTO> _currentRegionSchools = new();
 
-    // REGION AUTOCOMPLETE
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
         if (_regionList.Count == 0)
@@ -158,19 +158,18 @@
             : _regionList.Where(r => r.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(r => r.Name);
     }
 
-    // ON REGION CHANGE
     private async Task OnRegionChanged(string selectedRegionName)
     {
-        _model.RegionName = selectedRegionName;
-        _model.SchoolName = null;
-        _model.Address = null;
+        _selectedRegionName = selectedRegionName;
+        _selectedSchoolName = null;
+        _selectedAddress = null;
+        _selectedSchoolId = null;
         _currentRegionSchools.Clear();
 
         var selectedRegion = _regionList.FirstOrDefault(r => r.Name == selectedRegionName);
         _selectedRegionId = selectedRegion?.Id;
     }
 
-    // SCHOOL AUTOCOMPLETE
     private async Task<IEnumerable<string>> SearchSchools(string value, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(_selectedRegionId) || !Guid.TryParse(_selectedRegionId, out var regionGuid))
@@ -185,7 +184,6 @@
         return filtered.Select(s => s.Name).Distinct();
     }
 
-    // ADDRESS AUTOCOMPLETE
     private async Task<IEnumerable<string>> SearchAddresses(string value, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(_selectedRegionId) || _currentRegionSchools.Count == 0)
@@ -198,7 +196,19 @@
         return filtered.Select(s => s.Address).Distinct();
     }
 
-    //Form SUBMIT
+    private Task OnSchoolSelected(string selectedName)
+    {
+        _selectedSchoolName = selectedName;
+        var match = _currentRegionSchools.FirstOrDefault(s => s.Name == selectedName);
+
+        if (match != null)
+        {
+            _selectedSchoolId = match.Id;
+            _selectedAddress = match.Address;
+        }
+
+        return Task.CompletedTask;
+    }
 
     private async Task ValidateForm()
     {
@@ -212,6 +222,21 @@
 
         try
         {
+            _model.School = new SchoolDTO
+                {
+                    Id = _selectedSchoolId ?? Guid.Empty,
+                    Name = _selectedSchoolName ?? string.Empty,
+                    Address = _selectedAddress ?? string.Empty
+                };
+
+            // _model.SchoolName = _selectedSchoolName ?? string.Empty;
+            _model.Address = _selectedAddress ?? string.Empty;
+            // _model.RegionName = _selectedRegionName ?? string.Empty;
+            _model.Region = new RegionDTO { Name = _selectedRegionName ?? string.Empty };
+            _model.Login = _model.Email;
+            _model.Password = GenerateCode(_model.Email);
+            _model.AccessCode = Guid.NewGuid().ToString().Substring(0, 8);
+
             var response = await HttpClient.PostAsJsonAsync("api/regions/save", _model);
 
             if (response.IsSuccessStatusCode)
@@ -232,4 +257,14 @@
         }
     }
 
+    private static string GenerateCode(string input)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = System.Text.Encoding.UTF8.GetBytes(input);
+        var hash = sha256.ComputeHash(bytes);
+
+        var hex = BitConverter.ToString(hash).Replace("-", "");
+        var digitsOnly = new string(hex.Where(char.IsDigit).ToArray()).PadRight(6, '0');
+        return digitsOnly.Substring(0, 6);
+    }
 }

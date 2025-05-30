@@ -2,6 +2,8 @@
 @using Registeration.DTOs
 @using Registeration.Models
 @using Registeration.Services
+@using System.Text
+@using System.Security.Cryptography
 @inject HttpClient HttpClient
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Navigation
@@ -56,58 +58,38 @@
     {
         try
         {
-            var crmClient = HttpClientFactory.CreateClient("CrmApi");
+            // Generate login credentials
+            string password = GenerateCode(_model.Email);
+            string accessCode = Guid.NewGuid().ToString().Substring(0, 8);
 
-            var pupils = await crmClient.GetFromJsonAsync<List<CRMPupil>>(
-                $"api/Platform/GetPupilsBySchool?schoolId={_model.School.Id}");
-
-            if (pupils != null && pupils.Any())
-            {
-                var saveResponse = await HttpClient.PostAsJsonAsync("api/pupils", pupils);
-                if (!saveResponse.IsSuccessStatusCode)
+            var confirmData = new ConfirmCredentialsDTO
                 {
-                    Console.WriteLine("❌ Failed to save pupils.");
-                    return;
-                }
+                    Password = password,
+                    AccessCode = accessCode
+                };
 
-                // Generate login credentials
-                string password = GenerateCode(_model.Email);
-                string accessCode = Guid.NewGuid().ToString().Substring(0, 8);
-
-                var confirmData = new ConfirmCredentialsDTO
-                    {
-                        Password = password,
-                        AccessCode = accessCode
-                    };
-
-                var updateResponse = await HttpClient.PostAsJsonAsync($"api/regions/confirm/{_registrationId}", confirmData);
-                if (!updateResponse.IsSuccessStatusCode)
-                {
-                    Console.WriteLine("❌ Failed to update credentials.");
-                    return;
-                }
-
-                string emailBody = $@"
-                    <h3>Բարև Ձեզ, {_model.FullName}</h3>
-                    <p>Ձեր գրանցումն հաստատվել է։</p>
-                    <p><b>Մուտքի տվյալներ՝</b></p>
-                    <ul>
-                        <li><b>Մուտքանուն:</b> {_model.Email}</li>
-                        <li><b>Գաղտնաբառ:</b> {password}</li>
-                        <li><b>Մուտքի կոդ:</b> {accessCode}</li>
-                    </ul>
-                ";
-
-                await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
-                Console.WriteLine("📧 Email sent.");
-
-                Navigation.NavigateTo("/success");
-            }
-            else
+            var updateResponse = await HttpClient.PostAsJsonAsync($"api/regions/confirm/{_registrationId}", confirmData);
+            if (!updateResponse.IsSuccessStatusCode)
             {
-                Console.WriteLine("⚠️ No pupils returned from CRM.");
-                Navigation.NavigateTo("/success");
+                Console.WriteLine("❌ Failed to update credentials.");
+                return;
             }
+
+            string emailBody = $@"
+                <h3>Բարև Ձեզ, {_model.FullName}</h3>
+                <p>Ձեր գրանցումն հաստատվել է։</p>
+                <p><b>Մուտքի տվյալներ՝</b></p>
+                <ul>
+                    <li><b>Մուտքանուն:</b> {_model.Email}</li>
+                    <li><b>Գաղտնաբառ:</b> {password}</li>
+                    <li><b>Մուտքի կոդ:</b> {accessCode}</li>
+                </ul>
+            ";
+
+            await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
+            Console.WriteLine("📧 Email sent.");
+
+            Navigation.NavigateTo("/success");
         }
         catch (Exception ex)
         {
@@ -142,12 +124,44 @@
 
     private static string GenerateCode(string input)
     {
-        using var sha256 = System.Security.Cryptography.SHA256.Create();
-        var bytes = System.Text.Encoding.UTF8.GetBytes(input);
-        var hash = sha256.ComputeHash(bytes);
+        using (var sha256 = SHA256.Create())
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(input);
+            byte[] hash = sha256.ComputeHash(bytes);
 
-        var hex = BitConverter.ToString(hash).Replace("-", "");
-        var digitsOnly = new string(hex.Where(char.IsDigit).ToArray()).PadRight(6, '0');
-        return digitsOnly.Substring(0, 6);
+            string hex = BitConverter.ToString(hash).Replace("-", "");
+            string digitsOnly = new string(hex.Where(char.IsDigit).ToArray()).PadRight(3, '0');
+            string digitPart = digitsOnly.Substring(0, 3);
+
+            char[] upper = {
+                'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
+                'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
+                'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
+        };
+
+            char[] lower = {
+                'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
+                'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
+                'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
+        };
+
+            char[] symbols = { '!', '@', '#', '$', '%', '&', '*' };
+
+            Random rand = new Random(hash[0] + hash[1] + hash[2]);
+
+            char letter1 = rand.Next(2) == 0 ? upper[hash[3] % upper.Length] : lower[hash[4] % lower.Length];
+            char letter2 = rand.Next(2) == 0 ? upper[hash[5] % upper.Length] : lower[hash[6] % lower.Length];
+            char symbol = symbols[hash[7] % symbols.Length];
+
+            char[] codeChars = new[] {
+                digitPart[0], digitPart[1], digitPart[2],
+                letter1, letter2,
+                symbol
+            };
+
+            codeChars = codeChars.OrderBy(_ => rand.Next()).ToArray();
+
+            return new string(codeChars);
+        }
     }
 }

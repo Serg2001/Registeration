@@ -1,43 +1,4 @@
-﻿@* @inherits LayoutComponentBase
-@inject NavigationManager Nav
-
-<MudThemeProvider />
-<MudDialogProvider />
-<MudSnackbarProvider />
-<MudDialog/>
-
-@code {
-    private bool HideSidebar => Nav.Uri.Contains("/register", StringComparison.OrdinalIgnoreCase);
-}
-
-<div class="page">
-    @if (!HideSidebar)
-    {
-        <div class="sidebar">
-            <NavMenu />
-        </div>
-    }
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://dshh.am" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
-
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
- *@
-
-
- @inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
 @implements IDisposable
 @inject NavigationManager NavigationManager
@@ -48,75 +9,144 @@
 <MudSnackbarProvider />
 <MudDialog />
 
-@code {
-    private string? currentUrl;
-    private bool HideSidebar => NavigationManager.Uri.Contains("/register", StringComparison.OrdinalIgnoreCase);
-
-    protected override void OnInitialized()
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        NavigationManager.LocationChanged += OnLocationChanged;
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
-        StateHasChanged();
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
     }
 
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
     }
-}
+
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
+
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
+
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
+
+    .glassmorphic-appbar {
+        background-color: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border-radius: 0 0 20px 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    .main-button-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .sub-button-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
 
 <MudLayout>
-    <MudAppBar Color="Color.Transparent">
-        <MudLink Href="https://dshh.am" Target="_blank">
-            <MudImage Src="images/logo.jpg" Alt="Logo" Height="60" />
-        </MudLink>
-
-        <MudSpacer />
-        <MudText Typo="Typo.h5">ԴԱՍԱԳՐՔԵՐԻ ԹՎԱՅՆԱՑՄԱՆ ԾՐԱԳԻՐ</MudText>
-        <MudSpacer />
-
-        <AuthorizeView>
-            <Authorized>
-                <MudButton Variant="Variant.Filled" Style="background-color: white; color: rebeccapurple; width: 500px; height: 40px;">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        @context.User.Identity?.Name
-                    </NavLink>
-                </MudButton>
-
-                <form action="Account/Logout" method="post">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                    <MudButton Variant="Variant.Filled"
-                               Style="background-color: white; color: rebeccapurple; width: 150px; height: 40px;"
-                               ButtonType="ButtonType.Submit">
-                        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Դուրս գալ
-                    </MudButton>
-                </form>
-            </Authorized>
-            <NotAuthorized>
-                <MudButton Variant="Variant.Filled" Style="background-color: white; color: rebeccapurple; width: 150px; height: 40px;">
-                    <NavLink class="nav-link" href="/register">
-                        Աշակերտ
-                    </NavLink>
-                </MudButton>
-                <MudButton Variant="Variant.Filled" Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;">
-                    <NavLink class="nav-link" href="/RegisterTeacher">
-                        Ուսուցիչ
-                    </NavLink>
-                </MudButton>
-            </NotAuthorized>
-        </AuthorizeView>
+    <MudAppBar Class="glassmorphic-appbar" Elevation="2">
+        <div class="logo-container">
+            <MudLink Href="https://dshh.am" Target="_blank">
+                <MudImage Src="images/logo.jpg" Alt="Logo" Height="60" />
+            </MudLink>
+        </div>
     </MudAppBar>
 
     <MudMainContent>
         <div class="page">
             <main>
                 <article class="content px-4">
+                    @if (!_navigating)
+                    {
+                        <div class="main-button-container">
+                            <MudButton Variant="Variant.Filled"
+                                       Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
+                                       OnClick="@(() => NavigateToPage("/counter"))">
+                                Դպրոց
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Filled"
+                                       Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
+                                       OnClick="@ToggleOtherMenu">
+                                Այլ
+                            </MudButton>
+                        </div>
+
+                        @if (_showOtherMenu)
+                        {
+                            <div class="sub-button-container">
+                                <MudButton Variant="Variant.Filled"
+                                           Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
+                                           OnClick="@(() => NavigateToPage("/otherpupil"))">
+                                    Աշակերտ
+                                </MudButton>
+
+                                <MudButton Variant="Variant.Filled"
+                                           Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
+                                           OnClick="@(() => NavigateToPage("/otherteacher"))">
+                                    Ուսուցիչ
+                                </MudButton>
+
+                                <MudButton Variant="Variant.Filled"
+                                           Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
+                                           OnClick="@(() => NavigateToPage("/other"))">
+                                    Այլ Օգտատեր
+                                </MudButton>
+                            </div>
+                        }
+                    }
+
                     @Body
                 </article>
             </main>
@@ -129,3 +159,39 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    private string? currentUrl;
+    private bool _showOtherMenu = false;
+    private bool _navigating = false;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        _navigating = false;
+        StateHasChanged();
+    }
+
+    private void ToggleOtherMenu()
+    {
+        _showOtherMenu = !_showOtherMenu;
+    }
+
+    private void NavigateToPage(string route)
+    {
+        _navigating = true;
+        _showOtherMenu = false;
+        NavigationManager.NavigateTo(route);
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

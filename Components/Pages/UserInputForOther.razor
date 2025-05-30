@@ -7,96 +7,163 @@
 @inject NavigationManager Navigation
 @inject IEmailService EmailService
 
-<MudPaper Elevation="3" Class="p-6 mx-auto mt-6" Style="max-width:600px;">
-    <MudForm @ref="_form" Model="_model">
-        <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+    }
 
-        @if (!string.IsNullOrWhiteSpace(_model.Country))
-        {
-            <MudTextField T="string" Label="Երկիր"
-                          Text="@_model.Country"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
 
-        @if (!string.IsNullOrWhiteSpace(_model.City))
-        {
-            <MudTextField T="string" Label="Քաղաք"
-                          Text="@_model.City"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
 
-        @if (!string.IsNullOrWhiteSpace(_model.NameSurname))
-        {
-            <MudTextField T="string" Label="Անուն / Ազգանուն"
-                          Text="@_model.NameSurname"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
 
-        @if (!string.IsNullOrWhiteSpace(_model.Profession))
-        {
-            <MudTextField T="string" Label="Մասնագիտություն"
-                          Text="@(_model.Profession == "Այլ" && !string.IsNullOrWhiteSpace(_model.CustomProfession) ? _model.CustomProfession : _model.Profession)"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
 
-        @if (_model.Age.HasValue)
-        {
-            <MudTextField T="int?" Label="Տարիք"
-                          Text="@_model.Age.ToString()"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
 
-        @if (!string.IsNullOrWhiteSpace(_model.StudyPlace))
-        {
-            <MudTextField T="string" Label="Սովորելու վայր"
-                          Text="@_model.StudyPlace"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+    .confirmation-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+    }
+</style>
 
-        @if (!string.IsNullOrWhiteSpace(_model.TeachingPlace))
-        {
-            <MudTextField T="string" Label="Դասավանդման վայր"
-                          Text="@_model.TeachingPlace"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
 
-        @if (!string.IsNullOrWhiteSpace(_model.TeachingSubject))
-        {
-            <MudTextField T="string" Label="Դասավանդման առարկա"
-                          Text="@_model.TeachingSubject"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+<div class="d-flex justify-center align-center mt-10">
+    <MudPaper Class="confirmation-box">
+        <MudForm @ref="_form" Model="_model">
+            <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
 
-        @if (!string.IsNullOrWhiteSpace(_model.Email))
-        {
-            <MudTextField T="string" Label="Էլ․ հասցե"
-                          Text="@_model.Email"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+            @if (!string.IsNullOrWhiteSpace(_model.Country))
+            {
+                <MudTextField T="string" Label="Երկիր"
+                              Text="@_model.Country"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
 
-        @if (!string.IsNullOrWhiteSpace(_model.Phone))
-        {
-            <MudTextField T="string" Label="Հեռ․ համար"
-                          Text="@_model.Phone"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+            @if (!string.IsNullOrWhiteSpace(_model.City))
+            {
+                <MudTextField T="string" Label="Քաղաք"
+                              Text="@_model.City"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
 
-        @if (!string.IsNullOrWhiteSpace(_model.Purpose))
-        {
-            <MudTextField T="string" Label="Նպատակ"
-                          Text="@_model.Purpose"
-                          Variant="Variant.Outlined" Disabled="true" />
-        }
+            @if (!string.IsNullOrWhiteSpace(_model.NameSurname))
+            {
+                <MudTextField T="string" Label="Անուն / Ազգանուն"
+                              Text="@_model.NameSurname"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
 
-        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
-            Հաստատել
-        </MudButton>
+            @if (!string.IsNullOrWhiteSpace(_model.Profession))
+            {
+                <MudTextField T="string" Label="Մասնագիտություն"
+                              Text="@(_model.Profession == "Այլ" && !string.IsNullOrWhiteSpace(_model.CustomProfession) ? _model.CustomProfession : _model.Profession)"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
 
-        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
-            Մերժել
-        </MudButton>
-    </MudForm>
-</MudPaper>
+            @if (_model.Age.HasValue)
+            {
+                <MudTextField T="int?" Label="Տարիք"
+                              Text="@_model.Age.ToString()"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_model.StudyPlace))
+            {
+                <MudTextField T="string" Label="Սովորելու վայր"
+                              Text="@_model.StudyPlace"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_model.TeachingPlace))
+            {
+                <MudTextField T="string" Label="Դասավանդման վայր"
+                              Text="@_model.TeachingPlace"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_model.TeachingSubject))
+            {
+                <MudTextField T="string" Label="Դասավանդման առարկա"
+                              Text="@_model.TeachingSubject"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_model.Email))
+            {
+                <MudTextField T="string" Label="Էլ․ հասցե"
+                              Text="@_model.Email"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_model.Phone))
+            {
+                <MudTextField T="string" Label="Հեռ․ համար"
+                              Text="@_model.Phone"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_model.Purpose))
+            {
+                <MudTextField T="string" Label="Նպատակ"
+                              Text="@_model.Purpose"
+                              Variant="Variant.Outlined" Disabled="true" />
+            }
+
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
+                Հաստատել
+            </MudButton>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
+                Մերժել
+            </MudButton>
+        </MudForm>
+    </MudPaper>
+</div>
 
 @code {
     private MudForm _form;
@@ -136,7 +203,6 @@
 
         try
         {
-            // Step 1: Get identity string from backend
             var identityResponse = await HttpClient.GetFromJsonAsync<Dictionary<string, string>>($"api/other/identity-string/{_otherId}");
             if (identityResponse == null || !identityResponse.TryGetValue("identity", out var identityString))
             {
@@ -144,11 +210,9 @@
                 return;
             }
 
-            // Step 2: Generate code from identity string
             string password = GenerateCode(identityString);
-            string accessCode = Guid.NewGuid().ToString().Substring(0, 8); // Optional
+            string accessCode = Guid.NewGuid().ToString().Substring(0, 8);
 
-            // Step 3: Confirm via backend
             var confirmData = new ConfirmCredentialsDTO
                 {
                     Password = password,
@@ -162,7 +226,6 @@
                 return;
             }
 
-            // Step 4: Send email
             string emailBody = $@"
             <h3>Բարև Ձեզ, {_model.NameSurname}</h3>
             <p>Ձեր գրանցումն հաստատվել է։</p>
@@ -171,8 +234,7 @@
                 <li><b>Մուտքանուն:</b> {_model.Email}</li>
                 <li><b>Գաղտնաբառ:</b> {password}</li>
                 <li><b>Մուտքի կոդ:</b> {accessCode}</li>
-            </ul>
-        ";
+            </ul>";
 
             await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
             Console.WriteLine("📧 Email sent.");
@@ -186,7 +248,6 @@
                 Console.WriteLine("Inner: " + ex.InnerException.Message);
         }
     }
-
 
     private async Task OnReject()
     {
@@ -214,7 +275,6 @@
         }
     }
 
-    // ✅ Code generator
     private static string GenerateCode(string input)
     {
         using (var sha256 = SHA256.Create())
@@ -230,13 +290,13 @@
             'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
             'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
             'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
-    };
+        };
 
             char[] lower = {
             'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
             'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
             'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
-    };
+        };
 
             char[] symbols = { '!', '@', '#', '$', '%', '&', '*' };
 
@@ -250,12 +310,11 @@
             digitPart[0], digitPart[1], digitPart[2],
             letter1, letter2,
             symbol
-        };
+            };
 
             codeChars = codeChars.OrderBy(_ => rand.Next()).ToArray();
 
             return new string(codeChars);
         }
     }
-}
 }

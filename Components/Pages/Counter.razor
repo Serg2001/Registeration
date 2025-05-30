@@ -21,28 +21,66 @@
     body {
         margin: 0;
         padding: 0;
-        background: radial-gradient(circle at top left, #f7e9ff, #f4f5ff, #ffffff);
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
         background-attachment: fixed;
         background-repeat: no-repeat;
-        font-family: 'Segoe UI', sans-serif;
         overflow-x: hidden;
+    }
+
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
+
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
+
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
+
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
+
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
     }
 
     .centered-container {
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 90vh;
+        min-height: 100vh;
         padding: 2rem;
     }
 
     .form-box {
-        background-color: white;
+        background-color: rgba(255, 255, 255, 0.85);
         padding: 3rem;
-        border-radius: 16px;
+        border-radius: 20px;
         max-width: 600px;
         width: 100%;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
     }
 
     .form-title {
@@ -59,6 +97,12 @@
         font-weight: bold;
     }
 </style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
 
 <div class="centered-container">
     <div class="form-box">
@@ -106,7 +150,7 @@
 
                 <!-- Email -->
                 <MudTextField T="string"
-                              Label="Էլթեկչյան հասցե"
+                              Label="Էլ. հասցե"
                               @bind-Value="_model.Email"
                               Variant="Variant.Outlined"
                               InputType="InputType.Email"
@@ -122,6 +166,7 @@
         </MudForm>
     </div>
 </div>
+
 
 @code {
     private MudForm _form = new();

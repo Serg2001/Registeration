@@ -7,47 +7,133 @@
 @inject HttpClient HttpClient
 @inject NavigationManager Navigation
 @inject IEmailService EmailService
-@* @inject IHttpClientFactory HttpClientFactory *@
 
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+    }
 
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
 
-<MudPaper Elevation="3" Class="p-6 mx-auto mt-6" Style="max-width:600px;">
-    <MudForm @ref="_form" Model="_model">
-        <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
 
-        <MudTextField T="string" Label="Դպրոց"
-                      Text="@_model.School?.Name"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
 
-        <MudTextField T="string" Label="Մարզ"
-                      Text="@_model.Region?.Name"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
 
-        <MudTextField T="string" Label="Անուն / Ազգանուն"
-                      Text="@_model.FullName"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
 
-        <MudTextField T="string" Label="Սոցիալական համար"
-                      Text="@_model.SocNumber"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+    }
 
-        <MudTextField T="string" Label="Ծնողի էլ․ հասցե"
-                      Text="@_model.ParentsEmail"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .form-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+    }
 
-        <MudTextField T="string" Label="Դասարան"
-                      Text="@GetGradeDisplay(_model.Grade)"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .form-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6a1b9a;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
 
-        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
-            Հաստատել
-        </MudButton>
+    .form-button {
+        background-color: #6a1b9a;
+        color: white;
+        font-weight: bold;
+    }
+</style>
 
-        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
-            Մերժել
-        </MudButton>
-    </MudForm>
-</MudPaper>
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+    <div class="form-box">
+        <MudForm @ref="_form" Model="_model">
+            <div class="form-title">Գրանցման Տվյալների Հաստատում</div>
+
+            <MudTextField T="string" Label="Դպրոց"
+                          Text="@_model.School?.Name"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Մարզ"
+                          Text="@_model.Region?.Name"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Անուն / Ազգանուն"
+                          Text="@_model.FullName"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Սոցիալական համար"
+                          Text="@_model.SocNumber"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Ծնողի էլ․ հասցե"
+                          Text="@_model.ParentsEmail"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Դասարան"
+                          Text="@GetGradeDisplay(_model.Grade)"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
+                Հաստատել
+            </MudButton>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
+                Մերժել
+            </MudButton>
+        </MudForm>
+    </div>
+</div>
 
 @code {
     private MudForm _form;
@@ -81,14 +167,11 @@
 
         try
         {
-            // Step 1: Get unique identity string (used for access code generation)
             var identityString = await HttpClient.GetStringAsync($"api/otherpupil/identity-string/{_pupilId}");
 
-            // Step 2: Generate password and access code
             string parentPassword = GenerateCode(_model.ParentsEmail);
             string childAccessCode = GenerateCode(identityString);
 
-            // Step 3: Send password and access code to backend API
             var confirmData = new
             {
                 Password = parentPassword,
@@ -102,22 +185,19 @@
                 return;
             }
 
-            // Step 4: Send login credentials to parent's email
             string emailBody = $@"
-			<h3>Բարև Ձեզ, {_model.FullName}</h3>
-			<p>Ձեր գրանցումն հաստատվել է։</p>
-			<p><b>Ծնողի մուտքի տվյալներ՝</b></p>
-			<ul>
-				<li><b>Մուտքանուն:</b> {_model.ParentsEmail}</li>
-				<li><b>Գաղտնաբառ:</b> {parentPassword}</li>
-			</ul>
-			<p><b>Երեխայի մուտքի կոդն է՝</b> {childAccessCode}</p>
-		";
+                <h3>Բարև Ձեզ, {_model.FullName}</h3>
+                <p>Ձեր գրանցումն հաստատվել է։</p>
+                <p><b>Ծնողի մուտքի տվյալներ՝</b></p>
+                <ul>
+                    <li><b>Մուտքանուն:</b> {_model.ParentsEmail}</li>
+                    <li><b>Գաղտնաբառ:</b> {parentPassword}</li>
+                </ul>
+                <p><b>Երեխայի մուտքի կոդն է՝</b> {childAccessCode}</p>";
 
             await EmailService.SendEmailAsync(_model.ParentsEmail, "Մուտքի Տվյալներ", emailBody);
             Console.WriteLine("📧 Email sent with login details.");
 
-            // Step 5: Navigate to success page
             Navigation.NavigateTo("/success");
         }
         catch (Exception ex)
@@ -127,8 +207,6 @@
                 Console.WriteLine("Inner: " + ex.InnerException.Message);
         }
     }
-
-
 
     private async Task OnReject()
     {
@@ -173,7 +251,6 @@
         };
     }
 
-    // ✅ Code generator
     private static string GenerateCode(string input)
     {
         using (var sha256 = SHA256.Create())
@@ -186,16 +263,16 @@
             string digitPart = digitsOnly.Substring(0, 3);
 
             char[] upper = {
-            'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
-            'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
-            'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
-    };
+                'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
+                'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
+                'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
+        };
 
             char[] lower = {
-            'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
-            'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
-            'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
-    };
+                'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
+                'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
+                'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
+        };
 
             char[] symbols = { '!', '@', '#', '$', '%', '&', '*' };
 
@@ -206,16 +283,14 @@
             char symbol = symbols[hash[7] % symbols.Length];
 
             char[] codeChars = new[] {
-            digitPart[0], digitPart[1], digitPart[2],
-            letter1, letter2,
-            symbol
-        };
+                digitPart[0], digitPart[1], digitPart[2],
+                letter1, letter2,
+                symbol
+            };
 
             codeChars = codeChars.OrderBy(_ => rand.Next()).ToArray();
 
             return new string(codeChars);
         }
     }
-}
-}
 }

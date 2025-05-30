@@ -13,87 +13,174 @@
 @inject FormStateService FormStateService
 @inject IDialogService DialogService
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8 d-flex justify-center">
-    <MudPaper Elevation="4" Class="pa-6 rounded-lg" Style="width: 100%; max-width: 600px;">
-            @if (_step == 1)
-            {
-                <MudStack Spacing="3">
-                    <MudAutocomplete T="string"
-                                     Label="Մարզ"
-                                     Value="_selectedRegionName"
-                                     ValueChanged="OnRegionChanged"
-                                     SearchFunc="@SearchRegions"
-                                     Variant="Variant.Outlined"
-                                     Required="true"
-                                     MaxItems="null" />
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+    }
 
-                    <MudAutocomplete T="string"
-                                     Label="Դպրոց"
-                                     Value="_selectedSchoolName"
-                                     ValueChanged="OnSchoolChanged"
-                                     SearchFunc="@SearchSchools"
-                                     Variant="Variant.Outlined"
-                                     Required="true"
-                                     Disabled="@(_model.Region?.Id == Guid.Empty)"
-                                     MaxItems="null" />
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
 
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" FullWidth="true">
-                        Հաջորդը
-                    </MudButton>
-                </MudStack>
-            }
-            else if (_step == 2)
-            {
-                <MudStack Spacing="3">
-                    <MudTextField T="string"
-                                  Label="Անուն Ազգանուն"
-                                  @bind-Value="_model.FullName"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  For="@(() => _model.FullName)" />
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
 
-                    <MudTextField T="string"
-                                  Label="Դասավանդվող Առարկա"
-                                  @bind-Value="_model.TeachingSubject"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  For="@(() => _model.TeachingSubject)" />
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
 
-                    <MudTextField T="string"
-                                  Label="Սոցիալական համար"
-                                  @bind-Value="_model.SocNumber"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  For="@(() => _model.SocNumber)" />
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
 
-                    <MudTextField T="string"
-                                  Label="Էլ. հասցե"
-                                  @bind-Value="_model.Email"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  For="@(() => _model.Email)" />
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
 
-                    <div class="d-flex align-items-center gap-4 mt-4">
-                        <MudCheckBox T="bool" @bind-Value="isAgreed" Color="Color.Success">
-                            <LabelContent>
-                                <span class="text-primary text-decoration-underline cursor-pointer" @onclick="OpenContactDialog">
-                                    Ուսուցչի Համաձայնություն
-                                </span>
-                            </LabelContent>
-                        </MudCheckBox>
-                    </div>
-                   
-                    <MudButton Variant="Variant.Filled"
-                               Disabled="@(!isAgreed)"
-                               Color="Color.Primary"
-                               OnClick="Submit"
-                               FullWidth="true">
-                        Հաջորդը
-                    </MudButton>
-                </MudStack>
-                }
-    </MudPaper>
-</MudContainer>
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .form-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6a1b9a;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .form-button {
+        background-color: #6a1b9a;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+    <div class="form-box">
+        @if (_step == 1)
+        {
+            <MudStack Spacing="3">
+                <MudAutocomplete T="string"
+                                 Label="Մարզ"
+                                 Value="_selectedRegionName"
+                                 ValueChanged="OnRegionChanged"
+                                 SearchFunc="@SearchRegions"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 MaxItems="null" />
+
+                <MudAutocomplete T="string"
+                                 Label="Դպրոց"
+                                 Value="_selectedSchoolName"
+                                 ValueChanged="OnSchoolChanged"
+                                 SearchFunc="@SearchSchools"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 Disabled="@(_model.Region?.Id == Guid.Empty)"
+                                 MaxItems="null" />
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" FullWidth="true">
+                    Հաջորդը
+                </MudButton>
+            </MudStack>
+        }
+        else if (_step == 2)
+        {
+            <MudStack Spacing="3">
+                <MudTextField T="string"
+                              Label="Անուն Ազգանուն"
+                              @bind-Value="_model.FullName"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              For="@(() => _model.FullName)" />
+
+                <MudTextField T="string"
+                              Label="Դասավանդվող Առարկա"
+                              @bind-Value="_model.TeachingSubject"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              For="@(() => _model.TeachingSubject)" />
+
+                <MudTextField T="string"
+                              Label="Սոցիալական համար"
+                              @bind-Value="_model.SocNumber"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              For="@(() => _model.SocNumber)" />
+
+                <MudTextField T="string"
+                              Label="Էլ. հասցե"
+                              @bind-Value="_model.Email"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              For="@(() => _model.Email)" />
+
+                <div class="d-flex align-items-center gap-4 mt-4">
+                    <MudCheckBox T="bool" @bind-Value="isAgreed" Color="Color.Success">
+                        <LabelContent>
+                            <span class="text-primary text-decoration-underline cursor-pointer" @onclick="OpenContactDialog">
+                                Ուսուցչի Համաձայնություն
+                            </span>
+                        </LabelContent>
+                    </MudCheckBox>
+                </div>
+
+                <MudButton Variant="Variant.Filled"
+                           Disabled="@(!isAgreed)"
+                           Color="Color.Primary"
+                           OnClick="Submit"
+                           FullWidth="true">
+                    Հաջորդը
+                </MudButton>
+            </MudStack>
+        }
+    </div>
+</div>
 
 @code {
     private MudForm _form = new();

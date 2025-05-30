@@ -7,43 +7,132 @@
 @inject NavigationManager Navigation
 @inject IEmailService EmailService
 
-<MudPaper Elevation="3" Class="p-6 mx-auto mt-6" Style="max-width:600px;">
-    <MudForm @ref="_form" Model="_model">
-        <MudText Typo="Typo.h5" Class="mb-4">Ուսուցչի Գրանցման Տվյալների Հաստատում</MudText>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+    }
 
-        <MudTextField T="string" Label="Դպրոց"
-                      Text="@_model.School?.Name"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
 
-        <MudTextField T="string" Label="Մարզ"
-                      Text="@_model.Region?.Name"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
 
-        <MudTextField T="string" Label="Անուն / Ազգանուն"
-                      Text="@_model.FullName"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
 
-        <MudTextField T="string" Label="Դասավանդվող առարկա"
-                      Text="@_model.TeachingSubject"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
 
-        <MudTextField T="string" Label="Սոցիալական համար"
-                      Text="@_model.SocNumber"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
 
-        <MudTextField T="string" Label="Էլ․ հասցե"
-                      Text="@_model.Email"
-                      Variant="Variant.Outlined" Disabled="true" />
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+    }
 
-        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
-            Հաստատել
-        </MudButton>
+    .form-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+    }
 
-        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
-            Մերժել
-        </MudButton>
-    </MudForm>
-</MudPaper>
+    .form-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6a1b9a;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .form-button {
+        background-color: #6a1b9a;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+    <div class="form-box">
+        <MudForm @ref="_form" Model="_model">
+            <div class="form-title">Ուսուցչի Գրանցման Տվյալների Հաստատում</div>
+
+            <MudTextField T="string" Label="Դպրոց"
+                          Text="@_model.School?.Name"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Մարզ"
+                          Text="@_model.Region?.Name"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Անուն / Ազգանուն"
+                          Text="@_model.FullName"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Դասավանդվող առարկա"
+                          Text="@_model.TeachingSubject"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Սոցիալական համար"
+                          Text="@_model.SocNumber"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="Էլ․ հասցե"
+                          Text="@_model.Email"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
+                Հաստատել
+            </MudButton>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
+                Մերժել
+            </MudButton>
+        </MudForm>
+    </div>
+</div>
 
 @code {
     private MudForm _form;
@@ -152,16 +241,16 @@
             string digitPart = digitsOnly.Substring(0, 3);
 
             char[] upper = {
-            'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
-            'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
-            'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
-    };
+                'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
+                'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
+                'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
+        };
 
             char[] lower = {
-            'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
-            'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
-            'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
-    };
+                'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
+                'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
+                'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
+        };
 
             char[] symbols = { '!', '@', '#', '$', '%', '&', '*' };
 
@@ -172,15 +261,14 @@
             char symbol = symbols[hash[7] % symbols.Length];
 
             char[] codeChars = new[] {
-            digitPart[0], digitPart[1], digitPart[2],
-            letter1, letter2,
-            symbol
-        };
+                digitPart[0], digitPart[1], digitPart[2],
+                letter1, letter2,
+                symbol
+            };
 
             codeChars = codeChars.OrderBy(_ => rand.Next()).ToArray();
 
             return new string(codeChars);
         }
     }
-}
 }

@@ -11,28 +11,103 @@
 
 <PageTitle>Հաստատում</PageTitle>
 
-<MudPaper Class="d-flex flex-column justify-center align-center mt-10 pa-6" Elevation="4" Style="max-width: 600px; margin: auto;">
-    <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
-        ✔ Հաջողությամբ գրանցվեցիք
-    </MudText>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+    }
 
-    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">
-        Հաստատման համար մուտք գործեք ձեր նշած էլ․ հասցեն։
-    </MudText>
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
 
-    <MudDivider Class="my-4" />
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
 
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">
-        Վերադառնալ Գլխավոր Էջ
-    </MudButton>
-</MudPaper>
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
+
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
+
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
+
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .confirmation-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        text-align: center;
+    }
+</style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+    <div class="confirmation-box">
+        <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+            ✔ Հաջողությամբ գրանցվեցիք
+        </MudText>
+
+        <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">
+            Հաստատման համար մուտք գործեք ձեր նշած էլ․ հասցեն։
+        </MudText>
+
+        <MudDivider Class="my-4" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">
+            Վերադառնալ Գլխավոր Էջ
+        </MudButton>
+    </div>
+</div>
 
 @code {
     protected override async Task OnInitializedAsync()
     {
         var model = FromStateServiceOther.OtherModel;
 
-        // Log model details for debugging
         if (model == null)
         {
             Console.WriteLine("❌ OtherModel is null");

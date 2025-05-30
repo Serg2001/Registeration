@@ -14,8 +14,95 @@
 @inject FormStateService FormStateService
 @inject IDialogService DialogService
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8 d-flex justify-center">
-    <MudPaper Elevation="4" Class="pa-6 rounded-lg" Style="width: 100%; max-width: 600px;">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+    }
+
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
+
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
+
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
+
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
+
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
+
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .form-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6a1b9a;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .form-button {
+        background-color: #6a1b9a;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+    <div class="form-box">
         <MudForm @ref="_form" Model="_model">
             @if (_step == 1)
             {
@@ -100,7 +187,6 @@
                                   Required="true"
                                   For="@(() => _model.ParentsEmail)" />
 
-
                     <div class="d-flex align-items-center gap-4 mt-4">
                         <MudCheckBox T="bool" @bind-Value="isAgreed" Color="Color.Success">
                             <LabelContent>
@@ -110,8 +196,6 @@
                             </LabelContent>
                         </MudCheckBox>
                     </div>
-
-
 
                     <MudButton Variant="Variant.Filled"
                                Disabled="@(!isAgreed)"
@@ -123,8 +207,8 @@
                 </MudStack>
             }
         </MudForm>
-    </MudPaper>
-</MudContainer>
+    </div>
+</div>
 
 @code {
     private MudForm _form = new();
@@ -208,7 +292,6 @@
         }
     }
 
-
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
         if (_regionList.Count == 0)
@@ -278,7 +361,6 @@
         var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
         DialogService.Show<ContactDialog>("Համաձայն եմ", options);
     }
-
 
     private string GetDisplayName(GradeLevel grade)
     {

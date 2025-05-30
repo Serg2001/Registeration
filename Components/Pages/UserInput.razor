@@ -9,24 +9,113 @@
 @inject NavigationManager Navigation
 @inject IEmailService EmailService
 
-<MudPaper Elevation="3" Class="p-6 mx-auto mt-6" Style="max-width:600px;">
-    <MudForm @ref="_form" Model="_model">
-        <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+    }
 
-        <MudTextField T="string" Label="Դպրոց" @bind-Value="_model.School.Name" Variant="Variant.Outlined" Disabled="true" />
-        <MudTextField T="string" Label="Հասցե" @bind-Value="_model.Address" Variant="Variant.Outlined" Disabled="true" />
-        <MudTextField T="string" Label="Անուն / Ազգանուն" @bind-Value="_model.FullName" Variant="Variant.Outlined" Disabled="true" />
-        <MudTextField T="string" Label="Էլ․ Հասցե" @bind-Value="_model.Email" Variant="Variant.Outlined" Disabled="true" />
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
 
-        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
-            Հաստատել
-        </MudButton>
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
 
-        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
-            Մերժել
-        </MudButton>
-    </MudForm>
-</MudPaper>
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
+
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
+
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
+
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .form-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6a1b9a;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .form-button {
+        background-color: #6a1b9a;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+    <div class="form-box">
+        <MudForm @ref="_form" Model="_model">
+            <div class="form-title">Գրանցման Տվյալների Հաստատում</div>
+
+            <MudTextField T="string" Label="Դպրոց" @bind-Value="_model.School.Name" Variant="Variant.Outlined" Disabled="true" />
+            <MudTextField T="string" Label="Հասցե" @bind-Value="_model.Address" Variant="Variant.Outlined" Disabled="true" />
+            <MudTextField T="string" Label="Անուն / Ազգանուն" @bind-Value="_model.FullName" Variant="Variant.Outlined" Disabled="true" />
+            <MudTextField T="string" Label="Էլ․ Հասցե" @bind-Value="_model.Email" Variant="Variant.Outlined" Disabled="true" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
+                Հաստատել
+            </MudButton>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="OnReject" Class="mt-4 me-2">
+                Մերժել
+            </MudButton>
+        </MudForm>
+    </div>
+</div>
 
 @code {
     private MudForm _form;
@@ -58,7 +147,6 @@
     {
         try
         {
-            // Generate login credentials
             string password = GenerateCode(_model.Email);
             string accessCode = Guid.NewGuid().ToString().Substring(0, 8);
 
@@ -83,8 +171,7 @@
                     <li><b>Մուտքանուն:</b> {_model.Email}</li>
                     <li><b>Գաղտնաբառ:</b> {password}</li>
                     <li><b>Մուտքի կոդ:</b> {accessCode}</li>
-                </ul>
-            ";
+                </ul>";
 
             await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
             Console.WriteLine("📧 Email sent.");

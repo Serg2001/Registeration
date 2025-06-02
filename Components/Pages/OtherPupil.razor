@@ -348,10 +348,10 @@
         _model.Region = regionDto;
 
         var schoolDto = await CrmSchoolService.SaveSchoolIfNotExistsAsync(
-            selectedSchoolName,
-            address: "Not provided",
-            regionId: regionDto.Id
-        );
+           selectedSchoolName,
+           address: "Not provided",
+           regionId: regionDto.Id
+       );
 
         _model.School = schoolDto;
     }

@@ -42,6 +42,7 @@ namespace Registeration.Controllers
                 var region = await _regionService.SaveRegionIfNotExistsAsync(dto.Region.Name);
 
                 var school = await _schoolService.SaveSchoolIfNotExistsAsync(
+                    dto.School.Id,
                     dto.School.Name,
                     dto.School.Address ?? "Not Provided",
                     region.Id);
@@ -67,6 +68,8 @@ namespace Registeration.Controllers
                 return StatusCode(500, $"Server error: {ex.Message}");
             }
         }
+
+
 
         [HttpGet("by-id/{id}")]
         public async Task<ActionResult<RegistrationFormDTO>> GetById(Guid id)

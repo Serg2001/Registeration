@@ -14,6 +14,7 @@
 @using MudBlazor
 @using Registeration.DTOs
 @using Registeration.Services
+@using System.Text.Json
 
 <PageTitle>Գրանցում</PageTitle>
 
@@ -313,8 +314,31 @@
             }
             else
             {
-                var error = await response.Content.ReadAsStringAsync();
-                Snackbar.Add($"Սխալ է առաջացել․ {error}", Severity.Error);
+                var errorContent = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    var jsonDoc = JsonDocument.Parse(errorContent);
+                    if (jsonDoc.RootElement.TryGetProperty("errors", out var errorsElement))
+                    {
+                        if (errorsElement.TryGetProperty("FullName", out var fullNameErrors) && fullNameErrors.GetArrayLength() > 0)
+                        {
+                            var errorMessage = fullNameErrors[0].GetString();
+                            Snackbar.Add(errorMessage, Severity.Error);
+                        }
+                        else
+                        {
+                            Snackbar.Add("Սխալ:", Severity.Error);
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.Add("Սխալ:", Severity.Error);
+                    }
+                }
+                catch
+                {
+                    Snackbar.Add("Սխալ:", Severity.Error);
+                }
             }
         }
         catch (Exception ex)
@@ -322,6 +346,7 @@
             Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
         }
     }
+
 
     private static string GenerateCode(string input)
     {

@@ -1,9 +1,11 @@
-﻿// Registeration/DTOs/OtherDTO.cs
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 
 namespace Registeration.DTOs
 {
-    public class OtherDTO
+    public class OtherDTO : IValidatableObject
     {
         public Guid Id { get; set; }
 
@@ -34,8 +36,29 @@ namespace Registeration.DTOs
 
         public string Purpose { get; set; } = string.Empty;
 
-        public string Login { get; set; } = string.Empty;    // Added
-        public string Password { get; set; } = string.Empty; // Added
-        public string AccessCode { get; set; } = string.Empty; // Added
+        public string Login { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string AccessCode { get; set; } = string.Empty;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Country.Trim().Equals("Armenia", StringComparison.OrdinalIgnoreCase))
+            {
+                // Validate that NameSurname is Armenian-only
+                var regex = new Regex(@"^[\u0531-\u0587\s]+$");
+                if ((!string.IsNullOrWhiteSpace(CustomProfession) && !regex.IsMatch(CustomProfession)) 
+                    || (!string.IsNullOrWhiteSpace(NameSurname) && !regex.IsMatch(NameSurname))
+                    || (!string.IsNullOrWhiteSpace(Purpose) && !regex.IsMatch(Purpose))
+                    || (!string.IsNullOrWhiteSpace(TeachingPlace) && !regex.IsMatch(TeachingPlace)
+                    || (!string.IsNullOrWhiteSpace(TeachingSubject) && !regex.IsMatch(TeachingSubject)
+                    || (!string.IsNullOrWhiteSpace(StudyPlace) && !regex.IsMatch(StudyPlace)))))
+                {
+                    yield return new ValidationResult(
+                        "Խնդրում ենք մուտքագրել հայատառ։",
+                        new[] { nameof(NameSurname),
+                                nameof(Purpose)});
+                }
+            }
+        }
     }
 }

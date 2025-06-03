@@ -1,4 +1,5 @@
-﻿using Registeration.Models;
+﻿using Registeration.Attributes;
+using Registeration.Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,6 +19,7 @@ namespace Registeration.DTOs
         public string Address { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Անուն / Ազգանունը պարտադիր է")]
+        [ArmenianOnly]
         public string FullName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Էլ․ հասցեն պարտադիր է")]

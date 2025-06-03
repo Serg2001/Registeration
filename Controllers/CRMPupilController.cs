@@ -16,7 +16,7 @@ public class PupilsController : ControllerBase
         _httpClientFactory = httpClientFactory;
     }
 
-    [HttpPost]
+    [HttpPost("save")]
     public async Task<IActionResult> SavePupils([FromBody] List<CRMPupil> pupils)
     {
         if (pupils == null || !pupils.Any())
@@ -27,10 +27,12 @@ public class PupilsController : ControllerBase
     }
 
     [HttpGet("fetch-from-crm")]
-    public async Task<IActionResult> FetchAndSavePupilsFromCRM()
+    public async Task<IActionResult> FetchAndSavePupilsFromCRM([FromQuery] Guid schoolId)
     {
-        // Hard-coded schoolId
-        Guid schoolId = Guid.Parse("B1080242-4002-46F1-5F9B-08D49E8401FF");
+        if (schoolId == Guid.Empty)
+        {
+            return BadRequest("Invalid or missing schoolId.");
+        }
 
         try
         {
@@ -44,7 +46,7 @@ public class PupilsController : ControllerBase
             // Map to internal model
             var pupilsToSave = crmPupils.Select(p => new CRMPupil
             {
-                Id = p.Id,  // Add Id mapping here
+                Id = p.Id,  // Preserving the CRM Ids
                 Name = p.Name ?? string.Empty,
                 Surname = p.Surname ?? string.Empty
             }).ToList();
@@ -58,4 +60,5 @@ public class PupilsController : ControllerBase
             return StatusCode(500, $"Error fetching pupils: {ex.Message}");
         }
     }
+
 }

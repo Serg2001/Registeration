@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Registeration.Models;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Registeration.DTOs

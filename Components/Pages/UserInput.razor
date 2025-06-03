@@ -147,6 +147,22 @@
     {
         try
         {
+            if (_model.School.Id != Guid.Empty)
+            {
+                var fetchAndSavePupilsResponse = await HttpClient.GetAsync($"api/pupils/fetch-from-crm?schoolId={_model.School.Id}");
+                if (!fetchAndSavePupilsResponse.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("❌ Failed to fetch and save pupils from CRM.");
+                    return;
+                }
+            }
+            else
+            {
+                Console.WriteLine("⚠️ No SchoolId found in the model.");
+                return;
+            }
+
+            // 2️⃣ Generate credentials
             string password = GenerateCode(_model.Email);
             string accessCode = Guid.NewGuid().ToString().Substring(0, 8);
 
@@ -156,6 +172,7 @@
                     AccessCode = accessCode
                 };
 
+            // 3️⃣ Update credentials
             var updateResponse = await HttpClient.PostAsJsonAsync($"api/regions/confirm/{_registrationId}", confirmData);
             if (!updateResponse.IsSuccessStatusCode)
             {
@@ -163,19 +180,21 @@
                 return;
             }
 
+            // 4️⃣ Send email
             string emailBody = $@"
-                <h3>Բարև Ձեզ, {_model.FullName}</h3>
-                <p>Ձեր գրանցումն հաստատվել է։</p>
-                <p><b>Մուտքի տվյալներ՝</b></p>
-                <ul>
-                    <li><b>Մուտքանուն:</b> {_model.Email}</li>
-                    <li><b>Գաղտնաբառ:</b> {password}</li>
-                    <li><b>Մուտքի կոդ:</b> {accessCode}</li>
-                </ul>";
+            <h3>Բարև Ձեզ, {_model.FullName}</h3>
+            <p>Ձեր գրանցումն հաստատվել է։</p>
+            <p><b>Մուտքի տվյալներ՝</b></p>
+            <ul>
+                <li><b>Մուտքանուն:</b> {_model.Email}</li>
+                <li><b>Գաղտնաբառ:</b> {password}</li>
+                <li><b>Մուտքի կոդ:</b> {accessCode}</li>
+            </ul>";
 
             await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
             Console.WriteLine("📧 Email sent.");
 
+            // 5️⃣ Navigate to success page
             Navigation.NavigateTo("/success");
         }
         catch (Exception ex)
@@ -185,6 +204,7 @@
                 Console.WriteLine("Inner: " + ex.InnerException.Message);
         }
     }
+
 
     private async Task OnReject()
     {

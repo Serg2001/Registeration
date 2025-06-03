@@ -1,4 +1,5 @@
-﻿using Registeration.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Registeration.Data;
 using Registeration.Models;
 
 namespace Registeration.Services
@@ -14,8 +15,21 @@ namespace Registeration.Services
 
         public async Task SavePupilsAsync(List<CRMPupil> pupils)
         {
-            _context.CRMPupils.AddRange(pupils);
-            await _context.SaveChangesAsync();
+            var existingPupilIds = await _context.CRMPupils
+                .Where(p => pupils.Select(x => x.Id).Contains(p.Id))
+                .Select(p => p.Id)
+                .ToListAsync();
+
+            var newPupils = pupils
+                .Where(p => !existingPupilIds.Contains(p.Id))
+                .ToList();
+
+            if (newPupils.Any())
+            {
+                _context.CRMPupils.AddRange(newPupils);
+                await _context.SaveChangesAsync();
+            }
         }
+
     }
 }

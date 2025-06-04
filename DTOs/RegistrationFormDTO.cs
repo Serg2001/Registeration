@@ -1,10 +1,12 @@
-﻿using Registeration.Attributes;
+﻿using Microsoft.EntityFrameworkCore;
+using Registeration.Attributes;
 using Registeration.Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Registeration.DTOs
 {
+    [Index(nameof(Email), IsUnique = true)]
     public class RegistrationFormDTO
     {
         public Guid Id { get; set; }
@@ -26,9 +28,7 @@ namespace Registeration.DTOs
         [EmailAddress(ErrorMessage = "Սխալ էլ․ հասցեի ձևաչափ")]
         public string Email { get; set; } = string.Empty;
 
-        //// Optional: Display names for UI
-        //public string RegionName { get; set; } = string.Empty;
-        //public string SchoolName { get; set; } = string.Empty;
+        public bool isRegistered { get; set; } = false;
 
         public string Login { get; set; } = string.Empty;
 

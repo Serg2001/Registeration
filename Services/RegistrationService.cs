@@ -15,8 +15,22 @@ namespace Registeration.Services
 
         public async Task SaveAsync(Registration registration)
         {
+            registration.isRegistered = false;
             _context.Registrations.Add(registration);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Check if this is a unique constraint violation
+                if (ex.InnerException?.Message.Contains("duplicate") == true ||
+                    ex.InnerException?.Message.Contains("UNIQUE") == true)
+                {
+                    throw new InvalidOperationException("Դուք արդեն գրանցված եք։ Ստուգեք ձեր մուտքի տվյալները։");
+                }
+                throw;
+            }
         }
 
         public async Task<Registration?> GetByIdAsync(Guid id)
@@ -50,6 +64,7 @@ namespace Registeration.Services
 
             registration.Password = password;
             registration.AccessCode = accessCode;
+            registration.isRegistered = true;
 
             await _context.SaveChangesAsync();
             return true;

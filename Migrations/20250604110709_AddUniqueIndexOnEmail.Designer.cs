@@ -12,8 +12,8 @@ using Registeration.Data;
 namespace Registeration.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250603074936_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250604110709_AddUniqueIndexOnEmail")]
+    partial class AddUniqueIndexOnEmail
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -308,7 +308,13 @@ namespace Registeration.Migrations
                     b.Property<Guid>("SchoolId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("isRegistered")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.HasIndex("SchoolId");
 

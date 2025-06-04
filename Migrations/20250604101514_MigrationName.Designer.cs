@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Registeration.Data;
 
@@ -11,9 +12,11 @@ using Registeration.Data;
 namespace Registeration.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250604101514_MigrationName")]
+    partial class MigrationName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -189,14 +192,11 @@ namespace Registeration.Migrations
 
                     b.Property<string>("SocNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SchoolId");
-
-                    b.HasIndex("FullName", "SocNumber", "SchoolId")
-                        .IsUnique();
 
                     b.ToTable("OtherPupil");
                 });
@@ -308,13 +308,7 @@ namespace Registeration.Migrations
                     b.Property<Guid>("SchoolId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("isRegistered")
-                        .HasColumnType("bit");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.HasIndex("SchoolId");
 

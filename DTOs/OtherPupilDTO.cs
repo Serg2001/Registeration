@@ -1,4 +1,6 @@
-﻿using Registeration.Enums;
+﻿using Microsoft.EntityFrameworkCore;
+using Registeration.Enums;
+using Registeration.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace Registeration.DTOs

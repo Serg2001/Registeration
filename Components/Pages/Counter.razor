@@ -294,6 +294,7 @@
             _model.Password = GenerateCode(_model.Email);
             _model.AccessCode = Guid.NewGuid().ToString().Substring(0, 8);
 
+            // Try to save registration
             var response = await HttpClient.PostAsJsonAsync("api/regions/save", _model);
 
             if (response.IsSuccessStatusCode)
@@ -314,7 +315,15 @@
             }
             else
             {
+                // Handle possible duplicate registration error
                 var errorContent = await response.Content.ReadAsStringAsync();
+
+                if (errorContent.Contains("Դուք արդեն գրանցված եք"))
+                {
+                    Snackbar.Add("Դուք արդեն գրանցված եք։ Ստուգեք ձեր մուտքի տվյալները։", Severity.Warning);
+                    return;
+                }
+
                 try
                 {
                     var jsonDoc = JsonDocument.Parse(errorContent);
@@ -346,6 +355,8 @@
             Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
         }
     }
+
+
 
 
     private static string GenerateCode(string input)

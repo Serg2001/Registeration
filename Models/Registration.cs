@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Registeration.Models
 {
+    [Index(nameof(Email), IsUnique = true)]
     public class Registration
     {
         [Key]
@@ -28,6 +30,8 @@ namespace Registeration.Models
         [EmailAddress]
         [StringLength(100)]
         public string Email { get; set; } = string.Empty;
+        
+        public bool isRegistered { get; set; } = false;
 
         [Required]
         [StringLength(255)]

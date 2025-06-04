@@ -17,6 +17,7 @@ namespace Registeration.Services
 
         public async Task SaveAsync(OtherPupil otherPupil)
         {
+            // Check if the pupil already exists by ID (update) or is new (add)
             var exists = await _context.OtherPupil.AnyAsync(p => p.Id == otherPupil.Id);
             if (!exists)
             {
@@ -27,7 +28,21 @@ namespace Registeration.Services
                 _context.OtherPupil.Update(otherPupil);
             }
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Check for unique constraint violation
+                if (ex.InnerException?.Message.Contains("UNIQUE") == true ||
+                    ex.InnerException?.Message.Contains("duplicate") == true)
+                {
+                    throw new InvalidOperationException("Այս աշակերտն արդեն գրանցված է տվյալ դպրոցում։");
+                }
+
+                throw;
+            }
         }
 
         public async Task<OtherPupil?> GetByIdAsync(Guid id)
@@ -37,7 +52,6 @@ namespace Registeration.Services
                                  .ThenInclude(s => s.Region)
                                  .FirstOrDefaultAsync(p => p.Id == id);
         }
-
 
         public async Task<string?> GetConcatenatedIdentityAsync(Guid id)
         {
@@ -50,6 +64,5 @@ namespace Registeration.Services
         }
 
     }
-
-
 }
+

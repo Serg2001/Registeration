@@ -46,7 +46,7 @@ namespace Registeration.DTOs
             {
                 // Validate that NameSurname is Armenian-only
                 var regex = new Regex(@"^[\u0531-\u0587\s]+$");
-                if ((!string.IsNullOrWhiteSpace(CustomProfession) && !regex.IsMatch(CustomProfession)) 
+                if ((!string.IsNullOrWhiteSpace(CustomProfession) && !regex.IsMatch(CustomProfession))
                     || (!string.IsNullOrWhiteSpace(NameSurname) && !regex.IsMatch(NameSurname))
                     || (!string.IsNullOrWhiteSpace(Purpose) && !regex.IsMatch(Purpose))
                     || (!string.IsNullOrWhiteSpace(TeachingPlace) && !regex.IsMatch(TeachingPlace)

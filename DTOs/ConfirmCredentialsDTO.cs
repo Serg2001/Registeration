@@ -4,5 +4,6 @@
     {
         public string Password { get; set; } = null!;
         public string AccessCode { get; set; } = null!;
+        public bool isRegistered { get; set; }
     }
 }

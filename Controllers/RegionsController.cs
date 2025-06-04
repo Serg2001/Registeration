@@ -131,6 +131,7 @@ namespace Registeration.Controllers
             registration.Login = registration.Email;
             registration.Password = dto.Password;
             registration.AccessCode = dto.AccessCode;
+            registration.isRegistered = dto.isRegistered;
 
             await _context.SaveChangesAsync();
             return Ok();

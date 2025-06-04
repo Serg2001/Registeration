@@ -169,7 +169,8 @@
             var confirmData = new ConfirmCredentialsDTO
                 {
                     Password = password,
-                    AccessCode = accessCode
+                    AccessCode = accessCode,
+                    isRegistered = true // Mark as registered
                 };
 
             // 3️⃣ Update credentials
@@ -182,14 +183,14 @@
 
             // 4️⃣ Send email
             string emailBody = $@"
-            <h3>Բարև Ձեզ, {_model.FullName}</h3>
-            <p>Ձեր գրանցումն հաստատվել է։</p>
-            <p><b>Մուտքի տվյալներ՝</b></p>
-            <ul>
-                <li><b>Մուտքանուն:</b> {_model.Email}</li>
-                <li><b>Գաղտնաբառ:</b> {password}</li>
-                <li><b>Մուտքի կոդ:</b> {accessCode}</li>
-            </ul>";
+        <h3>Բարև Ձեզ, {_model.FullName}</h3>
+        <p>Ձեր գրանցումն հաստատվել է։</p>
+        <p><b>Մուտքի տվյալներ՝</b></p>
+        <ul>
+            <li><b>Մուտքանուն:</b> {_model.Email}</li>
+            <li><b>Գաղտնաբառ:</b> {password}</li>
+            <li><b>Մուտքի կոդ:</b> {accessCode}</li>
+        </ul>";
 
             await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
             Console.WriteLine("📧 Email sent.");
@@ -204,6 +205,7 @@
                 Console.WriteLine("Inner: " + ex.InnerException.Message);
         }
     }
+
 
 
     private async Task OnReject()

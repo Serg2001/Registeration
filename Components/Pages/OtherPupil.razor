@@ -282,8 +282,16 @@
             }
             else
             {
-                var error = await response.Content.ReadAsStringAsync();
-                Snackbar.Add($"Սխալ է առաջացել․ {error}", Severity.Error);
+                var errorContent = await response.Content.ReadAsStringAsync();
+
+                // 🚨 Handle duplicate record error from backend
+                if (errorContent.Contains("Այս աշակերտն արդեն գրանցված է տվյալ դպրոցում"))
+                {
+                    Snackbar.Add("Դուք արդեն գրանցված եք տվյալ դպրոցում։ Մուտքի տվյալները վերցրեք դպրոցից։", Severity.Warning);
+                    return;
+                }
+
+                Snackbar.Add($"Սխալ է առաջացել․ {errorContent}", Severity.Error);
             }
         }
         catch (Exception ex)
@@ -291,6 +299,7 @@
             Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
         }
     }
+
 
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {

@@ -1,9 +1,11 @@
-﻿using Registeration.Enums;
+﻿using Microsoft.EntityFrameworkCore;
+using Registeration.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Registeration.Models
 {
+    [Index(nameof(FullName), nameof(SocNumber), nameof(SchoolId), IsUnique = true)]
     public class OtherPupil
     {
         [Key]

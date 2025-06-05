@@ -40,26 +40,9 @@
         opacity: 0.7;
     }
 
-    .bubble1 {
-        top: 10%;
-        left: 5%;
-        width: 300px;
-        height: 300px;
-    }
-
-    .bubble2 {
-        top: 30%;
-        left: 60%;
-        width: 400px;
-        height: 400px;
-    }
-
-    .bubble3 {
-        bottom: 10%;
-        left: 30%;
-        width: 500px;
-        height: 500px;
-    }
+    .bubble1 { top: 10%; left: 5%; width: 300px; height: 300px; }
+    .bubble2 { top: 30%; left: 60%; width: 400px; height: 400px; }
+    .bubble3 { bottom: 10%; left: 30%; width: 500px; height: 500px; }
 
     .centered-container {
         display: flex;
@@ -124,7 +107,11 @@
                                  Disabled="@(_model.Region?.Id == Guid.Empty)"
                                  MaxItems="null" />
 
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" FullWidth="true">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="NextStep"
+                           Disabled="@(!_isSchoolValid)"
+                           FullWidth="true">
                     Հաջորդը
                 </MudButton>
             </MudStack>
@@ -187,6 +174,7 @@
     private OtherTeacherDTO _model = new() { Id = Guid.NewGuid() };
     private int _step = 1;
     private bool isAgreed;
+    private bool _isSchoolValid = true; // new flag
 
     private string _selectedRegionName = string.Empty;
     private string _selectedSchoolName = string.Empty;
@@ -204,7 +192,7 @@
             return;
         }
 
-        if (_step == 2)
+        if (_step == 1)
         {
             if (string.IsNullOrWhiteSpace(_selectedRegionName) || string.IsNullOrWhiteSpace(_selectedSchoolName))
             {
@@ -212,7 +200,12 @@
                 return;
             }
 
-            await OnSchoolChanged(_selectedSchoolName);
+            bool schoolCheckPassed = await OnSchoolChanged(_selectedSchoolName);
+            if (!schoolCheckPassed)
+            {
+                _step = 1;
+                return;
+            }
         }
 
         _step++;
@@ -255,6 +248,11 @@
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
+                if (error.Contains("Այս Ուսուցիչն արդեն գրանցված է։"))
+                {
+                    Snackbar.Add("Դուք արդեն գրանցված եք տվյալ դպրոցում։ Մուտքի տվյալները վերցրեք դպրոցից։", Severity.Warning);
+                    return;
+                }
                 Snackbar.Add($"Սխալ է առաջացել․ {error}", Severity.Error);
             }
         }
@@ -312,21 +310,59 @@
             : _schoolList.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(s => s.Name);
     }
 
-    private async Task OnSchoolChanged(string selectedSchoolName)
+    private async Task<bool> OnSchoolChanged(string selectedSchoolName)
     {
-        _selectedSchoolName = selectedSchoolName;
+        try
+        {
+            _selectedSchoolName = selectedSchoolName;
 
-        var regionDto = await CrmRegionService.SaveRegionIfNotExistsAsync(_selectedRegionName);
-        _model.Region = regionDto;
+            // Get region
+            var regionDto = await CrmRegionService.SaveRegionIfNotExistsAsync(_selectedRegionName);
+            _model.Region = regionDto;
 
-        var schoolDto = await CrmSchoolService.SaveSchoolIfNotExistsAsync(
-            selectedSchoolName,
-            address: "Not provided",
-            regionId: regionDto.Id
-        );
+            // Lookup in the dropdown list first
+            var selectedSchool = _schoolList.FirstOrDefault(s => s.Name == selectedSchoolName);
+            if (selectedSchool != null)
+            {
+                // 🟢 Check if the school exists in the DB
+                var existingSchool = await CrmSchoolService.GetSchoolByNameAsync(selectedSchoolName);
+                if (existingSchool != null)
+                {
+                    // 🛑 School already exists, so disable next step
+                    Snackbar.Add("Այս դպրոցն արդեն գոյություն ունի։ Խնդրում ենք ընտրել մեկ այլ դպրոց:", Severity.Warning);
 
-        _model.School = schoolDto;
+                    // Reset School Selection
+                    _selectedSchoolName = string.Empty;
+                    _model.School = new SchoolDTO();
+                    _form.ResetValidation();
+
+                    StateHasChanged();
+                    return false;
+                }
+
+                // 🟢 No duplicate in DB, proceed
+                _model.School = selectedSchool;
+                return true;
+            }
+
+            // 🛑 School not found in dropdown list
+            Snackbar.Add("Դպրոցը չի գտնվել։ Խնդրում ենք ընտրել դպրոց ցանկից։", Severity.Warning);
+            _selectedSchoolName = string.Empty;
+            _model.School = new SchoolDTO();
+            _form.ResetValidation();
+
+            StateHasChanged();
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Սխալ է առաջացել․ {ex.Message}", Severity.Error);
+            StateHasChanged();
+            return false;
+        }
     }
+
+
 
     private async void OpenContactDialog()
     {

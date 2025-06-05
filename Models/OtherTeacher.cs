@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using Registeration.Enums;
 
 namespace Registeration.Models
 {
+    [Index(nameof(FullName), nameof(SocNumber), nameof(SchoolId), IsUnique = true)]
     public class OtherTeacher
     {
         [Key]

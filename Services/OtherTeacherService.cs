@@ -25,7 +25,19 @@ namespace Registeration.Services
                 _context.OtherTeacher.Update(otherTeacher);
             }
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException?.Message.Contains("UNIQUE") == true ||
+                    ex.InnerException?.Message.Contains("duplicate") == true)
+                {
+                    throw new InvalidOperationException("Այս Ուսուցիչն արդեն գրանցված է։");
+                }
+                throw;
+            }
         }
 
         public async Task<OtherTeacher?> GetByIdAsync(Guid id)

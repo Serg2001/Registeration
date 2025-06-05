@@ -42,13 +42,16 @@ namespace Registeration.Services
         public async Task<SchoolDTO> SaveSchoolIfNotExistsAsync(string name, string address, Guid regionId)
         {
             var existing = await _context.Schools
-                .FirstOrDefaultAsync(s => s.Name == name && s.RegionId == regionId);
+                .FirstOrDefaultAsync(s => s.Name == name);
 
             if (existing != null)
-            {
-                // School already exists — throw error
-                throw new InvalidOperationException("Այս դպրոցն արդեն գոյություն ունի տվյալ մարզում։");
-            }
+                return new SchoolDTO
+                {
+                    Id = existing.Id,
+                    Name = existing.Name,
+                    Address = existing.Address,
+                    RegionId = existing.RegionId
+                };
 
             var school = new School
             {
@@ -71,30 +74,39 @@ namespace Registeration.Services
 
 
         public async Task<SchoolDTO> SaveSchoolIfNotExistsAsync(Guid schoolId, string name, string address, Guid regionId)
-{
-    var existing = await _context.Schools.FirstOrDefaultAsync(s => s.Name == name && s.RegionId == regionId);
-    if (existing != null)
-        return new SchoolDTO
         {
-            Id = existing.Id,
-            Name = existing.Name,
-            Address = existing.Address,
-            RegionId = existing.RegionId
-        };
+            var existing = await _context.Schools.FirstOrDefaultAsync(s => s.Name == name && s.RegionId == regionId);
+            if (existing != null)
+                return new SchoolDTO
+                {
+                    Id = existing.Id,
+                    Name = existing.Name,
+                    Address = existing.Address,
+                    RegionId = existing.RegionId
+                };
 
-    var school = new School
-    {
-        Id = schoolId,
-        Name = name,
-        Address = address,
-        RegionId = regionId
-    };
+            var school = new School
+            {
+                Id = schoolId,
+                Name = name,
+                Address = address,
+                RegionId = regionId
+            };
 
-    _context.Schools.Add(school);
-    await _context.SaveChangesAsync();
+            _context.Schools.Add(school);
+            await _context.SaveChangesAsync();
 
-    return new SchoolDTO { Id = school.Id, Name = school.Name, Address = school.Address, RegionId = school.RegionId };
-}
+            return new SchoolDTO { Id = school.Id, Name = school.Name, Address = school.Address, RegionId = school.RegionId };
+        }
+
+        public async Task<SchoolDTO?> GetSchoolByNameAsync(string name)
+        {
+            var existing = await _context.Schools.FirstOrDefaultAsync(s => s.Name == name);
+            return existing != null
+                ? new SchoolDTO { Id = existing.Id, Name = existing.Name, Address = existing.Address, RegionId = existing.RegionId }
+                : null;
+        }
+
 
     }
 }

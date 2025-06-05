@@ -110,7 +110,7 @@
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            OnClick="NextStep"
-                           Disabled="@(!_isSchoolValid)"
+                           Disabled="@(!_canProceed)"
                            FullWidth="true">
                     Հաջորդը
                 </MudButton>
@@ -174,7 +174,7 @@
     private OtherTeacherDTO _model = new() { Id = Guid.NewGuid() };
     private int _step = 1;
     private bool isAgreed;
-    private bool _isSchoolValid = true; // new flag
+    private bool _canProceed = true;
 
     private string _selectedRegionName = string.Empty;
     private string _selectedSchoolName = string.Empty;
@@ -287,6 +287,7 @@
     private async Task OnRegionChanged(string selectedName)
     {
         _selectedRegionName = selectedName;
+        _canProceed = true;  // reset proceed flag
 
         var selected = _regionList.FirstOrDefault(r => r.Name == selectedName);
         if (selected != null)
@@ -316,53 +317,45 @@
         {
             _selectedSchoolName = selectedSchoolName;
 
-            // Get region
             var regionDto = await CrmRegionService.SaveRegionIfNotExistsAsync(_selectedRegionName);
             _model.Region = regionDto;
 
-            // Lookup in the dropdown list first
             var selectedSchool = _schoolList.FirstOrDefault(s => s.Name == selectedSchoolName);
             if (selectedSchool != null)
             {
-                // 🟢 Check if the school exists in the DB
                 var existingSchool = await CrmSchoolService.GetSchoolByNameAsync(selectedSchoolName);
                 if (existingSchool != null)
                 {
-                    // 🛑 School already exists, so disable next step
                     Snackbar.Add("Այս դպրոցն արդեն գոյություն ունի։ Խնդրում ենք ընտրել մեկ այլ դպրոց:", Severity.Warning);
-
-                    // Reset School Selection
                     _selectedSchoolName = string.Empty;
                     _model.School = new SchoolDTO();
                     _form.ResetValidation();
-
+                    _canProceed = false;
                     StateHasChanged();
                     return false;
                 }
 
-                // 🟢 No duplicate in DB, proceed
                 _model.School = selectedSchool;
+                _canProceed = true;
                 return true;
             }
 
-            // 🛑 School not found in dropdown list
             Snackbar.Add("Դպրոցը չի գտնվել։ Խնդրում ենք ընտրել դպրոց ցանկից։", Severity.Warning);
             _selectedSchoolName = string.Empty;
             _model.School = new SchoolDTO();
             _form.ResetValidation();
-
+            _canProceed = false;
             StateHasChanged();
             return false;
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Սխալ է առաջացել․ {ex.Message}", Severity.Error);
+            _canProceed = false;
             StateHasChanged();
             return false;
         }
     }
-
-
 
     private async void OpenContactDialog()
     {

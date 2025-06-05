@@ -353,17 +353,41 @@
     {
         _selectedSchoolName = selectedSchoolName;
 
-        var regionDto = await CrmRegionService.SaveRegionIfNotExistsAsync(_selectedRegionName);
-        _model.Region = regionDto;
+        try
+        {
+            var regionDto = await CrmRegionService.SaveRegionIfNotExistsAsync(_selectedRegionName);
+            _model.Region = regionDto;
 
-        var schoolDto = await CrmSchoolService.SaveSchoolIfNotExistsAsync(
-           selectedSchoolName,
-           address: "Not provided",
-           regionId: regionDto.Id
-       );
+            var schoolDto = await CrmSchoolService.SaveSchoolIfNotExistsAsync(
+                selectedSchoolName,
+                address: "Not provided",
+                regionId: regionDto.Id
+            );
 
-        _model.School = schoolDto;
+            _model.School = schoolDto;
+        }
+        catch (InvalidOperationException ex)
+        {
+            Snackbar.Add("Այս դպրոցն արդեն գրանցված է տվյալ մարզում։", Severity.Warning);
+
+            // Reset the school selection
+            _selectedSchoolName = string.Empty;
+            _model.School = new SchoolDTO();
+
+            // Optional: reset the _form validation
+             _form.ResetValidation();
+
+            // Optional: navigate user back to step 2 if needed
+            _step = 2;
+            StateHasChanged();
+        }
+
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Սխալ է առաջացել․ {ex.Message}", Severity.Error);
+        }
     }
+
 
     private async void OpenContactDialog()
     {

@@ -155,6 +155,11 @@ namespace Registeration.Services
             catch (DbUpdateException ex)
             {
                 Console.WriteLine($"❌ Database error saving registration: {ex.Message}");
+                if (ex.InnerException?.Message.Contains("duplicate") == true ||
+                    ex.InnerException?.Message.Contains("UNIQUE") == true)
+                {
+                    throw new InvalidOperationException("Դուք արդեն գրանցված եք։");
+                }
                 throw;
             }
             catch (Exception ex)

@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Registeration.Attributes;
 using Registeration.Enums;
 
 namespace Registeration.Models
 {
-    [Index(nameof(FullName), nameof(SocNumber), nameof(SchoolId), IsUnique = true)]
+    [Index(nameof(SocNumber), nameof(SchoolId), IsUnique = true)]
     public class OtherTeacher
     {
         [Key]
@@ -24,10 +25,12 @@ namespace Registeration.Models
         public School School { get; set; } = null!;
 
         [Required]
+        [ArmenianOnly]
         [StringLength(100)]
         public string FullName { get; set; } = string.Empty;
 
         [Required]
+        [ArmenianOnly]
         [StringLength(100)]
         public string TeachingSubject { get; set; } = string.Empty;
 

@@ -52,7 +52,6 @@ namespace Registeration.Controllers
                 var model = new OtherPupil
                 {
                     Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
-                    IsArmenianCitizen = dto.IsArmenianCitizen,
                     SchoolId = school.Id,
                     Grade = dto.Grade,
                     FullName = dto.FullName,
@@ -84,7 +83,6 @@ namespace Registeration.Controllers
             var dto = new OtherPupilDTO
             {
                 Id = pupil.Id,
-                IsArmenianCitizen = pupil.IsArmenianCitizen,
                 Region = new RegionDTO
                 {
                     Id = pupil.School.Region.Id,

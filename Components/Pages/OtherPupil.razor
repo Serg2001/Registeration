@@ -24,7 +24,6 @@
         background-repeat: no-repeat;
         overflow-x: hidden;
     }
-
     .blurred-bubbles {
         position: absolute;
         width: 100vw;
@@ -32,7 +31,6 @@
         overflow: hidden;
         z-index: -1;
     }
-
     .bubble {
         position: absolute;
         border-radius: 50%;
@@ -40,28 +38,9 @@
         filter: blur(90px);
         opacity: 0.7;
     }
-
-    .bubble1 {
-        top: 10%;
-        left: 5%;
-        width: 300px;
-        height: 300px;
-    }
-
-    .bubble2 {
-        top: 30%;
-        left: 60%;
-        width: 400px;
-        height: 400px;
-    }
-
-    .bubble3 {
-        bottom: 10%;
-        left: 30%;
-        width: 500px;
-        height: 500px;
-    }
-
+    .bubble1 { top: 10%; left: 5%; width: 300px; height: 300px; }
+    .bubble2 { top: 30%; left: 60%; width: 400px; height: 400px; }
+    .bubble3 { bottom: 10%; left: 30%; width: 500px; height: 500px; }
     .centered-container {
         display: flex;
         align-items: center;
@@ -69,7 +48,6 @@
         min-height: 100vh;
         padding: 2rem;
     }
-
     .form-box {
         background-color: rgba(255, 255, 255, 0.85);
         padding: 3rem;
@@ -79,7 +57,6 @@
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         backdrop-filter: blur(10px);
     }
-
     .form-title {
         font-size: 2rem;
         font-weight: bold;
@@ -87,7 +64,6 @@
         margin-bottom: 1.5rem;
         text-align: center;
     }
-
     .form-button {
         background-color: #6a1b9a;
         color: white;
@@ -106,25 +82,6 @@
         <MudForm @ref="_form" Model="_model">
             @if (_step == 1)
             {
-                <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">
-                    Նշեք՝ ՀՀ Բնակիչ եք, թե ոչ
-                </MudText>
-
-                <MudRadioGroup T="bool"
-                               @bind-SelectedValue="_model.IsArmenianCitizen"
-                               Required="true"
-                               RequiredError="Խնդրում ենք ընտրել։"
-                               Class="my-4">
-                    <MudRadio T="bool" Value="true" Label="Այո, ՀՀ Բնակիչ եմ։" />
-                    <MudRadio T="bool" Value="false" Label="Ոչ, ՀՀ Բնակիչ Չեմ։" />
-                </MudRadioGroup>
-
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" FullWidth="true">
-                    Հաջորդը
-                </MudButton>
-            }
-            else if (_step == 2)
-            {
                 <MudStack Spacing="3">
                     <MudAutocomplete T="string"
                                      Label="Մարզ"
@@ -142,15 +99,19 @@
                                      SearchFunc="@SearchSchools"
                                      Variant="Variant.Outlined"
                                      Required="true"
-                                     Disabled="@(_model.Region.Id == Guid.Empty)"
+                                     Disabled="@(_model.Region?.Id == Guid.Empty)"
                                      MaxItems="null" />
 
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" FullWidth="true">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="NextStep"
+                               Disabled="@(!_canProceed)"
+                               FullWidth="true">
                         Հաջորդը
                     </MudButton>
                 </MudStack>
             }
-            else if (_step == 3)
+            else if (_step == 2)
             {
                 <MudStack Spacing="3">
                     <MudSelect T="GradeLevel"
@@ -215,6 +176,7 @@
     private OtherPupilDTO _model = new() { Id = Guid.NewGuid() };
     private int _step = 1;
     private bool isAgreed;
+    private bool _canProceed = true;
 
     private string _selectedRegionName = string.Empty;
     private string _selectedSchoolName = string.Empty;
@@ -225,14 +187,13 @@
     private async Task NextStep()
     {
         await _form.Validate();
-
         if (!_form.IsValid)
         {
             Snackbar.Add("Խնդրում ենք լրացնել բոլոր դաշտերը։", Severity.Error);
             return;
         }
 
-        if (_step == 2)
+        if (_step == 1)
         {
             if (string.IsNullOrWhiteSpace(_selectedRegionName) || string.IsNullOrWhiteSpace(_selectedSchoolName))
             {
@@ -240,7 +201,12 @@
                 return;
             }
 
-            await OnSchoolChanged(_selectedSchoolName);
+            bool schoolCheckPassed = await OnSchoolChanged(_selectedSchoolName);
+            if (!schoolCheckPassed)
+            {
+                _step = 1;
+                return;
+            }
         }
 
         _step++;
@@ -250,7 +216,6 @@
     private async Task Submit()
     {
         await _form.Validate();
-
         if (!_form.IsValid)
         {
             Snackbar.Add("Խնդրում ենք լրացնել բոլոր դաշտերը։", Severity.Error);
@@ -264,14 +229,10 @@
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
-
-                if (result != null &&
-                    result.TryGetValue("id", out var idObj) &&
-                    Guid.TryParse(idObj?.ToString(), out Guid id))
+                if (result != null && result.TryGetValue("id", out var idObj) && Guid.TryParse(idObj?.ToString(), out Guid id))
                 {
-                    _model.Id = id; // ✅ ensure model ID is in sync with DB
+                    _model.Id = id;
                     FormStateService.OtherPupilFormModel = _model;
-
                     Snackbar.Add("Հաջողությամբ պահպանվեց։", Severity.Success);
                     Navigation.NavigateTo("/nextstep-otherpupil");
                 }
@@ -283,14 +244,11 @@
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-
-                // 🚨 Handle duplicate record error from backend
                 if (errorContent.Contains("Այս աշակերտն արդեն գրանցված է տվյալ դպրոցում"))
                 {
                     Snackbar.Add("Դուք արդեն գրանցված եք տվյալ դպրոցում։ Մուտքի տվյալները վերցրեք դպրոցից։", Severity.Warning);
                     return;
                 }
-
                 Snackbar.Add($"Սխալ է առաջացել․ {errorContent}", Severity.Error);
             }
         }
@@ -300,7 +258,6 @@
         }
     }
 
-
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
         if (_regionList.Count == 0)
@@ -309,8 +266,7 @@
             {
                 var client = HttpClientFactory.CreateClient("ExternalRegions");
                 var response = await client.GetFromJsonAsync<List<RegionDTO>>("api/Platform/GetAllRegions", token);
-                if (response != null)
-                    _regionList = response;
+                if (response != null) _regionList = response;
             }
             catch (Exception ex)
             {
@@ -326,7 +282,6 @@
     private async Task OnRegionChanged(string selectedName)
     {
         _selectedRegionName = selectedName;
-
         var selected = _regionList.FirstOrDefault(r => r.Name == selectedName);
         if (selected != null)
         {
@@ -349,45 +304,50 @@
             : _schoolList.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(s => s.Name);
     }
 
-    private async Task OnSchoolChanged(string selectedSchoolName)
+    private async Task<bool> OnSchoolChanged(string selectedSchoolName)
     {
-        _selectedSchoolName = selectedSchoolName;
-
         try
         {
+            _selectedSchoolName = selectedSchoolName;
             var regionDto = await CrmRegionService.SaveRegionIfNotExistsAsync(_selectedRegionName);
             _model.Region = regionDto;
 
-            var schoolDto = await CrmSchoolService.SaveSchoolIfNotExistsAsync(
-                selectedSchoolName,
-                address: "Not provided",
-                regionId: regionDto.Id
-            );
+            var selectedSchool = _schoolList.FirstOrDefault(s => s.Name == selectedSchoolName);
+            if (selectedSchool != null)
+            {
+                var existingSchool = await CrmSchoolService.GetSchoolByNameAsync(selectedSchoolName);
+                if (existingSchool != null)
+                {
+                    Snackbar.Add("Այս դպրոցն արդեն գրանցված է։ Խնդրում ենք ընտրել մեկ այլ դպրոց։", Severity.Warning);
+                    _selectedSchoolName = string.Empty;
+                    _model.School = new SchoolDTO();
+                    _form.ResetValidation();
+                    _canProceed = false;
+                    StateHasChanged();
+                    return false;
+                }
 
-            _model.School = schoolDto;
-        }
-        catch (InvalidOperationException ex)
-        {
-            Snackbar.Add("Այս դպրոցն արդեն գրանցված է տվյալ մարզում։", Severity.Warning);
+                _model.School = selectedSchool;
+                _canProceed = true;
+                return true;
+            }
 
-            // Reset the school selection
+            Snackbar.Add("Դպրոցը չի գտնվել։ Խնդրում ենք ընտրել դպրոց ցանկից։", Severity.Warning);
             _selectedSchoolName = string.Empty;
             _model.School = new SchoolDTO();
-
-            // Optional: reset the _form validation
-             _form.ResetValidation();
-
-            // Optional: navigate user back to step 2 if needed
-            _step = 2;
+            _form.ResetValidation();
+            _canProceed = false;
             StateHasChanged();
+            return false;
         }
-
         catch (Exception ex)
         {
             Snackbar.Add($"Սխալ է առաջացել․ {ex.Message}", Severity.Error);
+            _canProceed = false;
+            StateHasChanged();
+            return false;
         }
     }
-
 
     private async void OpenContactDialog()
     {

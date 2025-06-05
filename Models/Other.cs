@@ -1,8 +1,10 @@
 ﻿// Registeration/Models/Other.cs
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace Registeration.Models
 {
+    [Index(nameof(Email), IsUnique = true)]
     public class Other
     {
         [Key]

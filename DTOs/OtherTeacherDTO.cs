@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Registeration.Attributes;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Registeration.DTOs
@@ -18,10 +19,12 @@ namespace Registeration.DTOs
         public SchoolDTO? School { get; set; }
 
         [Required(ErrorMessage = "Անուն Ազգանուն դաշտը պարտադիր է։")]
+        [ArmenianOnly]
         [StringLength(100)]
         public string FullName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Դասավանդվող առարկան պարտադիր է։")]
+        [ArmenianOnly]
         [StringLength(100)]
         public string TeachingSubject { get; set; } = string.Empty;
 

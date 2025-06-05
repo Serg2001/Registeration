@@ -1,18 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Registeration.Attributes;
 using Registeration.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Registeration.Models
 {
-    [Index(nameof(FullName), nameof(SocNumber), nameof(SchoolId), IsUnique = true)]
+    [Index(nameof(Grade), nameof(SocNumber), nameof(SchoolId), IsUnique = true)]
     public class OtherPupil
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Required]
-        public bool IsArmenianCitizen { get; set; }
 
         [Required]
         public Guid SchoolId { get; set; }
@@ -24,6 +23,7 @@ namespace Registeration.Models
         public GradeLevel Grade { get; set; }
 
         [Required]
+        [ArmenianOnly]
         [StringLength(100)]
         public string FullName { get; set; } = string.Empty;
 

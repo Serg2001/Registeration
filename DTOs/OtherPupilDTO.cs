@@ -1,7 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Registeration.Enums;
 using Registeration.Models;
+using Registeration.Services;
 using System.ComponentModel.DataAnnotations;
+using static MudBlazor.Colors;
+using System.Text.RegularExpressions;
+using Registeration.Attributes;
 
 namespace Registeration.DTOs
 {
@@ -10,8 +14,6 @@ namespace Registeration.DTOs
         [Required]
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Required(ErrorMessage = "Citizen status is required.")]
-        public bool IsArmenianCitizen { get; set; }
 
         [Required(ErrorMessage = "Region is required.")]
         public RegionDTO Region { get; set; } = new RegionDTO();
@@ -23,6 +25,7 @@ namespace Registeration.DTOs
         public GradeLevel Grade { get; set; }
 
         [Required(ErrorMessage = "Full name is required.")]
+        [ArmenianOnly]
         [StringLength(100, ErrorMessage = "Full name can't exceed 100 characters.")]
         public string FullName { get; set; } = string.Empty;
 

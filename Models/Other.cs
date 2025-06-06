@@ -16,10 +16,14 @@ namespace Registeration.Models
         [Required]
         public string City { get; set; } = string.Empty;
 
-        [Required]
+        public string PersonType { get; set; } = string.Empty; // New field for Person Type
+
+        public string OrganizationName { get; set; } = string.Empty; // New field for Organization Name
+
+        public string FieldOfActivity { get; set; } = string.Empty; // New field for Field of Activity
+
         public string NameSurname { get; set; } = string.Empty;
 
-        [Required]
         public string Profession { get; set; } = string.Empty;
 
         public string CustomProfession { get; set; } = string.Empty;

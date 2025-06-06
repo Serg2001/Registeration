@@ -106,7 +106,6 @@
     <div class="form-box">
         <div class="form-title">Գրանցում</div>
 
-        @* Keep your step-by-step forms unchanged *@
         @if (_state == 1)
         {
             <MudForm @ref="_form" Model="_formModel">
@@ -160,7 +159,51 @@
                 </MudStack>
             </MudForm>
         }
-        else if (_state == 2)
+        else if (_state == 2 && _formModel.Country != "Armenia")
+        {
+            <MudForm @ref="_form" Model="_formModel">
+                <MudStack Spacing="2">
+                    <MudAutocomplete T="string" 
+                                     Label="Անձի Տեսակ" 
+                                     Value="@_formModel.PersonType"
+                                     ValueChanged="@OnPersonTypeChanged"
+                                     SearchFunc="@SearchPersonTypes"
+                                     Variant="Variant.Outlined"
+                                     Required="true"
+                                     For="@(() => _formModel.PersonType)"
+                                     Dense="true"
+                                     Clearable="true"
+                                     Placeholder="Select person type..."
+                                     ResetValueOnEmptyText="true"
+                                     DebounceInterval="500"
+                                     MaxItems="null" />
+
+                    @if (_formModel.PersonType == "Իրավաբանական Անձ")
+                    {
+                        <MudTextField T="string" 
+                                      Label="Կազմակերպության Անվանում" 
+                                      @bind-Value="_formModel.OrganizationName"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.OrganizationName)" />
+
+                        <MudTextField T="string" 
+                                      Label="Գործունեության Ոլորտ" 
+                                      @bind-Value="_formModel.FieldOfActivity"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.FieldOfActivity)" />
+                    }
+
+                    <MudButton Variant="Variant.Filled" 
+                               Class="mt-4 form-button"
+                               OnClick="@HandleNextInState2">
+                        Հաջորդը
+                    </MudButton>
+                </MudStack>
+            </MudForm>
+        }
+        else if (_state == 2 && _formModel.Country == "Armenia" || _state == 3 && _formModel.Country != "Armenia")
         {
             <MudForm @ref="_form" Model="_formModel">
                 <MudStack Spacing="2">
@@ -198,13 +241,13 @@
 
                     <MudButton Variant="Variant.Filled" 
                                Class="mt-4 form-button"
-                               OnClick="@HandleNextInState2">
+                               OnClick="@HandleNextInState3">
                         Հաջորդը
                     </MudButton>
                 </MudStack>
             </MudForm>
         }
-        else if (_state == 3)
+        else if (_state == 3 && _formModel.Country == "Armenia" || _state == 4 && _formModel.Country != "Armenia")
         {
             <MudForm @ref="_form" Model="_formModel">
                 <MudStack Spacing="2">
@@ -290,13 +333,13 @@
 
                     <MudButton Variant="Variant.Filled"
                                Class="mt-4 form-button"
-                               OnClick="@HandleNextInState3">
+                               OnClick="@HandleNextInState4">
                         Հաջորդը
                     </MudButton>
                 </MudStack>
             </MudForm>
         }
-        else if (_state == 4)
+        else if (_state == 4 && _formModel.Country == "Armenia" || _state == 5 && _formModel.Country != "Armenia")
         {
             <MudForm @ref="_form" Model="_formModel">
                 <MudStack Spacing="2">
@@ -324,7 +367,7 @@
 
                     <MudButton Variant="Variant.Filled"
                                Class="mt-4 form-button"
-                               OnClick="@HandleNextInState4">
+                               OnClick="@HandleNextInState5">
                         Հաստատել
                     </MudButton>
                 </MudStack>
@@ -334,7 +377,7 @@
 </div>
 
 @code {
-    private int _state = 1; // 1: Select country/city, 2: Enter name/profession, 3: Enter age and additional parameters, 4: Enter email/phone/purpose
+    private int _state = 1; // Updated state progression
     private MudForm _form = new();
     private OtherDTO _formModel = new();
     private List<Country> _countries = new();
@@ -439,6 +482,16 @@
                      .Select(c => c.Name);
     }
 
+    private async Task<IEnumerable<string>> SearchPersonTypes(string value, CancellationToken cancellationToken)
+    {
+        var personTypes = new List<string> { "Ֆիզիկական Անձ", "Իրավաբանական Անձ" };
+        await Task.Delay(100, cancellationToken);
+
+        return string.IsNullOrWhiteSpace(value)
+            ? personTypes
+            : personTypes.Where(p => p.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
     private async Task<IEnumerable<string>> SearchProfessions(string value, CancellationToken cancellationToken)
     {
         var professions = new List<string> { "Աշակերտ", "Ուսուցիչ", "Ուսանող", "Դասախոս", "Այլ" };
@@ -477,6 +530,17 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task OnPersonTypeChanged(string value)
+    {
+        _formModel.PersonType = value;
+        if (_formModel.PersonType != "Իրավաբանական Անձ")
+        {
+            _formModel.OrganizationName = string.Empty;
+            _formModel.FieldOfActivity = string.Empty;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
     private async Task OnProfessionChanged(string value)
     {
         _formModel.Profession = value;
@@ -495,7 +559,7 @@
             Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
             return;
         }
-        _state = 2;
+        _state = _formModel.Country == "Armenia" ? 2 : 2; // Both go to state 2, but state 2 handles person type for non-Armenia
         await InvokeAsync(StateHasChanged);
     }
 
@@ -508,7 +572,44 @@
             return;
         }
 
-        // Additional manual validation for Armenian fields
+        var validationContext = new ValidationContext(_formModel);
+        var validationResults = new List<ValidationResult>();
+        bool isValid = Validator.TryValidateObject(_formModel, validationContext, validationResults, validateAllProperties: true);
+
+        var personTypeError = validationResults.FirstOrDefault(e => e.MemberNames.Contains(nameof(_formModel.PersonType)));
+        if (personTypeError != null)
+        {
+            Snackbar.Add(personTypeError.ErrorMessage, Severity.Error);
+            return;
+        }
+
+        var orgNameError = validationResults.FirstOrDefault(e => e.MemberNames.Contains(nameof(_formModel.OrganizationName)));
+        if (orgNameError != null)
+        {
+            Snackbar.Add(orgNameError.ErrorMessage, Severity.Error);
+            return;
+        }
+
+        var fieldOfActivityError = validationResults.FirstOrDefault(e => e.MemberNames.Contains(nameof(_formModel.FieldOfActivity)));
+        if (fieldOfActivityError != null)
+        {
+            Snackbar.Add(fieldOfActivityError.ErrorMessage, Severity.Error);
+            return;
+        }
+
+        _state = 5; // Proceed to name/profession state
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleNextInState3()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
+            return;
+        }
+
         var validationContext = new ValidationContext(_formModel);
         var validationResults = new List<ValidationResult>();
         bool isValid = Validator.TryValidateObject(_formModel, validationContext, validationResults, validateAllProperties: true);
@@ -527,11 +628,11 @@
             return;
         }
 
-        _state = 3;
+        _state = 4; // Proceed to age/additional parameters state
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task HandleNextInState3()
+    private async Task HandleNextInState4()
     {
         await _form.Validate();
         if (!_form.IsValid)
@@ -544,7 +645,6 @@
         var validationResults = new List<ValidationResult>();
         bool isValid = Validator.TryValidateObject(_formModel, validationContext, validationResults, validateAllProperties: true);
 
-        // Check relevant fields
         foreach (var field in new[] { nameof(_formModel.TeachingPlace), nameof(_formModel.TeachingSubject), nameof(_formModel.StudyPlace) })
         {
             var fieldError = validationResults.FirstOrDefault(e => e.MemberNames.Contains(field));
@@ -555,11 +655,11 @@
             }
         }
 
-        _state = 4;
+        _state = 5; // Proceed to email/phone/purpose state
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task HandleNextInState4()
+    private async Task HandleNextInState5()
     {
         await _form.Validate();
         if (!_form.IsValid)
@@ -606,7 +706,6 @@
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
 
-                // Check for specific error text
                 if (errorContent.Contains("Դուք արդեն գրանցված եք:"))
                 {
                     Snackbar.Add("Դուք արդեն գրանցված եք։ Ստուգեք ձեր մուտքի տվյալները։", Severity.Warning);
@@ -621,5 +720,4 @@
             Snackbar.Add($"Ճանապարհը ձախողվեց․ {ex.Message}", Severity.Error);
         }
     }
-
 }

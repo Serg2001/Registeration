@@ -15,7 +15,6 @@ namespace Registeration.Services
 
         public async Task SaveAsync(Registration registration)
         {
-            registration.isRegistered = false;
             _context.Registrations.Add(registration);
             try
             {
@@ -64,7 +63,6 @@ namespace Registeration.Services
 
             registration.Password = password;
             registration.AccessCode = accessCode;
-            registration.isRegistered = true;
 
             await _context.SaveChangesAsync();
             return true;

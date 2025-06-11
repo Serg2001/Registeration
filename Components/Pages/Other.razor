@@ -111,7 +111,7 @@
             <MudForm @ref="_form" Model="_formModel">
                 <MudStack Spacing="2">
                     <MudAutocomplete T="string" 
-                                     Label="Select Country" 
+                                     Label="Ընտրեք Երկիրը" 
                                      Value="@_formModel.Country"
                                      ValueChanged="@OnCountryChanged"
                                      SearchFunc="@SearchCountries"
@@ -120,7 +120,7 @@
                                      For="@(() => _formModel.Country)"
                                      Dense="true"
                                      Clearable="true"
-                                     Placeholder="Type to search countries..."
+                                     Placeholder="Ընտրեք"
                                      ResetValueOnEmptyText="true"
                                      DebounceInterval="500"
                                      MaxItems="null"
@@ -131,7 +131,7 @@
                     </MudAutocomplete>
 
                     <MudAutocomplete T="string" 
-                                     Label="Select City" 
+                                     Label="Ընտրեք Բնակավայրը" 
                                      Value="@_formModel.City"
                                      ValueChanged="@OnCityChanged"
                                      SearchFunc="@SearchCities"
@@ -140,7 +140,7 @@
                                      For="@(() => _formModel.City)"
                                      Dense="true"
                                      Clearable="true"
-                                     Placeholder="Type to search cities..."
+                                     Placeholder="Ընտրեք"
                                      ResetValueOnEmptyText="true"
                                      DebounceInterval="500"
                                      MaxItems="null"
@@ -173,7 +173,7 @@
                                      For="@(() => _formModel.PersonType)"
                                      Dense="true"
                                      Clearable="true"
-                                     Placeholder="Select person type..."
+                                     Placeholder="Ընտրեք"
                                      ResetValueOnEmptyText="true"
                                      DebounceInterval="500"
                                      MaxItems="null" />
@@ -597,7 +597,7 @@
             return;
         }
 
-        _state = 5; // Proceed to name/profession state
+        _state = 3; // Proceed to name/profession state
         await InvokeAsync(StateHasChanged);
     }
 

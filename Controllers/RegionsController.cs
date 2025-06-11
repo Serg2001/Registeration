@@ -52,7 +52,8 @@ namespace Registeration.Controllers
                     Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
                     SchoolId = school.Id,
                     Address = dto.Address,
-                    FullName = dto.FullName,
+                    DirectorName = dto.DirectorName,
+                    DirectorSurName = dto.DirectorSurName,
                     Email = dto.Email
                 };
 
@@ -86,7 +87,8 @@ namespace Registeration.Controllers
             {
                 Id = registration.Id,
                 Address = registration.Address,
-                FullName = registration.FullName,
+                DirectorName = registration.DirectorName,
+                DirectorSurName = registration.DirectorSurName,
                 Email = registration.Email,
                 Login = registration.Login,
                 Password = registration.Password,
@@ -131,10 +133,29 @@ namespace Registeration.Controllers
             registration.Login = registration.Email;
             registration.Password = dto.Password;
             registration.AccessCode = dto.AccessCode;
-            registration.isRegistered = dto.isRegistered;
 
             await _context.SaveChangesAsync();
             return Ok();
+        }
+
+        
+        //Updating IsRegistered = true
+        [HttpPut("school/{id}")]
+        public async Task<IActionResult> UpdateSchool(Guid id, [FromBody] SchoolDTO schoolDto)
+        {
+            var school = await _context.Schools.FindAsync(id);
+            if (school == null)
+                return NotFound();
+
+            // Update properties
+            school.Name = schoolDto.Name;
+            school.Address = schoolDto.Address;
+            school.RegionId = schoolDto.RegionId;
+            school.IsRegistered = schoolDto.IsRegistered;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

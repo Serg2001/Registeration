@@ -142,10 +142,17 @@
                                  Disabled="@string.IsNullOrWhiteSpace(_selectedRegionId)"
                                  MaxItems="null" />
 
-                <!-- Full Name -->
+                <!-- Director's' Name -->
                 <MudTextField T="string"
-                              Label="Անուն / Ազգանուն"
-                              @bind-Value="_model.FullName"
+                              Label="Տնօրենի Անուն"
+                              @bind-Value="_model.DirectorName"
+                              Variant="Variant.Outlined"
+                              Required="true" />
+
+                <!-- Director's' SurName -->
+                <MudTextField T="string"
+                              Label="Տնօրենի Ազգանուն"
+                              @bind-Value="_model.DirectorSurName"
                               Variant="Variant.Outlined"
                               Required="true" />
 
@@ -332,7 +339,10 @@
                         if (errorsElement.TryGetProperty("FullName", out var fullNameErrors) && fullNameErrors.GetArrayLength() > 0)
                         {
                             var errorMessage = fullNameErrors[0].GetString();
-                            Snackbar.Add(errorMessage, Severity.Error);
+                            if (!string.IsNullOrEmpty(errorMessage) && !errorMessage.Contains("[ArmenianOnly]"))
+                            {
+                                Snackbar.Add(errorMessage, Severity.Error);
+                            }
                         }
                         else
                         {
@@ -348,6 +358,7 @@
                 {
                     Snackbar.Add("Սխալ:", Severity.Error);
                 }
+
             }
         }
         catch (Exception ex)

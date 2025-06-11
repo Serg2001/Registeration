@@ -24,7 +24,11 @@ namespace Registeration.Models
 
         [Required]
         [StringLength(100)]
-        public string FullName { get; set; } = string.Empty;
+        public string DirectorName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(100)]
+        public string DirectorSurName { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]

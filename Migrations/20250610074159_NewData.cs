@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Registeration.Migrations
 {
     /// <inheritdoc />
-    public partial class MigrationName : Migration
+    public partial class NewData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -31,11 +31,14 @@ namespace Registeration.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Country = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PersonType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OrganizationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FieldOfActivity = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NameSurname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Profession = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CustomProfession = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Age = table.Column<int>(type: "int", nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeachingPlace = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TeachingSubject = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -87,7 +90,8 @@ namespace Registeration.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    RegionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    RegionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsRegistered = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -104,11 +108,10 @@ namespace Registeration.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsArmenianCitizen = table.Column<bool>(type: "bit", nullable: false),
                     SchoolId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Grade = table.Column<int>(type: "int", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    SocNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SocNumber = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ParentsEmail = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Login = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Password = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
@@ -133,7 +136,7 @@ namespace Registeration.Migrations
                     SchoolId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     TeachingSubject = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    SocNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SocNumber = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Login = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     Password = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
@@ -161,8 +164,10 @@ namespace Registeration.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SchoolId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    DirectorName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    DirectorSurName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    isRegistered = table.Column<bool>(type: "bit", nullable: false),
                     Login = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Password = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     AccessCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false)
@@ -178,9 +183,21 @@ namespace Registeration.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_OtherPupil_Grade_SocNumber_SchoolId",
+                table: "OtherPupil",
+                columns: new[] { "Grade", "SocNumber", "SchoolId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OtherPupil_SchoolId",
                 table: "OtherPupil",
                 column: "SchoolId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Others_Email",
+                table: "Others",
+                column: "Email",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OtherTeacher_RegionId",
@@ -191,6 +208,18 @@ namespace Registeration.Migrations
                 name: "IX_OtherTeacher_SchoolId",
                 table: "OtherTeacher",
                 column: "SchoolId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OtherTeacher_SocNumber_SchoolId",
+                table: "OtherTeacher",
+                columns: new[] { "SocNumber", "SchoolId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Registrations_Email",
+                table: "Registrations",
+                column: "Email",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Registrations_SchoolId",

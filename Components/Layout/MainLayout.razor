@@ -1,5 +1,4 @@
-﻿Tiko DSHH, [5/30/2025 2:54 PM]
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
 @implements IDisposable
 @inject NavigationManager NavigationManager
@@ -177,49 +176,10 @@
         </div>
     </MudAppBar>
 
-    Tiko DSHH, [5/30/2025 2:54 PM]
     <MudMainContent>
         <div class="page">
             <main>
                 <article class="content px-4">
-                    @if (!_navigating)
-                    {
-                        <div class="main-button-container">
-                            <MudButton Variant="Variant.Filled"
-                                       Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
-                                       OnClick="@(() => NavigateToPage("/counter"))">
-                                Դպրոց
-                            </MudButton>
-
-                            <MudButton Variant="Variant.Filled"
-                                       Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
-                                       OnClick="@ToggleOtherMenu">
-                                Այլ
-                            </MudButton>
-                        </div>
-
-                        @if (_showOtherMenu)
-                        {
-                            <div class="sub-button-container">
-                                <MudButton Variant="Variant.Filled"
-                                           Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
-                                           OnClick="@(() => NavigateToPage("/otherpupil"))">
-                                    Աշակերտ
-                                </MudButton>
-                                <MudButton Variant="Variant.Filled"
-                                           Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
-                                           OnClick="@(() => NavigateToPage("/otherteacher"))">
-                                    Ուսուցիչ
-                                </MudButton>
-                                <MudButton Variant="Variant.Filled"
-                                           Style="background-color: white; color: rebeccapurple; width: 200px; height: 40px;"
-                                           OnClick="@(() => NavigateToPage("/other"))">
-                                    Այլ Օգտատեր
-                                </MudButton>
-                            </div>
-                        }
-                    }
-
                     @Body
                 </article>
             </main>
@@ -235,7 +195,6 @@
 
 @code {
     private string? currentUrl;
-    private bool _showOtherMenu = false;
     private bool _navigating = false;
 
     protected override void OnInitialized()
@@ -249,18 +208,6 @@
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         _navigating = false;
         StateHasChanged();
-    }
-
-    private void ToggleOtherMenu()
-    {
-        _showOtherMenu = !_showOtherMenu;
-    }
-
-    private void NavigateToPage(string route)
-    {
-        _navigating = true;
-        _showOtherMenu = false;
-        NavigationManager.NavigateTo(route);
     }
 
     public void Dispose()

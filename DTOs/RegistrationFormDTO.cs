@@ -20,9 +20,13 @@ namespace Registeration.DTOs
         [Required(ErrorMessage = "Հասցեն պարտադիր է")]
         public string Address { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Անուն / Ազգանունը պարտադիր է")]
+        [Required(ErrorMessage = "Անունը պարտադիր է")]
         [ArmenianOnly]
-        public string FullName { get; set; } = string.Empty;
+        public string DirectorName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Անունը պարտադիր է")]
+        [ArmenianOnly]
+        public string DirectorSurName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Էլ․ հասցեն պարտադիր է")]
         [EmailAddress(ErrorMessage = "Սխալ էլ․ հասցեի ձևաչափ")]

@@ -21,5 +21,8 @@ namespace Registeration.Models
 
         [ForeignKey(nameof(RegionId))]
         public Region Region { get; set; } = null!;
+
+        [Required]
+        public bool IsRegistered { get; set; } = false;
     }
 }

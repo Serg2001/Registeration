@@ -103,7 +103,8 @@
 
             <MudTextField T="string" Label="Դպրոց" @bind-Value="_model.School.Name" Variant="Variant.Outlined" Disabled="true" />
             <MudTextField T="string" Label="Հասցե" @bind-Value="_model.Address" Variant="Variant.Outlined" Disabled="true" />
-            <MudTextField T="string" Label="Անուն / Ազգանուն" @bind-Value="_model.FullName" Variant="Variant.Outlined" Disabled="true" />
+            <MudTextField T="string" Label="Տնօրենի Անուն" @bind-Value="_model.DirectorName" Variant="Variant.Outlined" Disabled="true" />
+            <MudTextField T="string" Label="Տնօրենի Ազգանուն" @bind-Value="_model.DirectorSurName" Variant="Variant.Outlined" Disabled="true" />
             <MudTextField T="string" Label="Էլ․ Հասցե" @bind-Value="_model.Email" Variant="Variant.Outlined" Disabled="true" />
 
             <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
@@ -169,8 +170,7 @@
             var confirmData = new ConfirmCredentialsDTO
                 {
                     Password = password,
-                    AccessCode = accessCode,
-                    isRegistered = true // Mark as registered
+                    AccessCode = accessCode
                 };
 
             // 3️⃣ Update credentials
@@ -181,21 +181,30 @@
                 return;
             }
 
-            // 4️⃣ Send email
+            // 4️⃣ Update school's registration status
+            _model.School.IsRegistered = true;
+            var updateSchoolResponse = await HttpClient.PutAsJsonAsync($"api/regions/school/{_model.School.Id}", _model.School);
+            if (!updateSchoolResponse.IsSuccessStatusCode)
+            {
+                Console.WriteLine("❌ Failed to update school status.");
+                return;
+            }
+
+            // 5️⃣ Send email
             string emailBody = $@"
-        <h3>Բարև Ձեզ, {_model.FullName}</h3>
-        <p>Ձեր գրանցումն հաստատվել է։</p>
-        <p><b>Մուտքի տվյալներ՝</b></p>
-        <ul>
-            <li><b>Մուտքանուն:</b> {_model.Email}</li>
-            <li><b>Գաղտնաբառ:</b> {password}</li>
-            <li><b>Մուտքի կոդ:</b> {accessCode}</li>
-        </ul>";
+            <h3>Բարև Ձեզ, {_model.DirectorName}{_model.DirectorSurName}</h3>
+            <p>Ձեր գրանցումն հաստատվել է։</p>
+            <p><b>Մուտքի տվյալներ՝</b></p>
+            <ul>
+                <li><b>Մուտքանուն:</b> {_model.Email}</li>
+                <li><b>Գաղտնաբառ:</b> {password}</li>
+                <li><b>Մուտքի կոդ:</b> {accessCode}</li>
+            </ul>";
 
             await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
             Console.WriteLine("📧 Email sent.");
 
-            // 5️⃣ Navigate to success page
+            // 6️⃣ Navigate to success page
             Navigation.NavigateTo("/success");
         }
         catch (Exception ex)

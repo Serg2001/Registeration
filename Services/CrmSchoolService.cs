@@ -38,7 +38,7 @@ namespace Registeration.Services
             }
         }
 
-        // In CrmSchoolService.cs
+        // WITHOUT ID
         public async Task<SchoolDTO> SaveSchoolIfNotExistsAsync(string name, string address, Guid regionId)
         {
             var existing = await _context.Schools
@@ -50,7 +50,8 @@ namespace Registeration.Services
                     Id = existing.Id,
                     Name = existing.Name,
                     Address = existing.Address,
-                    RegionId = existing.RegionId
+                    RegionId = existing.RegionId,
+                    IsRegistered = existing.IsRegistered
                 };
 
             var school = new School
@@ -73,6 +74,7 @@ namespace Registeration.Services
         }
 
 
+        //School Save function with SchoolId
         public async Task<SchoolDTO> SaveSchoolIfNotExistsAsync(Guid schoolId, string name, string address, Guid regionId)
         {
             var existing = await _context.Schools.FirstOrDefaultAsync(s => s.Name == name && s.RegionId == regionId);
@@ -82,7 +84,8 @@ namespace Registeration.Services
                     Id = existing.Id,
                     Name = existing.Name,
                     Address = existing.Address,
-                    RegionId = existing.RegionId
+                    RegionId = existing.RegionId,
+                    IsRegistered = existing.IsRegistered
                 };
 
             var school = new School
@@ -103,7 +106,7 @@ namespace Registeration.Services
         {
             var existing = await _context.Schools.FirstOrDefaultAsync(s => s.Name == name);
             return existing != null
-                ? new SchoolDTO { Id = existing.Id, Name = existing.Name, Address = existing.Address, RegionId = existing.RegionId }
+                ? new SchoolDTO { Id = existing.Id, Name = existing.Name, Address = existing.Address, RegionId = existing.RegionId, IsRegistered = existing.IsRegistered }
                 : null;
         }
 

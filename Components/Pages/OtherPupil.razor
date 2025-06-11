@@ -286,7 +286,15 @@
         if (selected != null)
         {
             _model.Region = new RegionDTO { Id = selected.Id, Name = selected.Name };
+
+            // Fetch schools
             _schoolList = await CrmSchoolService.GetSchoolsByRegionAsync(selected.Id);
+
+            // Remove duplicates by name
+            _schoolList = _schoolList
+                .GroupBy(s => s.Name)
+                .Select(g => g.First())
+                .ToList();
         }
         else
         {
@@ -296,6 +304,7 @@
         _model.School = new SchoolDTO();
         _selectedSchoolName = string.Empty;
     }
+
 
     private async Task<IEnumerable<string>> SearchSchools(string value, CancellationToken token)
     {

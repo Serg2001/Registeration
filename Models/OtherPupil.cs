@@ -25,10 +25,15 @@ namespace Registeration.Models
         [Required]
         [ArmenianOnly]
         [StringLength(100)]
-        public string FullName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+
 
         [Required]
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Social number must be exactly 10 digits.")]
+        [ArmenianOnly]
+        [StringLength(100)]
+        public string SurName { get; set; } = string.Empty;
+
+        [Required]
         public string SocNumber { get; set; } = string.Empty;
 
         [Required]

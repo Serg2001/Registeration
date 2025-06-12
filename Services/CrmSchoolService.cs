@@ -6,6 +6,8 @@ using Registeration.DTOs;
 using Registeration.Data;
 using Microsoft.EntityFrameworkCore;
 using Registeration.Models;
+using System.Text.Json.Serialization;
+
 
 namespace Registeration.Services
 {
@@ -13,6 +15,13 @@ namespace Registeration.Services
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly AppDbContext _context;
+
+        public class SchoolWrapper
+        {
+            [JsonPropertyName("$values")]
+            public List<SchoolDTO> Values { get; set; } = new();
+        }
+
 
         public CrmSchoolService(IHttpClientFactory httpClientFactory, AppDbContext context)
         {
@@ -26,10 +35,10 @@ namespace Registeration.Services
 
             try
             {
-                var schools = await client.GetFromJsonAsync<List<SchoolDTO>>(
+                var wrapper = await client.GetFromJsonAsync<SchoolWrapper>(
                     $"api/Platform/GetSchoolsByRegion?regionid={regionId}");
 
-                return schools ?? new List<SchoolDTO>();
+                return wrapper?.Values ?? new List<SchoolDTO>();
             }
             catch (Exception ex)
             {
@@ -37,6 +46,7 @@ namespace Registeration.Services
                 return new List<SchoolDTO>();
             }
         }
+
 
         // WITHOUT ID
         public async Task<SchoolDTO> SaveSchoolIfNotExistsAsync(string name, string address, Guid regionId)

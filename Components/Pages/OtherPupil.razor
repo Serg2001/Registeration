@@ -3,6 +3,7 @@
 @using Registeration.Enums
 @using Registeration.Services
 @using MudBlazor
+@using System.Text.Json.Serialization
 
 @inject ISnackbar Snackbar
 @inject IHttpClientFactory HttpClientFactory
@@ -24,6 +25,7 @@
         background-repeat: no-repeat;
         overflow-x: hidden;
     }
+
     .blurred-bubbles {
         position: absolute;
         width: 100vw;
@@ -31,6 +33,7 @@
         overflow: hidden;
         z-index: -1;
     }
+
     .bubble {
         position: absolute;
         border-radius: 50%;
@@ -38,9 +41,28 @@
         filter: blur(90px);
         opacity: 0.7;
     }
-    .bubble1 { top: 10%; left: 5%; width: 300px; height: 300px; }
-    .bubble2 { top: 30%; left: 60%; width: 400px; height: 400px; }
-    .bubble3 { bottom: 10%; left: 30%; width: 500px; height: 500px; }
+
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
+
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
+
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
+
     .centered-container {
         display: flex;
         align-items: center;
@@ -48,6 +70,7 @@
         min-height: 100vh;
         padding: 2rem;
     }
+
     .form-box {
         background-color: rgba(255, 255, 255, 0.85);
         padding: 3rem;
@@ -57,6 +80,7 @@
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         backdrop-filter: blur(10px);
     }
+
     .form-title {
         font-size: 2rem;
         font-weight: bold;
@@ -64,6 +88,7 @@
         margin-bottom: 1.5rem;
         text-align: center;
     }
+
     .form-button {
         background-color: #6a1b9a;
         color: white;
@@ -128,14 +153,21 @@
                     </MudSelect>
 
                     <MudTextField T="string"
-                                  Label="Անուն Ազգանուն"
-                                  @bind-Value="_model.FullName"
+                                  Label="Անուն"
+                                  @bind-Value="_model.Name"
                                   Variant="Variant.Outlined"
                                   Required="true"
-                                  For="@(() => _model.FullName)" />
+                                  For="@(() => _model.Name)" />
 
                     <MudTextField T="string"
-                                  Label="Սոցիալական համար"
+                                  Label="Ազգանուն"
+                                  @bind-Value="_model.SurName"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  For="@(() => _model.SurName)" />
+
+                    <MudTextField T="string"
+                                  Label="ՀԾՀ"
                                   @bind-Value="_model.SocNumber"
                                   Variant="Variant.Outlined"
                                   Required="true"
@@ -265,8 +297,10 @@
             try
             {
                 var client = HttpClientFactory.CreateClient("ExternalRegions");
-                var response = await client.GetFromJsonAsync<List<RegionDTO>>("api/Platform/GetAllRegions", token);
-                if (response != null) _regionList = response;
+                var wrapper = await client.GetFromJsonAsync<RegionWrapper>("api/Platform/GetAllRegions", token);
+
+                if (wrapper != null)
+                    _regionList = wrapper.Values;
             }
             catch (Exception ex)
             {
@@ -279,10 +313,13 @@
             : _regionList.Where(r => r.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(r => r.Name);
     }
 
+
     private async Task OnRegionChanged(string selectedName)
     {
         _selectedRegionName = selectedName;
-        var selected = _regionList.FirstOrDefault(r => r.Name == selectedName);
+        var selected = _regionList
+    .FirstOrDefault(r => string.Equals(r.Name?.Trim(), selectedName?.Trim(), StringComparison.OrdinalIgnoreCase));
+
         if (selected != null)
         {
             _model.Region = new RegionDTO { Id = selected.Id, Name = selected.Name };
@@ -303,6 +340,10 @@
 
         _model.School = new SchoolDTO();
         _selectedSchoolName = string.Empty;
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.WriteLine($"Selected region name: {selectedName}");
+        Console.WriteLine($"Mapped region ID: {selected?.Id}");
+
     }
 
 
@@ -325,7 +366,7 @@
             if (selectedSchool != null)
             {
                 var existingSchool = await CrmSchoolService.GetSchoolByNameAsync(selectedSchoolName);
-                if (existingSchool != null)
+                if (existingSchool != null && existingSchool.IsRegistered)
                 {
                     Snackbar.Add("Այս դպրոցն արդեն գրանցված է։ Խնդրում ենք ընտրել մեկ այլ դպրոց։", Severity.Warning);
                     _selectedSchoolName = string.Empty;
@@ -382,5 +423,11 @@
             GradeLevel.Grade12 => "XII",
             _ => grade.ToString()
         };
+    }
+
+    private class RegionWrapper
+    {
+        [JsonPropertyName("$values")]
+        public List<RegionDTO> Values { get; set; } = new();
     }
 }

@@ -57,10 +57,10 @@ namespace Registeration.Services
         {
             var pupil = await _context.OtherPupil
                 .Where(p => p.Id == id)
-                .Select(p => new { p.FullName, p.SocNumber })
+                .Select(p => new { p.Name, p.SurName, p.SocNumber })
                 .FirstOrDefaultAsync();
 
-            return pupil == null ? null : $"{pupil.FullName}{pupil.SocNumber}";
+            return pupil == null ? null : $"{pupil.Name}{pupil.SurName}{pupil.SocNumber}";
         }
 
     }

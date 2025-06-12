@@ -15,26 +15,30 @@ namespace Registeration.DTOs
         public Guid Id { get; set; } = Guid.NewGuid();
 
 
-        [Required(ErrorMessage = "Region is required.")]
+        [Required(ErrorMessage = "Մարզը Պարտադիր է։")]
         public RegionDTO Region { get; set; } = new RegionDTO();
 
-        [Required(ErrorMessage = "School is required.")]
+        [Required(ErrorMessage = "Դպրոցը Պարտադիր է։")]
         public SchoolDTO School { get; set; } = new SchoolDTO();
 
-        [Required(ErrorMessage = "Grade is required.")]
+        [Required(ErrorMessage = "Դասարանը Պարտադիր է։")]
         public GradeLevel Grade { get; set; }
 
-        [Required(ErrorMessage = "Full name is required.")]
+        [Required(ErrorMessage = "Անունը Պարտադիր է։")]
         [ArmenianOnly]
         [StringLength(100, ErrorMessage = "Full name can't exceed 100 characters.")]
-        public string FullName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Social number is required.")]
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Social number must be exactly 10 digits.")]
+        [Required(ErrorMessage = "Ազգանունը Պարտադիր է։")]
+        [ArmenianOnly]
+        [StringLength(100, ErrorMessage = "Full name can't exceed 100 characters.")]
+        public string SurName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "ՀԾՀ-ն Պարտադիր է։")]
         public string SocNumber { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Parent's email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        [Required(ErrorMessage = "Ծնողի Էլ․ Հասցեն Պարտադիր է։")]
+        [EmailAddress(ErrorMessage = "Սխալ էլ․ հասցեի ձևաչափ։")]
         public string ParentsEmail { get; set; } = string.Empty;
 
         // ✅ NEW FIELDS

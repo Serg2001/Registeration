@@ -54,7 +54,8 @@ namespace Registeration.Controllers
                     Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
                     SchoolId = school.Id,
                     Grade = dto.Grade,
-                    FullName = dto.FullName,
+                    Name = dto.Name,
+                    SurName = dto.SurName,
                     SocNumber = dto.SocNumber ?? "", // ensure not null
                     ParentsEmail = dto.ParentsEmail ?? ""
                 };
@@ -96,7 +97,8 @@ namespace Registeration.Controllers
                     RegionId = pupil.School.RegionId
                 },
                 Grade = pupil.Grade,
-                FullName = pupil.FullName,
+                Name = pupil.Name,
+                SurName = pupil.SurName,
                 SocNumber = pupil.SocNumber,
                 ParentsEmail = pupil.ParentsEmail
             };

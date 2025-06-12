@@ -108,11 +108,15 @@
                           Text="@_model.Region?.Name"
                           Variant="Variant.Outlined" Disabled="true" />
 
-            <MudTextField T="string" Label="Անուն / Ազգանուն"
-                          Text="@_model.FullName"
+            <MudTextField T="string" Label="Անուն"
+                          Text="@_model.Name"
                           Variant="Variant.Outlined" Disabled="true" />
 
-            <MudTextField T="string" Label="Սոցիալական համար"
+            <MudTextField T="string" Label="Ազգանուն"
+                          Text="@_model.SurName"
+                          Variant="Variant.Outlined" Disabled="true" />
+
+            <MudTextField T="string" Label="ՀԾՀ"
                           Text="@_model.SocNumber"
                           Variant="Variant.Outlined" Disabled="true" />
 
@@ -186,7 +190,7 @@
             }
 
             string emailBody = $@"
-                <h3>Բարև Ձեզ, {_model.FullName}</h3>
+                <h3>Բարև Ձեզ, {_model.Name} {_model.SurName}</h3>
                 <p>Ձեր գրանցումն հաստատվել է։</p>
                 <p><b>Ծնողի մուտքի տվյալներ՝</b></p>
                 <ul>

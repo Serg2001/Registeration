@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Registeration.Attributes;
 
 namespace Registeration.Models
 {
@@ -23,10 +24,12 @@ namespace Registeration.Models
         public string Address { get; set; } = string.Empty;
 
         [Required]
+        [ArmenianOnly]
         [StringLength(100)]
         public string DirectorName { get; set; } = string.Empty;
 
         [Required]
+        [ArmenianOnly]
         [StringLength(100)]
         public string DirectorSurName { get; set; } = string.Empty;
 
@@ -35,7 +38,7 @@ namespace Registeration.Models
         [StringLength(100)]
         public string Email { get; set; } = string.Empty;
         
-        public bool isRegistered { get; set; } = false;
+        //public bool isRegistered { get; set; } = false;
 
         [Required]
         [StringLength(255)]

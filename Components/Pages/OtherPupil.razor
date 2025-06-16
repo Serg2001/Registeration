@@ -209,11 +209,12 @@
     private int _step = 1;
     private bool isAgreed;
     private bool _canProceed = true;
+    private bool _isLoadingRegions;
 
     private string _selectedRegionName = string.Empty;
     private string _selectedSchoolName = string.Empty;
 
-    private List<RegionDTO> _regionList = new();
+    private List<RegionDTO> _regionList = new List<RegionDTO>();
     private List<SchoolDTO> _schoolList = new();
 
     private async Task NextStep()
@@ -292,25 +293,80 @@
 
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
-        if (_regionList.Count == 0)
+        if (_regionList.Count == 0 && !_isLoadingRegions)
         {
+            _isLoadingRegions = true;
+            StateHasChanged();
             try
             {
-                var client = HttpClientFactory.CreateClient("ExternalRegions");
-                var wrapper = await client.GetFromJsonAsync<RegionWrapper>("api/Platform/GetAllRegions", token);
+                var client = HttpClientFactory.CreateClient("CrmApi");
+                var response = await client.GetAsync("api/Platform/GetAllRegions", token);
 
-                if (wrapper != null)
-                    _regionList = wrapper.Values;
+                if (response.StatusCode == System.Net.HttpStatusCode.NoContent) // 204
+                {
+                    Console.WriteLine("❌ No content returned from regions API.");
+                    Snackbar.Add("Մարզերի ցանկը դատարկ է։", Severity.Warning);
+                    _regionList = new List<RegionDTO>();
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest) // 400
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"❌ Bad request to regions API: {errorContent}");
+                    Snackbar.Add($"Սխալ հարցում։ {errorContent}", Severity.Error);
+                    _regionList = new List<RegionDTO>();
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.OK) // 200
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Raw JSON response: {json}");
+                    _regionList = (await response.Content.ReadFromJsonAsync<List<RegionDTO>>()) ?? new List<RegionDTO>();
+                    if (_regionList.Count == 0)
+                    {
+                        Snackbar.Add("Մարզերի ցանկը դատարկ է։", Severity.Warning);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Fetched {_regionList.Count} regions: {string.Join(", ", _regionList.Select(r => r.Name ?? "null"))}");
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"❌ Unexpected status code {response.StatusCode}: {errorContent}");
+                    Snackbar.Add($"Սերվերի սխալ։ Կարգավիճակ՝ {response.StatusCode}", Severity.Error);
+                    _regionList = new List<RegionDTO>();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("❌ Region fetch canceled due to user input or timeout.");
+                return Enumerable.Empty<string>();
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"❌ Failed to fetch regions: {ex.Message}, StackTrace: {ex.StackTrace}");
+                Snackbar.Add($"Չհաջողվեց բեռնել մարզերը։ Ստուգեք համացանցը։ {ex.Message}", Severity.Error);
+                return Enumerable.Empty<string>();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("❌ Failed to fetch regions: " + ex.Message);
+                Console.WriteLine($"❌ Failed to fetch regions: {ex.Message}, StackTrace: {ex.StackTrace}");
+                Snackbar.Add($"Չհաջողվեց բեռնել մարզերը։ {ex.Message}", Severity.Error);
+                return Enumerable.Empty<string>();
+            }
+            finally
+            {
+                _isLoadingRegions = false;
+                StateHasChanged();
             }
         }
 
+        // Pre-filter the list once to avoid repeated LINQ operations
+        var filteredNames = _regionList.Where(r => r.Name != null).Select(r => r.Name).ToList();
+
         return string.IsNullOrWhiteSpace(value)
-            ? _regionList.Select(r => r.Name)
-            : _regionList.Where(r => r.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(r => r.Name);
+            ? filteredNames
+            : filteredNames.Where(name => name.Contains(value.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
 
@@ -422,9 +478,9 @@
         };
     }
 
-    private class RegionWrapper
-    {
-        [JsonPropertyName("$values")]
-        public List<RegionDTO> Values { get; set; } = new();
-    }
+    // private class RegionWrapper
+    // {
+    //     [JsonPropertyName("$values")]
+    //     public List<RegionDTO> Values { get; set; } = new();
+    // }
 }

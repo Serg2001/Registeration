@@ -25,7 +25,7 @@ namespace Registeration.Services
         /// </summary>
         public async Task<List<RegionDTO>> GetAllRegionsAsync()
         {
-            var client = _httpClientFactory.CreateClient("CrmPlatformApi");
+            var client = _httpClientFactory.CreateClient("CrmApi");
 
             try
             {

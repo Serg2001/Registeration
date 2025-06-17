@@ -17,82 +17,82 @@
 
 <style>
     body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-        overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    overflow-x: hidden;
     }
 
     .blurred-bubbles {
-        position: absolute;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        z-index: -1;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: -1;
     }
 
     .bubble {
-        position: absolute;
-        border-radius: 50%;
-        background: #b58df1;
-        filter: blur(90px);
-        opacity: 0.7;
+    position: absolute;
+    border-radius: 50%;
+    background: #b58df1;
+    filter: blur(90px);
+    opacity: 0.7;
     }
 
     .bubble1 {
-        top: 10%;
-        left: 5%;
-        width: 300px;
-        height: 300px;
+    top: 10%;
+    left: 5%;
+    width: 300px;
+    height: 300px;
     }
 
     .bubble2 {
-        top: 30%;
-        left: 60%;
-        width: 400px;
-        height: 400px;
+    top: 30%;
+    left: 60%;
+    width: 400px;
+    height: 400px;
     }
 
     .bubble3 {
-        bottom: 10%;
-        left: 30%;
-        width: 500px;
-        height: 500px;
+    bottom: 10%;
+    left: 30%;
+    width: 500px;
+    height: 500px;
     }
 
     .centered-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
     }
 
     .form-box {
-        background-color: rgba(255, 255, 255, 0.85);
-        padding: 3rem;
-        border-radius: 20px;
-        max-width: 600px;
-        width: 100%;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 3rem;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
     }
 
     .form-title {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #6a1b9a;
-        margin-bottom: 1.5rem;
-        text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #6a1b9a;
+    margin-bottom: 1.5rem;
+    text-align: center;
     }
 
     .form-button {
-        background-color: #6a1b9a;
-        color: white;
-        font-weight: bold;
+    background-color: #6a1b9a;
+    color: white;
+    font-weight: bold;
     }
 </style>
 
@@ -109,29 +109,29 @@
             {
                 <MudStack Spacing="3">
                     <MudAutocomplete T="string"
-                                     Label="Մարզ"
-                                     Value="_selectedRegionName"
-                                     ValueChanged="OnRegionChanged"
-                                     SearchFunc="@SearchRegions"
-                                     Variant="Variant.Outlined"
-                                     Required="true"
-                                     MaxItems="null" />
+                    Label="Մարզ"
+                    Value="_selectedRegionName"
+                    ValueChanged="OnRegionChanged"
+                    SearchFunc="@SearchRegions"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    MaxItems="null" />
 
                     <MudAutocomplete T="string"
-                                     Label="Դպրոց"
-                                     Value="_selectedSchoolName"
-                                     ValueChanged="OnSchoolChanged"
-                                     SearchFunc="@SearchSchools"
-                                     Variant="Variant.Outlined"
-                                     Required="true"
-                                     Disabled="@(_model.Region?.Id == Guid.Empty)"
-                                     MaxItems="null" />
+                    Label="Դպրոց"
+                    Value="_selectedSchoolName"
+                    ValueChanged="OnSchoolChanged"
+                    SearchFunc="@SearchSchools"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    Disabled="@(_model.Region?.Id == Guid.Empty)"
+                    MaxItems="null" />
 
                     <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="NextStep"
-                               Disabled="@(!_canProceed)"
-                               FullWidth="true">
+                    Color="Color.Primary"
+                    OnClick="NextStep"
+                    Disabled="@(!_canProceed)"
+                    FullWidth="true">
                         Հաջորդը
                     </MudButton>
                 </MudStack>
@@ -140,12 +140,12 @@
             {
                 <MudStack Spacing="3">
                     <MudSelect T="GradeLevel"
-                               Label="Դասարան"
-                               @bind-Value="_model.Grade"
-                               Required="true"
-                               Variant="Variant.Outlined"
-                               Dense="true"
-                               For="@(() => _model.Grade)">
+                    Label="Դասարան"
+                    @bind-Value="_model.Grade"
+                    Required="true"
+                    Variant="Variant.Outlined"
+                    Dense="true"
+                    For="@(() => _model.Grade)">
                         @foreach (var grade in Enum.GetValues(typeof(GradeLevel)).Cast<GradeLevel>())
                         {
                             <MudSelectItem Value="@grade">@GetDisplayName(grade)</MudSelectItem>
@@ -153,32 +153,32 @@
                     </MudSelect>
 
                     <MudTextField T="string"
-                                  Label="Անուն"
-                                  @bind-Value="_model.Name"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  For="@(() => _model.Name)" />
+                    Label="Անուն"
+                    @bind-Value="_model.Name"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _model.Name)" />
 
                     <MudTextField T="string"
-                                  Label="Ազգանուն"
-                                  @bind-Value="_model.SurName"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  For="@(() => _model.SurName)" />
+                    Label="Ազգանուն"
+                    @bind-Value="_model.SurName"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _model.SurName)" />
 
                     <MudTextField T="string"
-                                  Label="ՀԾՀ"
-                                  @bind-Value="_model.SocNumber"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  For="@(() => _model.SocNumber)" />
+                    Label="ՀԾՀ"
+                    @bind-Value="_model.SocNumber"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _model.SocNumber)" />
 
                     <MudTextField T="string"
-                                  Label="Ծնողի էլ. հասցե"
-                                  @bind-Value="_model.ParentsEmail"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  For="@(() => _model.ParentsEmail)" />
+                    Label="Ծնողի էլ. հասցե"
+                    @bind-Value="_model.ParentsEmail"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _model.ParentsEmail)" />
 
                     <div class="d-flex align-items-center gap-4 mt-4">
                         <MudCheckBox T="bool" @bind-Value="isAgreed" Color="Color.Success">
@@ -191,10 +191,10 @@
                     </div>
 
                     <MudButton Variant="Variant.Filled"
-                               Disabled="@(!isAgreed)"
-                               Color="Color.Primary"
-                               OnClick="Submit"
-                               FullWidth="true">
+                    Disabled="@(!isAgreed)"
+                    Color="Color.Primary"
+                    OnClick="Submit"
+                    FullWidth="true">
                         Հաջորդը
                     </MudButton>
                 </MudStack>
@@ -290,84 +290,14 @@
         }
     }
 
-    private async Task FetchRegionsAsync(CancellationToken token)
-    {
-        if (_regionList.Count > 0) return; // Avoid redundant calls
-
-        StateHasChanged();
-        try
-        {
-            var client = HttpClientFactory.CreateClient("CrmApi");
-            var response = await client.GetAsync("api/Platform/GetAllRegions", token);
-
-            if (response.StatusCode == System.Net.HttpStatusCode.NoContent) // 204
-            {
-                Console.WriteLine("❌ No content returned from regions API.");
-                Snackbar.Add("Մարզերի ցանկը դատարկ է։", Severity.Warning);
-                _regionList = new List<RegionDTO>();
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest) // 400
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"❌ Bad request to regions API: {errorContent}");
-                Snackbar.Add($"Սխալ հարցում։ {errorContent}", Severity.Error);
-                _regionList = new List<RegionDTO>();
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.OK) // 200
-            {
-                var json = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Raw JSON response: {json}");
-                _regionList = (await response.Content.ReadFromJsonAsync<List<RegionDTO>>()) ?? new List<RegionDTO>();
-                if (_regionList.Count == 0)
-                {
-                    Snackbar.Add("Մարզերի ցանկը դատարկ է։", Severity.Warning);
-                }
-                else
-                {
-                    Console.WriteLine($"Fetched {_regionList.Count} regions: {string.Join(", ", _regionList.Select(r => r.Name ?? "null"))}");
-                }
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"❌ Unexpected status code {response.StatusCode}: {errorContent}");
-                Snackbar.Add($"Սերվերի սխալ։ Կարգավիճակ՝ {response.StatusCode}", Severity.Error);
-                _regionList = new List<RegionDTO>();
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            Console.WriteLine("❌ Region fetch canceled due to user input or timeout.");
-        }
-        catch (HttpRequestException ex)
-        {
-            Console.WriteLine($"❌ Failed to fetch regions: {ex.Message}, StackTrace: {ex.StackTrace}");
-            Snackbar.Add($"Չհաջողվեց բեռնել մարզերը։ Ստուգեք համացանցը։ {ex.Message}", Severity.Error);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Failed to fetch regions: {ex.Message}, StackTrace: {ex.StackTrace}");
-            Snackbar.Add($"Չհաջողվեց բեռնել մարզերը։ {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            StateHasChanged();
-        }
-    }
 
     private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
     {
-        // Ensure regions are fetched if not already done
-        if (_regionList.Count == 0)
-        {
-            await FetchRegionsAsync(token);
-        }
-
-        var filteredNames = _regionList.Where(r => r.Name != null).Select(r => r.Name).ToList();
-
+        _regionList = await CrmRegionService.GetAllRegionsAsync();
+        
         return string.IsNullOrWhiteSpace(value)
-            ? filteredNames
-            : filteredNames.Where(name => name.Contains(value.Trim(), StringComparison.OrdinalIgnoreCase));
+           ? _regionList.Select(s => s.Name)
+           : _regionList.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(s => s.Name);
     }
 
 

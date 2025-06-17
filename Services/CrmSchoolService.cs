@@ -16,11 +16,6 @@ namespace Registeration.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly AppDbContext _context;
 
-        public class SchoolWrapper
-        {
-            [JsonPropertyName("$values")]
-            public List<SchoolDTO> Values { get; set; } = new();
-        }
 
 
         public CrmSchoolService(IHttpClientFactory httpClientFactory, AppDbContext context)
@@ -35,10 +30,10 @@ namespace Registeration.Services
 
             try
             {
-                var wrapper = await client.GetFromJsonAsync<SchoolWrapper>(
+                var schools = await client.GetFromJsonAsync<List<SchoolDTO>>(
                     $"api/Platform/GetSchoolsByRegion?regionid={regionId}");
 
-                return wrapper?.Values ?? new List<SchoolDTO>();
+                return schools ?? new List<SchoolDTO>();
             }
             catch (Exception ex)
             {

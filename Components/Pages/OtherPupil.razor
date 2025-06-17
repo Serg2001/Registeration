@@ -209,7 +209,6 @@
     private int _step = 1;
     private bool isAgreed;
     private bool _canProceed = true;
-    private bool _isLoadingRegions;
 
     private string _selectedRegionName = string.Empty;
     private string _selectedSchoolName = string.Empty;
@@ -291,77 +290,79 @@
         }
     }
 
-    private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
+    private async Task FetchRegionsAsync(CancellationToken token)
     {
-        if (_regionList.Count == 0 && !_isLoadingRegions)
-        {
-            _isLoadingRegions = true;
-            StateHasChanged();
-            try
-            {
-                var client = HttpClientFactory.CreateClient("CrmApi");
-                var response = await client.GetAsync("api/Platform/GetAllRegions", token);
+        if (_regionList.Count > 0) return; // Avoid redundant calls
 
-                if (response.StatusCode == System.Net.HttpStatusCode.NoContent) // 204
+        StateHasChanged();
+        try
+        {
+            var client = HttpClientFactory.CreateClient("CrmApi");
+            var response = await client.GetAsync("api/Platform/GetAllRegions", token);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NoContent) // 204
+            {
+                Console.WriteLine("❌ No content returned from regions API.");
+                Snackbar.Add("Մարզերի ցանկը դատարկ է։", Severity.Warning);
+                _regionList = new List<RegionDTO>();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest) // 400
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Bad request to regions API: {errorContent}");
+                Snackbar.Add($"Սխալ հարցում։ {errorContent}", Severity.Error);
+                _regionList = new List<RegionDTO>();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.OK) // 200
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Raw JSON response: {json}");
+                _regionList = (await response.Content.ReadFromJsonAsync<List<RegionDTO>>()) ?? new List<RegionDTO>();
+                if (_regionList.Count == 0)
                 {
-                    Console.WriteLine("❌ No content returned from regions API.");
                     Snackbar.Add("Մարզերի ցանկը դատարկ է։", Severity.Warning);
-                    _regionList = new List<RegionDTO>();
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest) // 400
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"❌ Bad request to regions API: {errorContent}");
-                    Snackbar.Add($"Սխալ հարցում։ {errorContent}", Severity.Error);
-                    _regionList = new List<RegionDTO>();
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.OK) // 200
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Raw JSON response: {json}");
-                    _regionList = (await response.Content.ReadFromJsonAsync<List<RegionDTO>>()) ?? new List<RegionDTO>();
-                    if (_regionList.Count == 0)
-                    {
-                        Snackbar.Add("Մարզերի ցանկը դատարկ է։", Severity.Warning);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Fetched {_regionList.Count} regions: {string.Join(", ", _regionList.Select(r => r.Name ?? "null"))}");
-                    }
                 }
                 else
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"❌ Unexpected status code {response.StatusCode}: {errorContent}");
-                    Snackbar.Add($"Սերվերի սխալ։ Կարգավիճակ՝ {response.StatusCode}", Severity.Error);
-                    _regionList = new List<RegionDTO>();
+                    Console.WriteLine($"Fetched {_regionList.Count} regions: {string.Join(", ", _regionList.Select(r => r.Name ?? "null"))}");
                 }
             }
-            catch (OperationCanceledException)
+            else
             {
-                Console.WriteLine("❌ Region fetch canceled due to user input or timeout.");
-                return Enumerable.Empty<string>();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"❌ Failed to fetch regions: {ex.Message}, StackTrace: {ex.StackTrace}");
-                Snackbar.Add($"Չհաջողվեց բեռնել մարզերը։ Ստուգեք համացանցը։ {ex.Message}", Severity.Error);
-                return Enumerable.Empty<string>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Failed to fetch regions: {ex.Message}, StackTrace: {ex.StackTrace}");
-                Snackbar.Add($"Չհաջողվեց բեռնել մարզերը։ {ex.Message}", Severity.Error);
-                return Enumerable.Empty<string>();
-            }
-            finally
-            {
-                _isLoadingRegions = false;
-                StateHasChanged();
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Unexpected status code {response.StatusCode}: {errorContent}");
+                Snackbar.Add($"Սերվերի սխալ։ Կարգավիճակ՝ {response.StatusCode}", Severity.Error);
+                _regionList = new List<RegionDTO>();
             }
         }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("❌ Region fetch canceled due to user input or timeout.");
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"❌ Failed to fetch regions: {ex.Message}, StackTrace: {ex.StackTrace}");
+            Snackbar.Add($"Չհաջողվեց բեռնել մարզերը։ Ստուգեք համացանցը։ {ex.Message}", Severity.Error);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Failed to fetch regions: {ex.Message}, StackTrace: {ex.StackTrace}");
+            Snackbar.Add($"Չհաջողվեց բեռնել մարզերը։ {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
 
-        // Pre-filter the list once to avoid repeated LINQ operations
+    private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
+    {
+        // Ensure regions are fetched if not already done
+        if (_regionList.Count == 0)
+        {
+            await FetchRegionsAsync(token);
+        }
+
         var filteredNames = _regionList.Where(r => r.Name != null).Select(r => r.Name).ToList();
 
         return string.IsNullOrWhiteSpace(value)

@@ -88,7 +88,7 @@ builder.Services.AddHttpClient("CrmApi", client =>
 
 
 
-builder.Services.AddScoped<OtherService>();
+builder.Services.AddScoped<OtherCompanyService>();
 builder.Services.AddHttpClient("CountryStateCity", client =>
 {
     client.BaseAddress = new Uri("https://api.countrystatecity.in/v1/");
@@ -100,7 +100,7 @@ builder.Services.AddMudServices();
 builder.Services.AddScoped<CrmRegionService>();
 builder.Services.AddScoped<CrmSchoolService>();
 builder.Services.AddScoped<RegistrationService>();
-builder.Services.AddScoped<FromStateServiceOther>();
+builder.Services.AddScoped<FromStateServiceOtherCompany>();
 builder.Services.AddScoped<CRMPupilService>();
 
 

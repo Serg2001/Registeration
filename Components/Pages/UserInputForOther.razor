@@ -77,75 +77,30 @@
         <MudForm @ref="_form" Model="_model">
             <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
 
-            @if (!string.IsNullOrWhiteSpace(_model.Country))
-            {
                 <MudTextField T="string" Label="Երկիր"
                               Text="@_model.Country"
                               Variant="Variant.Outlined" Disabled="true" />
-            }
 
-            @if (!string.IsNullOrWhiteSpace(_model.City))
-            {
                 <MudTextField T="string" Label="Քաղաք"
                               Text="@_model.City"
                               Variant="Variant.Outlined" Disabled="true" />
-            }
 
-            @if (!string.IsNullOrWhiteSpace(_model.NameSurname))
-            {
-                <MudTextField T="string" Label="Անուն / Ազգանուն"
-                              Text="@_model.NameSurname"
+                <MudTextField T="string" Label="Կազմակերպության Անուն"
+                              Text="@_model.OrganizationName"
                               Variant="Variant.Outlined" Disabled="true" />
-            }
 
-            @if (!string.IsNullOrWhiteSpace(_model.Profession))
-            {
-                <MudTextField T="string" Label="Մասնագիտություն"
-                              Text="@(_model.Profession == "Այլ" && !string.IsNullOrWhiteSpace(_model.CustomProfession) ? _model.CustomProfession : _model.Profession)"
-                              Variant="Variant.Outlined" Disabled="true" />
-            }
+            <MudTextField T="string" Label="Գործունեության Ոլորտ"
+                          Text="@_model.FieldOfActivity"
+                          Variant="Variant.Outlined" Disabled="true" />
 
-            @if (_model.Age.HasValue)
-            {
-                <MudTextField T="int?" Label="Տարիք"
-                              Text="@_model.Age.ToString()"
-                              Variant="Variant.Outlined" Disabled="true" />
-            }
 
-            @if (!string.IsNullOrWhiteSpace(_model.StudyPlace))
-            {
-                <MudTextField T="string" Label="Սովորելու վայր"
-                              Text="@_model.StudyPlace"
-                              Variant="Variant.Outlined" Disabled="true" />
-            }
-
-            @if (!string.IsNullOrWhiteSpace(_model.TeachingPlace))
-            {
-                <MudTextField T="string" Label="Դասավանդման վայր"
-                              Text="@_model.TeachingPlace"
-                              Variant="Variant.Outlined" Disabled="true" />
-            }
-
-            @if (!string.IsNullOrWhiteSpace(_model.TeachingSubject))
-            {
-                <MudTextField T="string" Label="Դասավանդման առարկա"
-                              Text="@_model.TeachingSubject"
-                              Variant="Variant.Outlined" Disabled="true" />
-            }
-
-            @if (!string.IsNullOrWhiteSpace(_model.Email))
-            {
                 <MudTextField T="string" Label="Էլ․ հասցե"
                               Text="@_model.Email"
                               Variant="Variant.Outlined" Disabled="true" />
-            }
 
-            @if (!string.IsNullOrWhiteSpace(_model.Phone))
-            {
                 <MudTextField T="string" Label="Հեռ․ համար"
                               Text="@_model.Phone"
                               Variant="Variant.Outlined" Disabled="true" />
-            }
 
             @if (!string.IsNullOrWhiteSpace(_model.Purpose))
             {
@@ -180,7 +135,7 @@
             _otherId = id;
             try
             {
-                var result = await HttpClient.GetFromJsonAsync<OtherDTO>($"api/other/by-id/{id}");
+                var result = await HttpClient.GetFromJsonAsync<OtherDTO>($"api/othercompany/by-id/{id}");
                 if (result != null)
                     _model = result;
                 else
@@ -203,23 +158,21 @@
 
         try
         {
-            var identityResponse = await HttpClient.GetFromJsonAsync<Dictionary<string, string>>($"api/other/identity-string/{_otherId}");
-            if (identityResponse == null || !identityResponse.TryGetValue("identity", out var identityString))
-            {
-                Console.WriteLine("❌ Identity string missing.");
-                return;
-            }
+            // var identityResponse = await HttpClient.GetFromJsonAsync<Dictionary<string, string>>($"api/other/identity-string/{_otherId}");
+            // if (identityResponse == null || !identityResponse.TryGetValue("identity", out var identityString))
+            // {
+            //     Console.WriteLine("❌ Identity string missing.");
+            //     return;
+            // }
 
-            string password = GenerateCode(identityString);
-            string accessCode = Guid.NewGuid().ToString().Substring(0, 8);
+            string password = GenerateCode(_model.Email);
 
             var confirmData = new ConfirmCredentialsDTO
                 {
-                    Password = password,
-                    AccessCode = accessCode
+                    Password = password
                 };
 
-            var updateResponse = await HttpClient.PostAsJsonAsync($"api/other/confirm/{_otherId}", confirmData);
+            var updateResponse = await HttpClient.PostAsJsonAsync($"api/othercompany/confirm/{_otherId}", confirmData);
             if (!updateResponse.IsSuccessStatusCode)
             {
                 Console.WriteLine("❌ Failed to update credentials.");
@@ -233,7 +186,6 @@
             <ul>
                 <li><b>Մուտքանուն:</b> {_model.Email}</li>
                 <li><b>Գաղտնաբառ:</b> {password}</li>
-                <li><b>Մուտքի կոդ:</b> {accessCode}</li>
             </ul>";
 
             await EmailService.SendEmailAsync(_model.Email, "Մուտքի Տվյալներ", emailBody);
@@ -259,7 +211,7 @@
 
         try
         {
-            var response = await HttpClient.DeleteAsync($"api/other/delete/{_otherId}");
+            var response = await HttpClient.DeleteAsync($"api/othercompany/delete/{_otherId}");
             if (response.IsSuccessStatusCode)
             {
                 Navigation.NavigateTo("/retry");

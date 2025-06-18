@@ -37,7 +37,7 @@ namespace Registeration.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("❌ Failed to load schools: " + ex.Message);
+                Console.WriteLine("Failed to load schools: " + ex.Message);
                 return new List<SchoolDTO>();
             }
         }

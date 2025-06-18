@@ -8,14 +8,14 @@ using Registeration.Data;
 namespace Registeration.Controllers
 {
     [ApiController]
-    [Route("api/other")]
-    public class OtherController : ControllerBase
+    [Route("api/othercompany")]
+    public class OtherCompanyController : ControllerBase
     {
-        private readonly OtherService _service;
+        private readonly OtherCompanyService _service;
         private readonly AppDbContext _context;
 
-        public OtherController(
-            OtherService service,
+        public OtherCompanyController(
+            OtherCompanyService service,
             AppDbContext context)
         {
             _service = service;
@@ -26,28 +26,23 @@ namespace Registeration.Controllers
         /// Save Other with provided details.
         /// </summary>
         [HttpPost("save")]
-        public async Task<IActionResult> Save([FromBody] OtherDTO dto)
+        public async Task<IActionResult> Save([FromBody] OtherCompanyDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             try
             {
-                var model = new Other
+                var model = new OtherCompany
                 {
                     Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
                     Country = dto.Country,
                     City = dto.City,
-                    NameSurname = dto.NameSurname,
-                    Profession = dto.Profession,
-                    CustomProfession = dto.CustomProfession,
-                    Age = dto.Age,
+                    OrganizationName = dto.OrganizationName,
+                    FieldOfActivity = dto.FieldOfActivity,
                     Email = dto.Email,
                     Phone = dto.Phone,
-                    TeachingPlace = dto.TeachingPlace,
-                    TeachingSubject = dto.TeachingSubject,
-                    Purpose = dto.Purpose,
-                    StudyPlace = dto.StudyPlace
+                    Purpose = dto.Purpose
                     //Login = dto.Login,
                     //Password = dto.Password,
                     //AccessCode = dto.AccessCode
@@ -67,7 +62,7 @@ namespace Registeration.Controllers
         }
 
         [HttpGet("by-id/{id}")]
-        public async Task<ActionResult<OtherDTO>> GetById(Guid id)
+        public async Task<ActionResult<OtherCompanyDTO>> GetById(Guid id)
         {
             var other = await _service.GetByIdAsync(id);
 
@@ -79,17 +74,12 @@ namespace Registeration.Controllers
                 Id = other.Id,
                 Country = other.Country,
                 City = other.City,
-                NameSurname = other.NameSurname,
-                Profession = other.Profession,
-                CustomProfession = other.CustomProfession,
-                Age = other.Age,
+                OrganizationName = other.OrganizationName,
+                FieldOfActivity = other.FieldOfActivity,
                 Email = other.Email,
                 Phone = other.Phone,
-                TeachingPlace = other.TeachingPlace,
-                TeachingSubject = other.TeachingSubject,
-                Purpose = other.Purpose,
-                StudyPlace = other.StudyPlace
-                //IsConfirmed = other.IsConfirmed,
+                Purpose = other.Purpose
+
                 //Login = other.Login,
                 //Password = other.Password,
                 //AccessCode = other.AccessCode
@@ -101,41 +91,40 @@ namespace Registeration.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var other = await _context.Others.FindAsync(id);
+            var other = await _context.OtherCompanies.FindAsync(id);
             if (other == null)
                 return NotFound();
 
-            _context.Others.Remove(other);
+            _context.OtherCompanies.Remove(other);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Deleted" });
         }
 
-        [HttpGet("identity-string/{id}")]
-        public async Task<IActionResult> GetIdentityString(Guid id)
-        {
-            var other = await _service.GetByIdAsync(id);
-            if (other == null)
-                return NotFound(new { message = "Other not found" });
+        //[HttpGet("identity-string/{id}")]
+        //public async Task<IActionResult> GetIdentityString(Guid id)
+        //{
+        //    var other = await _service.GetByIdAsync(id);
+        //    if (other == null)
+        //        return NotFound(new { message = "Other not found" });
 
-            // Create a unique identity string (e.g., Email + NameSurname)
-            var identityString = $"{other.Email ?? ""}{other.NameSurname ?? ""}";
-            if (string.IsNullOrWhiteSpace(identityString))
-                return BadRequest(new { Message = "Insufficient data to generate identity string" });
+        //    // Create a unique identity string (e.g., Email + NameSurname)
+        //    var identityString = $"{other.Email ?? ""}{other.NameSurname ?? ""}";
+        //    if (string.IsNullOrWhiteSpace(identityString))
+        //        return BadRequest(new { Message = "Insufficient data to generate identity string" });
 
-            return Ok(new { identity = identityString });
-        }
+        //    return Ok(new { identity = identityString });
+        //}
 
         [HttpPost("confirm/{id}")]
         public async Task<IActionResult> Confirm(Guid id, [FromBody] ConfirmCredentialsDTO dto)
         {
-            var other = await _context.Others.FindAsync(id);
+            var other = await _context.OtherCompanies.FindAsync(id);
             if (other == null)
                 return NotFound();
 
             other.Login = other.Email;
             other.Password = dto.Password;
-            other.AccessCode = dto.AccessCode;
 
             await _context.SaveChangesAsync();
             return Ok();

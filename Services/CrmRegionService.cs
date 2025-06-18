@@ -20,9 +20,7 @@ namespace Registeration.Services
             _context = context;
         }
 
-        /// <summary>
         /// Fetch regions from external CRM API.
-        /// </summary>
         public async Task<List<RegionDTO>> GetAllRegionsAsync()
         {
             var client = _httpClientFactory.CreateClient("CrmApi");

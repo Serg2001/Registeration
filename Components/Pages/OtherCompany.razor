@@ -1,0 +1,365 @@
+﻿@page "/other"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject IHttpClientFactory HttpClientFactory
+@inject OtherCompanyService OtherService
+@inject ISnackbar Snackbar
+@inject HttpClient HttpClient
+@inject FromStateServiceOtherCompany FromStateServiceOtherCompany
+
+@using MudBlazor
+@using System.Net.Http.Json
+@using Registeration.DTOs
+@using Registeration.Services
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Գրանցում</PageTitle>
+
+<style>
+    body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    overflow-x: hidden;
+    }
+
+    .blurred-bubbles {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: -1;
+    }
+
+    .bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: #b58df1;
+    filter: blur(90px);
+    opacity: 0.7;
+    }
+
+    .bubble1 {
+    top: 10%;
+    left: 5%;
+    width: 300px;
+    height: 300px;
+    }
+
+    .bubble2 {
+    top: 30%;
+    left: 60%;
+    width: 400px;
+    height: 400px;
+    }
+
+    .bubble3 {
+    bottom: 10%;
+    left: 30%;
+    width: 500px;
+    height: 500px;
+    }
+
+    .centered-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    }
+
+    .form-box {
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 3rem;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    }
+
+    .form-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #6a1b9a;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    }
+
+    .form-button {
+    background-color: #6a1b9a;
+    color: white;
+    font-weight: bold;
+    }
+</style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+    <div class="form-box">
+        <div class="form-title">Գրանցում</div>
+        @if (_state == 1)
+        {
+            <MudForm @ref="_form" Model="_formModel">
+                <MudStack Spacing="2">
+                    <MudAutocomplete T="string" 
+                    Label="Ընտրեք Երկիրը" 
+                    Value="@_formModel.Country"
+                    ValueChanged="@OnCountryChanged"
+                    SearchFunc="@SearchCountries"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _formModel.Country)"
+                    Dense="true"
+                    Clearable="true"
+                    Placeholder="Ընտրեք"
+                    ResetValueOnEmptyText="true"
+                    DebounceInterval="500"
+                    MaxItems="null"
+                    Loading="@isCountryLoading">
+                        <LoadingContent>
+                            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                        </LoadingContent>
+                    </MudAutocomplete>
+
+                    <MudAutocomplete T="string" 
+                    Label="Ընտրեք Բնակավայրը" 
+                    Value="@_formModel.City"
+                    ValueChanged="@OnCityChanged"
+                    SearchFunc="@SearchCities"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _formModel.City)"
+                    Dense="true"
+                    Clearable="true"
+                    Placeholder="Ընտրեք"
+                    ResetValueOnEmptyText="true"
+                    DebounceInterval="500"
+                    MaxItems="null"
+                    Loading="@isCityLoading"
+                    Disabled="@string.IsNullOrEmpty(selectedCountryCode)">
+                        <LoadingContent>
+                            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                        </LoadingContent>
+                    </MudAutocomplete>
+
+                    <MudButton Variant="Variant.Filled" 
+                    Class="mt-4 form-button"
+                    OnClick="@HandleNextInState1">
+                        Հաջորդը
+                    </MudButton>
+                </MudStack>
+            </MudForm>
+        }
+
+        else if (_state == 2)
+        {
+            <MudForm @ref="_form" Model="_formModel">
+                <MudStack Spacing="2">
+                    <MudTextField T="string"
+                    Label="Կազմակերպության Անվանում"
+                    @bind-Value="_formModel.OrganizationName"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _formModel.OrganizationName)" />
+                    <MudTextField T="string"
+                    Label="Գործունեության Ոլորտ"
+                    @bind-Value="_formModel.FieldOfActivity"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _formModel.FieldOfActivity)" />
+                    <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2">
+                        <ValidationMessage For="@(() => _formModel.OrganizationName)" />
+                        <ValidationMessage For="@(() => _formModel.FieldOfActivity)" />
+                    </MudText>
+
+                    <MudButton Variant="Variant.Filled"
+                    Class="mt-4 form-button"
+                    OnClick="@HandleNextInState2">
+                        Հաջորդը
+                    </MudButton>
+                </MudStack>
+            </MudForm>
+        }
+
+        else if (_state == 3)
+        {
+            <MudForm @ref="_form" Model="_formModel">
+                <MudStack Spacing="2">
+                    <MudTextField T="string"
+                    Label="Էլ․ Հասցե"
+                    @bind-Value="_formModel.Email"
+                    Variant="Variant.Outlined"
+                    InputType="InputType.Email"
+                    Required="true"
+                    For="@(() => _formModel.Email)" />
+
+                    <MudTextField T="string"
+                    Label="Հեռ․ Համար"
+                    @bind-Value="_formModel.Phone"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _formModel.Phone)" />
+
+                    <MudTextField T="string"
+                    Label="Նպատակ"
+                    @bind-Value="_formModel.Purpose"
+                    Variant="Variant.Outlined"
+                    Required="true"
+                    For="@(() => _formModel.Purpose)" />
+
+                    <MudButton Variant="Variant.Filled"
+                    Class="mt-4 form-button"
+                    OnClick="@HandleNextInState3">
+                        Հաստատել
+                    </MudButton>
+                </MudStack>
+            </MudForm>
+        }
+    </div>
+</div>
+
+@code {
+    private int _state = 1; // Updated state progression
+    private MudForm _form = new();
+    private OtherCompanyDTO _formModel = new();
+    private List<Country> _countries = new();
+    private List<City> _cities = new();
+    private bool isCountryLoading = false;
+    private bool isCityLoading = false;
+    private string selectedCountryCode = string.Empty;
+    private string _lastCountryCode = string.Empty;
+
+    private async Task<IEnumerable<string>> SearchCountries(string value, CancellationToken cancellationToken)
+    {
+        if (_countries.Count == 0)
+        {
+            isCountryLoading = true;
+            _countries = await OtherService.GetAllCountriesAsync(cancellationToken);
+            isCountryLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+
+        return string.IsNullOrWhiteSpace(value)
+            ? _countries.Select(c => c.Name.Common)
+            : _countries.Where(c => c.Name.Common.Contains(value, StringComparison.OrdinalIgnoreCase))
+                        .Select(c => c.Name.Common);
+    }
+
+    private async Task<IEnumerable<string>> SearchCities(string value, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(selectedCountryCode))
+        {
+            return Array.Empty<string>();
+        }
+
+        if (_cities.Count == 0 || _lastCountryCode != selectedCountryCode)
+        {
+            isCityLoading = true;
+            _cities = await OtherService.GetCitiesByCountryAsync(selectedCountryCode, cancellationToken);
+            _lastCountryCode = selectedCountryCode;
+            isCityLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+
+        return string.IsNullOrWhiteSpace(value)
+            ? _cities.Select(c => c.Name)
+            : _cities.Where(c => c.Name.Contains(value, StringComparison.OrdinalIgnoreCase))
+                     .Select(c => c.Name);
+    }
+
+    private async Task OnCountryChanged(string value)
+    {
+        _formModel.Country = value;
+        var selected = _countries.FirstOrDefault(c => c.Name.Common == value);
+        selectedCountryCode = selected?.Cca2 ?? string.Empty;
+        Console.WriteLine($"Selected country: {_formModel.Country}, Code: {selectedCountryCode}");
+        if (selectedCountryCode != _lastCountryCode)
+        {
+            _cities.Clear();
+            _formModel.City = string.Empty;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnCityChanged(string value)
+    {
+        _formModel.City = value;
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    //State1
+    private async Task HandleNextInState1()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
+            return;
+        }
+        _state = 2;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    //State 2
+    private async Task HandleNextInState2()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
+            return;
+        }
+        _state = 3;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    //State 3
+    private async Task HandleNextInState3()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը։", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            _formModel.Id = Guid.NewGuid();
+            var response = await HttpClient.PostAsJsonAsync("api/othercompany/save", _formModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                FromStateServiceOtherCompany.OtherCompanyModel = _formModel;
+                Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
+
+                Navigation.NavigateTo("/nextstep-for-other");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+
+                if (errorContent.Contains("Դուք արդեն գրանցված եք:"))
+                {
+                    Snackbar.Add("Դուք արդեն գրանցված եք։ Ստուգեք ձեր մուտքի տվյալները։", Severity.Warning);
+                    return;
+                }
+
+                Snackbar.Add($"API սխալ: {errorContent}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Ճանապարհը ձախողվեց․ {ex.Message}", Severity.Error);
+        }
+    }
+}

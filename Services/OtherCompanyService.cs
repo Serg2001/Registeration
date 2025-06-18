@@ -38,12 +38,12 @@ namespace Registeration.Services
         public string Name { get; set; } = string.Empty;
     }
 
-    public class OtherService
+    public class OtherCompanyService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly AppDbContext _context;
 
-        public OtherService(IHttpClientFactory httpClientFactory, AppDbContext context)
+        public OtherCompanyService(IHttpClientFactory httpClientFactory, AppDbContext context)
         {
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _context = context ?? throw new ArgumentNullException(nameof(context));
@@ -139,7 +139,7 @@ namespace Registeration.Services
         /// <summary>
         /// Save a registration to the local DB.
         /// </summary>
-        public async Task SaveAsync(Other other, CancellationToken cancellationToken = default)
+        public async Task SaveAsync(OtherCompany other, CancellationToken cancellationToken = default)
         {
             if (other == null)
             {
@@ -148,7 +148,7 @@ namespace Registeration.Services
 
             try
             {
-                _context.Others.Add(other);
+                _context.OtherCompanies.Add(other);
                 await _context.SaveChangesAsync(cancellationToken);
                 Console.WriteLine($"✅ Successfully saved registration with ID: {other.Id}");
             }
@@ -172,11 +172,11 @@ namespace Registeration.Services
         /// <summary>
         /// Get a registration by ID.
         /// </summary>
-        public async Task<Other?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<OtherCompany?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             try
             {
-                var result = await _context.Others.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+                var result = await _context.OtherCompanies.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
                 if (result == null)
                 {
                     Console.WriteLine($"⚠️ Registration with ID {id} not found.");
@@ -197,14 +197,14 @@ namespace Registeration.Services
         {
             try
             {
-                var other = await _context.Others.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+                var other = await _context.OtherCompanies.FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
                 if (other == null)
                 {
                     Console.WriteLine($"⚠️ Registration with ID {id} not found for deletion.");
                     return false;
                 }
 
-                _context.Others.Remove(other);
+                _context.OtherCompanies.Remove(other);
                 await _context.SaveChangesAsync(cancellationToken);
                 Console.WriteLine($"✅ Successfully deleted registration with ID: {id}");
                 return true;
@@ -221,14 +221,14 @@ namespace Registeration.Services
             }
         }
 
-        public async Task<string?> GetConcatenatedIdentityAsync(Guid id)
-        {
-            var other = await _context.Others
-                .Where(p => p.Id == id)
-                .Select(p => new { p.NameSurname, p.Email })
-                .FirstOrDefaultAsync();
+        //public async Task<string?> GetConcatenatedIdentityAsync(Guid id)
+        //{
+        //    var other = await _context.Others
+        //        .Where(p => p.Id == id)
+        //        .Select(p => new { p.NameSurname, p.Email })
+        //        .FirstOrDefaultAsync();
 
-            return other == null ? null : $"{other.NameSurname}{other.Email}";
-        }
+        //    return other == null ? null : $"{other.NameSurname}{other.Email}";
+        //}
     }
 }

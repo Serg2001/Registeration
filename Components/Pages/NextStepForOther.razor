@@ -6,7 +6,7 @@
 @using Registeration.Services
 
 @inject IEmailService EmailService
-@inject FromStateServiceOther FromStateServiceOther
+@inject FromStateServiceOtherCompany FromStateServiceOtherCompany
 @inject NavigationManager Navigation
 
 <PageTitle>Հաստատում</PageTitle>
@@ -106,7 +106,7 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
-        var model = FromStateServiceOther.OtherModel;
+        var model = FromStateServiceOtherCompany.OtherCompanyModel;
 
         if (model == null)
         {
@@ -114,7 +114,7 @@
             return;
         }
 
-        Console.WriteLine($"📋 Model Details: Id={model.Id}, Email={model.Email}, NameSurname={model.NameSurname}");
+        Console.WriteLine($"📋 Model Details: Id={model.Id}, Email={model.Email}, NameSurname={model.OrganizationName}");
 
         if (string.IsNullOrWhiteSpace(model.Email))
         {
@@ -128,7 +128,7 @@
             var confirmationLink = $"{baseUrl}/confirm-other?id={model.Id}";
 
             string emailBody = $@"
-                <h3>Բարև Ձեզ, {model.NameSurname}</h3>
+                <h3>Բարև Ձեզ, {model.OrganizationName}</h3>
                 <p>Շնորհակալություն գրանցման համար։</p>
                 <p>Դիտել ձեր գրանցման տվյալները՝ <a href=""{confirmationLink}"">Հաստատման էջ</a></p>";
 

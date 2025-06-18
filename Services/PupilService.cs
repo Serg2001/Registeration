@@ -14,9 +14,9 @@ namespace Registeration.Services
             _client = clientFactory.CreateClient("CRM");
         }
 
-        public async Task<PupilInfo?> GetPupilBySocNumber(string SocNumber)
+        public async Task<PupilInfo19?> GetPupilBySocNumber(string SocNumber)
         {
-            var response = await _client.GetFromJsonAsync<PupilInfo>($"/api/Platform/GetPupilsBySocNumber?socnumber={SocNumber}");
+            var response = await _client.GetFromJsonAsync<PupilInfo19>($"/api/Platform/GetPupilsBySocNumber?socnumber={SocNumber}");
 
             //if (response.StatusCode == HttpStatusCode.OK)
             //{

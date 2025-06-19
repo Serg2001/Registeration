@@ -1,4 +1,4 @@
-﻿@page "/nextstep-for-other"
+﻿@page "/nextstep-for-other-company"
 @rendermode InteractiveServer
 
 @using MudBlazor
@@ -6,7 +6,7 @@
 @using Registeration.Services
 
 @inject IEmailService EmailService
-@inject FromStateServiceOtherCompany FromStateServiceOtherCompany
+@inject FromStateServiceOtherCompany FromStateServiceOther
 @inject NavigationManager Navigation
 
 <PageTitle>Հաստատում</PageTitle>
@@ -106,7 +106,7 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
-        var model = FromStateServiceOtherCompany.OtherCompanyModel;
+        var model = FromStateServiceOther.OtherCompanyModel;
 
         if (model == null)
         {
@@ -125,7 +125,7 @@
         try
         {
             var baseUrl = Navigation.BaseUri.TrimEnd('/');
-            var confirmationLink = $"{baseUrl}/confirm-other?id={model.Id}";
+            var confirmationLink = $"{baseUrl}/confirm-other-company?id={model.Id}";
 
             string emailBody = $@"
                 <h3>Բարև Ձեզ, {model.OrganizationName}</h3>

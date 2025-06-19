@@ -1,11 +1,11 @@
-﻿@page "/other"
+﻿@* @page "/other"
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject IHttpClientFactory HttpClientFactory
-@inject OtherService OtherService
+@inject OtherCompanyService OtherService
 @inject ISnackbar Snackbar
 @inject HttpClient HttpClient
-@inject FromStateServiceOther FromStateServiceOther
+@inject FromStateServiCompanyceOther FromStateServiceOther
 
 @using MudBlazor
 @using System.Net.Http.Json
@@ -720,4 +720,4 @@
             Snackbar.Add($"Ճանապարհը ձախողվեց․ {ex.Message}", Severity.Error);
         }
     }
-}
+} *@

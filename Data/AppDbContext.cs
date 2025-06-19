@@ -18,6 +18,7 @@ namespace Registeration.Data
         public DbSet<OtherTeacher> OtherTeacher { get; set; }
         public DbSet<CRMPupil> CRMPupils { get; set; }
         public DbSet<OtherCompany> OtherCompanies { get; set; }
+        public DbSet<OtherPhysicalPerson> OtherPhysicalPersons { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

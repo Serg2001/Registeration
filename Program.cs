@@ -89,6 +89,9 @@ builder.Services.AddHttpClient("CrmApi", client =>
 
 
 builder.Services.AddScoped<OtherCompanyService>();
+builder.Services.AddScoped<OtherPhysicalPersonService>();
+builder.Services.AddScoped<FormStateForOtherPhysicalPerson>();
+
 builder.Services.AddHttpClient("CountryStateCity", client =>
 {
     client.BaseAddress = new Uri("https://api.countrystatecity.in/v1/");

@@ -1,0 +1,146 @@
+﻿@page "/nextstep-for-other-physical-person"
+@rendermode InteractiveServer
+
+@using MudBlazor
+@using Registeration.DTOs
+@using Registeration.Services
+
+@inject IEmailService EmailService
+@inject FormStateForOtherPhysicalPerson FormStateService
+@inject NavigationManager Navigation
+
+<PageTitle>Հաստատում</PageTitle>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+    }
+
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
+
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
+
+    .bubble1 {
+        top: 10%;
+        left: 5%;
+        width: 300px;
+        height: 300px;
+    }
+
+    .bubble2 {
+        top: 30%;
+        left: 60%;
+        width: 400px;
+        height: 400px;
+    }
+
+    .bubble3 {
+        bottom: 10%;
+        left: 30%;
+        width: 500px;
+        height: 500px;
+    }
+
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .confirmation-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+        text-align: center;
+    }
+</style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+    <div class="confirmation-box">
+        <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+            ✔ Հաջողությամբ գրանցվեցիք
+        </MudText>
+
+        <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">
+            Հաստատման համար մուտք գործեք ձեր նշած էլ․ հասցեն։
+        </MudText>
+
+        <MudDivider Class="my-4" />
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">
+            Վերադառնալ Գլխավոր Էջ
+        </MudButton>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var model = FormStateService.OtherPhysicalPersonModel;
+
+        if (model == null)
+        {
+            Console.WriteLine("❌ OtherModel is null");
+            return;
+        }
+
+        Console.WriteLine($"📋 Model Details: Id={model.Id}, Email={model.Email}, NameSurname={model.Name}, SurName={model.SurName}");
+
+        if (string.IsNullOrWhiteSpace(model.Email))
+        {
+            Console.WriteLine("❌ Email is empty or invalid");
+            return;
+        }
+
+        try
+        {
+            var baseUrl = Navigation.BaseUri.TrimEnd('/');
+            var confirmationLink = $"{baseUrl}/confirm-other-physical-person?id={model.Id}";
+
+            string emailBody = $@"
+                <h3>Բարև Ձեզ, {model.Name} {model.SurName}</h3>
+                <p>Շնորհակալություն գրանցման համար։</p>
+                <p>Դիտել ձեր գրանցման տվյալները՝ <a href=""{confirmationLink}"">Հաստատման էջ</a></p>";
+
+            Console.WriteLine("📧 Sending to: " + model.Email);
+            await EmailService.SendEmailAsync(model.Email, "Գրանցման Հաստատում", emailBody);
+            Console.WriteLine("✅ Email sent successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error sending confirmation email: " + ex.Message);
+            if (ex.InnerException != null)
+                Console.WriteLine("Inner: " + ex.InnerException.Message);
+        }
+    }
+}

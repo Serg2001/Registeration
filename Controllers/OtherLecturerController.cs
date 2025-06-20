@@ -9,14 +9,14 @@ using Registeration.Services;
 namespace Registeration.Controllers
 {
     [ApiController]
-    [Route("api/otherphysicalperson")]
-    public class OtherPhysicalPersonController : ControllerBase
+    [Route("api/otherlecturer")]
+    public class OtherLecturerController : ControllerBase
     {
-        private readonly OtherPhysicalPersonService _service;
+        private readonly OtherLecturerService _service;
         private readonly AppDbContext _context;
 
-        public OtherPhysicalPersonController(
-            OtherPhysicalPersonService service,
+        public OtherLecturerController(
+            OtherLecturerService service,
             AppDbContext context)
         {
             _service = service;
@@ -27,21 +27,22 @@ namespace Registeration.Controllers
         /// Save Other with provided details.
         /// </summary>
         [HttpPost("save")]
-        public async Task<IActionResult> Save([FromBody] OtherPhysicalPersonDTO dto)
+        public async Task<IActionResult> Save([FromBody] OtherLecturerDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             try
             {
-                var model = new OtherPhysicalPerson
+                var model = new OtherLecturer
                 {
                     Id = dto.Id != Guid.Empty ? dto.Id : Guid.NewGuid(),
                     Country = dto.Country,
                     City = dto.City,
-                    Profession = dto.Profession,
                     Name = dto.Name,
                     SurName = dto.SurName,
+                    TeachingPlace = dto.TeachingPlace,
+                    TeachingSubject = dto.TeachingSubject,
                     Age = dto.Age,
                     Email = dto.Email,
                     Phone = dto.Phone,
@@ -65,21 +66,22 @@ namespace Registeration.Controllers
         }
 
         [HttpGet("by-id/{id}")]
-        public async Task<ActionResult<OtherPhysicalPersonDTO>> GetById(Guid id)
+        public async Task<ActionResult<OtherLecturerDTO>> GetById(Guid id)
         {
             var other = await _service.GetByIdAsync(id);
 
             if (other == null)
                 return NotFound(new { Message = "Other not found" });
 
-            var dto = new OtherPhysicalPersonDTO
+            var dto = new OtherLecturerDTO
             {
                 Id = other.Id,
                 Country = other.Country,
                 City = other.City,
-                Profession = other.Profession,
                 Name = other.Name,
-                SurName= other.SurName,
+                SurName = other.SurName,
+                TeachingPlace = other.TeachingPlace,
+                TeachingSubject = other.TeachingSubject,
                 Age = other.Age,
                 Email = other.Email,
                 Phone = other.Phone,
@@ -96,11 +98,11 @@ namespace Registeration.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var other = await _context.OtherPhysicalPersons.FindAsync(id);
+            var other = await _context.OtherLecturers.FindAsync(id);
             if (other == null)
                 return NotFound();
 
-            _context.OtherPhysicalPersons.Remove(other);
+            _context.OtherLecturers.Remove(other);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Deleted" });
@@ -124,7 +126,7 @@ namespace Registeration.Controllers
         [HttpPost("confirm/{id}")]
         public async Task<IActionResult> Confirm(Guid id, [FromBody] ConfirmCredentialsDTO dto)
         {
-            var other = await _context.OtherPhysicalPersons.FindAsync(id);
+            var other = await _context.OtherLecturers.FindAsync(id);
             if (other == null)
                 return NotFound();
 

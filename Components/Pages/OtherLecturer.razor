@@ -1,11 +1,11 @@
-﻿@page "/otherphysicalperson"
+﻿@page "/otherlecturer"
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject IHttpClientFactory HttpClientFactory
-@inject OtherPhysicalPersonService OtherPhysicalPersonService
+@inject OtherLecturerService OtherLecturerService
 @inject ISnackbar Snackbar
 @inject HttpClient HttpClient
-@inject FormStateForOtherPhysicalPerson FormStateService
+@inject FormStateServiceForOtherLecturer FormStateService
 
 
 @using MudBlazor
@@ -170,27 +170,54 @@
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   For="@(() => _formModel.Name)"
-                                  Validation="@((string v) => ValidateField(nameof(OtherPhysicalPersonDTO.Name), v))" />
+                                  Validation="@((string v) => ValidateField(nameof(OtherLecturerDTO.Name), v))" />
                     <MudTextField T="string"
                                   Label="Ազգանուն"
                                   @bind-Value="_formModel.SurName"
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   For="@(() => _formModel.SurName)"
-                                  Validation="@((string v) => ValidateField(nameof(OtherPhysicalPersonDTO.SurName), v))" />
+                                  Validation="@((string v) => ValidateField(nameof(OtherLecturerDTO.SurName), v))" />
                     <MudTextField T="int?"
                                   Label="Տարիք"
                                   @bind-Value="_formModel.Age"
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   For="@(() => _formModel.Age)" />
+                    @if (_formModel.Country == "Armenia")
+                    {
+                        <MudAutocomplete T="string"
+                                         Label="Դասավանդման Վայր"
+                                         Value="@_formModel.TeachingPlace"
+                                         ValueChanged="@(value => _formModel.TeachingPlace = value)"
+                                         SearchFunc="@SearchUniversities"
+                                         Variant="Variant.Outlined"
+                                         Required="true"
+                                         For="@(() => _formModel.TeachingPlace)"
+                                         Dense="true"
+                                         Clearable="true"
+                                         Placeholder="Select university..."
+                                         ResetValueOnEmptyText="true"
+                                         DebounceInterval="500"
+                                         MaxItems="null" />
+                    }
+                    else if (_formModel.Country != "Armenia")
+                    {
+                        <MudTextField T="string"
+                                      Label="Սովորելու վայր"
+                                      @bind-Value="_formModel.TeachingPlace"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      For="@(() => _formModel.TeachingPlace)" />
+                    }
+
                     <MudTextField T="string"
-                                  Label="Մասնագիտություն"
-                                  @bind-Value="_formModel.Profession"
+                                  Label="Դասավանդվող Առարկա"
+                                  @bind-Value="_formModel.TeachingSubject"
                                   Variant="Variant.Outlined"
                                   Required="true"
-                                  For="@(() => _formModel.Profession)"
-                                  Validation="@((string v) => ValidateField(nameof(OtherPhysicalPersonDTO.Profession), v))" />
+                                  For="@(() => _formModel.TeachingSubject)"
+                                  Validation="@((string v) => ValidateField(nameof(OtherLecturerDTO.TeachingSubject), v))" />
                     <MudButton Variant="Variant.Filled"
                                Class="mt-4 form-button"
                                OnClick="@HandleNextInState2">
@@ -222,7 +249,7 @@
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   For="@(() => _formModel.Purpose)"
-                                  Validation="@((string v) => ValidateField(nameof(OtherPhysicalPersonDTO.Purpose), v))" />
+                                  Validation="@((string v) => ValidateField(nameof(OtherStudentDTO.Purpose), v))" />
                     <MudButton Variant="Variant.Filled"
                                Class="mt-4 form-button"
                                OnClick="@HandleNextInState3">
@@ -237,7 +264,7 @@
 @code {
     private int _state = 1;
     private MudForm _form = new();
-    private OtherPhysicalPersonDTO _formModel = new();
+    private OtherLecturerDTO _formModel = new();
     private List<Country> _countries = new();
     private List<City> _cities = new();
     private bool isCountryLoading = false;
@@ -250,7 +277,7 @@
         if (_countries.Count == 0)
         {
             isCountryLoading = true;
-            _countries = await OtherPhysicalPersonService.GetAllCountriesAsync(cancellationToken);
+            _countries = await OtherLecturerService.GetAllCountriesAsync(cancellationToken);
             isCountryLoading = false;
             await InvokeAsync(StateHasChanged);
         }
@@ -271,7 +298,7 @@
         if (_cities.Count == 0 || _lastCountryCode != selectedCountryCode)
         {
             isCityLoading = true;
-            _cities = await OtherPhysicalPersonService.GetCitiesByCountryAsync(selectedCountryCode, cancellationToken);
+            _cities = await OtherLecturerService.GetCitiesByCountryAsync(selectedCountryCode, cancellationToken);
             _lastCountryCode = selectedCountryCode;
             isCityLoading = false;
             await InvokeAsync(StateHasChanged);
@@ -320,6 +347,14 @@
         return validationResults.Select(r => r.ErrorMessage);
     }
 
+    private async Task<IEnumerable<string>> SearchUniversities(string value, CancellationToken cancellationToken)
+    {
+        await Task.Delay(100, cancellationToken);
+        return string.IsNullOrWhiteSpace(value)
+            ? _universities
+            : _universities.Where(u => u.Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
     // State 1
     private async Task HandleNextInState1()
     {
@@ -355,13 +390,13 @@
         try
         {
             _formModel.Id = Guid.NewGuid();
-            var response = await HttpClient.PostAsJsonAsync("api/otherphysicalperson/save", _formModel);
+            var response = await HttpClient.PostAsJsonAsync("api/otherlecturer/save", _formModel);
 
             if (response.IsSuccessStatusCode)
             {
-                FormStateService.OtherPhysicalPersonModel = _formModel;
+                FormStateService.OtherLecturerModel = _formModel;
                 Snackbar.Add("Գրանցումը հաջողությամբ պահպանվեց։", Severity.Success);
-                Navigation.NavigateTo("/nextstep-for-other-physical-person");
+                Navigation.NavigateTo("/nextstep-for-other-lecturer");
             }
             else
             {
@@ -389,10 +424,10 @@
 
         if (_formModel.Country.Equals("Armenia", StringComparison.OrdinalIgnoreCase))
         {
-            if (fieldName == nameof(OtherPhysicalPersonDTO.Name) ||
-                fieldName == nameof(OtherPhysicalPersonDTO.SurName) ||
-                fieldName == nameof(OtherPhysicalPersonDTO.Profession) ||
-                fieldName == nameof(OtherPhysicalPersonDTO.Purpose))
+            if (fieldName == nameof(OtherLecturerDTO.Name) ||
+                fieldName == nameof(OtherLecturerDTO.SurName) ||
+                fieldName == nameof(OtherLecturerDTO.TeachingSubject) ||
+                fieldName == nameof(OtherLecturerDTO.Purpose))
             {
                 var regex = new Regex(@"^[\p{IsArmenian}\s\-.,;:()0-9]+$");
                 if (!string.IsNullOrWhiteSpace(value) && !regex.IsMatch(value))
@@ -403,4 +438,61 @@
         }
         return Enumerable.Empty<string>();
     }
+
+    private readonly List<string> _universities = new()
+    {
+        "Երևանի պետական համալսարան",
+        "Հայաստանի ազգային ագրարային համալսարան",
+        "Երևանի պետական բժշկական համալսարան",
+        "Խաչատուր Աբովյանի անվան հայկական պետական մանկավարժական համալսարան",
+        "Երևանի Կոմիտասի անվան պետական կոնսերվատորիա",
+        "Հայաստանի ազգային պոլիտեխնիկական համալսարան",
+        "Երևանի Վալերի Բրյուսովի անվան պետական լեզվաբանական համալսարան",
+        "Երևանի թատրոնի և կինոյի պետական ինստիտուտ",
+        "Հայկական պետական ֆիզիկական կուլտուրայի և սպորտի ինստիտուտ",
+        "Երևանի գեղարվեստի պետական ակադեմիա",
+        "Հայաստանի պետական տնտեսագիտական համալսարան",
+        "Ամերիկյան համալսարան Հայաստանում",
+        "Հայաստանի ճգնաժամային կառավարման պետական ակադեմիա",
+        "Արմենակ Խանփերյանցի անվան ռազմական ավիացիոն համալսարան",
+        "Հայաստանի պետական կառավարման ակադեմիա",
+        "Վազգեն Սարգսյանի անվան ռազմական համալսարան",
+        "Հայաստանում ֆրանսիական համալսարան",
+        "Ռուս-հայկական (Սլավոնական) համալսարան",
+        "Եվրոպական համալսարան Հայաստանում",
+        "Հայաստանի ազգային ճարտարապետության և շինարարության համալսարան",
+        "Շիրակի պետական համալսարան՝ Միքայել Նալբանդյանի անվան",
+        "Գավառի պետական համալսարան",
+        "Գորիսի պետական համալսարան",
+        "Վանաձորի պետական համալսարան՝ Հովհաննես Թումանյանի անվան",
+        "Գալիք համալսարան",
+        "Երևանի Հայբուսակ համալսարան",
+        "Երևանի Գլաձոր համալսարան",
+        "Երևանի Մեսրոպ Մաշտոցի անվան համալսարան",
+        "ՄՖԲ Ֆինանսների ակադեմիա",
+        "Հայկական բժշկական ինստիտուտ",
+        "Արտավազդ Մկրտչյանի անվան տնտեսագիտության և իրավունքի համալսարան",
+        "Ուրարտու գործնական հոգեբանության և սոցիոլոգիայի համալսարան",
+        "Ավանդական բժշկության համալսարան",
+        "Միջազգային տնտեսական հարաբերությունների համալսարան",
+        "Երևանի գյուղատնտեսական համալսարան",
+        "Սուրբ Թերեզայի անվան բժշկական համալսարան",
+        "Ազպատ-Վետերան դատաբժշկական և հոգեբանության ինստիտուտ",
+        "Անանիա Շիրակացու անվան միջազգային հարաբերությունների համալսարան",
+        "Ազգային գեղարվեստի ակադեմիա",
+        "Եվրասիա միջազգային համալսարան",
+        "Հյուսիսային համալսարան",
+        "Երևանի կառավարման համալսարան",
+        "Մովսես Խորենացու անվան համալսարան",
+        "Երևանի մշակույթի համալսարան",
+        "Միջազգային հաշվապահական ուսուցման կենտրոն",
+        "Գյումրու «Առաջընթաց» համալսարան",
+        "Մխիթար Գոշի անվան հայ-ռուսական միջազգային համալսարան",
+        "Հրազդանի հումանիտար ինստիտուտ",
+        "Վարդենիսի Վիկտոր Համբարձումյանի անվան ուսուցչական ինստիտուտ",
+        "Պլեխանովի անվան ռուսական տնտեսագիտական համալսարանի երևանյան մասնաճյուղ",
+        "Տերնոպիլի ազգային տնտեսագիտական համալսարանի գիտակրթական կենտրոն",
+        "Ռուսաստանի միջազգային զբոսաշրջության ակադեմիայի երևանյան մասնաճյուղ",
+        "Մ.Վ. Լոմոնոսովի անվան Մոսկվայի պետական համալսարանի երևանյան մասնաճյուղ"
+    };
 }

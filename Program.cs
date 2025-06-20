@@ -104,6 +104,12 @@ builder.Services.AddScoped<CrmRegionService>();
 builder.Services.AddScoped<CrmSchoolService>();
 builder.Services.AddScoped<RegistrationService>();
 builder.Services.AddScoped<FromStateServiceOtherCompany>();
+builder.Services.AddScoped<FormStateServiceForOtherStudent>();
+builder.Services.AddScoped<FormStateForOtherPhysicalPerson>();
+builder.Services.AddScoped<FormStateServiceForOtherLecturer>();
+builder.Services.AddScoped<OtherStudentService>();
+builder.Services.AddScoped<OtherLecturerService>();
+builder.Services.AddScoped<OtherPhysicalPersonService>();
 builder.Services.AddScoped<CRMPupilService>();
 
 

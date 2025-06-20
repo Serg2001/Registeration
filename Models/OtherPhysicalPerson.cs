@@ -16,8 +16,6 @@ namespace Registeration.Models
 
         public string Profession { get; set; } = string.Empty;
 
-        public string CustomProfession { get; set; } = string.Empty;
-
         public string Name { get; set; } = string.Empty;
 
         public string SurName { get; set; } = string.Empty;

@@ -2,31 +2,31 @@
 
 namespace Registeration.Enums
 {
-    public enum GradeLevel
+    public enum EGrade : int
     {
         [Display(Name = "I")]
-        Grade1 = 1,
+        G1 = 1,
         [Display(Name = "II")]
-        Grade2,
+        G2 = 2,
         [Display(Name = "III")]
-        Grade3,
+        G3 = 3,
         [Display(Name = "IV")]
-        Grade4,
+        G4 = 4,
         [Display(Name = "V")]
-        Grade5,
+        G5 = 5,
         [Display(Name = "VI")]
-        Grade6,
+        G6 = 6,
         [Display(Name = "VII")]
-        Grade7,
+        G7 = 7,
         [Display(Name = "VIII")]
-        Grade8,
+        G8 = 8,
         [Display(Name = "IX")]
-        Grade9,
+        G9 = 9,
         [Display(Name = "X")]
-        Grade10,
+        G10 = 10,
         [Display(Name = "XI")]
-        Grade11,
+        G11 = 11,
         [Display(Name = "XII")]
-        Grade12
+        G12 = 12
     }
 }

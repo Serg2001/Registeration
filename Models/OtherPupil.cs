@@ -20,7 +20,7 @@ namespace Registeration.Models
         public School School { get; set; } = null!;
 
         [Required]
-        public GradeLevel Grade { get; set; }
+        public EGrade Grade { get; set; }
 
         [Required]
         [ArmenianOnly]

@@ -4,6 +4,8 @@
 @using Registeration.Services
 @using MudBlazor
 @using System.Text.Json.Serialization
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 
 @inject ISnackbar Snackbar
 @inject IHttpClientFactory HttpClientFactory
@@ -139,14 +141,14 @@
             else if (_step == 2)
             {
                 <MudStack Spacing="3">
-                    <MudSelect T="GradeLevel"
+                    <MudSelect T="EGrade"
                     Label="Դասարան"
                     @bind-Value="_model.Grade"
                     Required="true"
                     Variant="Variant.Outlined"
                     Dense="true"
                     For="@(() => _model.Grade)">
-                        @foreach (var grade in Enum.GetValues(typeof(GradeLevel)).Cast<GradeLevel>())
+                        @foreach (var grade in Enum.GetValues(typeof(EGrade)).Cast<EGrade>())
                         {
                             <MudSelectItem Value="@grade">@GetDisplayName(grade)</MudSelectItem>
                         }
@@ -256,6 +258,37 @@
 
         try
         {
+
+            var checkDto = new PupilCheckDTO
+                {
+                    SchoolId = _model.School.Id,
+                    Grade = _model.Grade,
+                    Name = _model.Name,
+                    SurName = _model.SurName
+                };
+
+            var client = HttpClientFactory.CreateClient("CrmApi");
+
+            var jsonContent = JsonContent.Create(checkDto);
+
+            // Create GET request message with body
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/Platform/PupilCheck")
+                {
+                    Content = jsonContent
+                };
+
+            // Send request
+            var responseForCheck = await client.SendAsync(request);
+            responseForCheck.EnsureSuccessStatusCode();
+
+            bool checkResponse = await responseForCheck.Content.ReadFromJsonAsync<bool>();
+
+            if (!checkResponse)
+            {
+                Snackbar.Add("Համապատասխան աշակերտ չի գտնվել։", Severity.Warning);
+                return;
+            }
+
             var response = await HttpClient.PostAsJsonAsync("api/otherpupil/save", _model);
 
             if (response.IsSuccessStatusCode)
@@ -389,29 +422,10 @@
         DialogService.Show<ContactDialog>("Համաձայն եմ", options);
     }
 
-    private string GetDisplayName(GradeLevel grade)
+    private string GetDisplayName(EGrade grade)
     {
-        return grade switch
-        {
-            GradeLevel.Grade1 => "I",
-            GradeLevel.Grade2 => "II",
-            GradeLevel.Grade3 => "III",
-            GradeLevel.Grade4 => "IV",
-            GradeLevel.Grade5 => "V",
-            GradeLevel.Grade6 => "VI",
-            GradeLevel.Grade7 => "VII",
-            GradeLevel.Grade8 => "VIII",
-            GradeLevel.Grade9 => "IX",
-            GradeLevel.Grade10 => "X",
-            GradeLevel.Grade11 => "XI",
-            GradeLevel.Grade12 => "XII",
-            _ => grade.ToString()
-        };
+        var memberInfo = grade.GetType().GetMember(grade.ToString()).FirstOrDefault();
+        var displayAttribute = memberInfo?.GetCustomAttribute<DisplayAttribute>();
+        return displayAttribute?.Name ?? grade.ToString();
     }
-
-    // private class RegionWrapper
-    // {
-    //     [JsonPropertyName("$values")]
-    //     public List<RegionDTO> Values { get; set; } = new();
-    // }
 }

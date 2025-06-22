@@ -4,6 +4,8 @@
 @using Registeration.Services
 @using System.Security.Cryptography
 @using System.Text
+@using System.Reflection
+@using System.ComponentModel.DataAnnotations
 @inject HttpClient HttpClient
 @inject NavigationManager Navigation
 @inject IEmailService EmailService
@@ -124,9 +126,11 @@
                           Text="@_model.ParentsEmail"
                           Variant="Variant.Outlined" Disabled="true" />
 
-            <MudTextField T="string" Label="Դասարան"
-                          Text="@GetGradeDisplay(_model.Grade)"
-                          Variant="Variant.Outlined" Disabled="true" />
+            <MudTextField T="string"
+                          Label="Դասարան"
+                          Text="@GetDisplayName(_model.Grade)"
+                          Variant="Variant.Outlined"
+                          Disabled="true" />
 
             <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
                 Հաստատել
@@ -235,24 +239,11 @@
         }
     }
 
-    private string GetGradeDisplay(GradeLevel grade)
+    private string GetDisplayName(EGrade grade)
     {
-        return grade switch
-        {
-            GradeLevel.Grade1 => "I",
-            GradeLevel.Grade2 => "II",
-            GradeLevel.Grade3 => "III",
-            GradeLevel.Grade4 => "IV",
-            GradeLevel.Grade5 => "V",
-            GradeLevel.Grade6 => "VI",
-            GradeLevel.Grade7 => "VII",
-            GradeLevel.Grade8 => "VIII",
-            GradeLevel.Grade9 => "IX",
-            GradeLevel.Grade10 => "X",
-            GradeLevel.Grade11 => "XI",
-            GradeLevel.Grade12 => "XII",
-            _ => grade.ToString()
-        };
+        var memberInfo = grade.GetType().GetMember(grade.ToString()).FirstOrDefault();
+        var displayAttribute = memberInfo?.GetCustomAttribute<DisplayAttribute>();
+        return displayAttribute?.Name ?? grade.ToString();
     }
 
     private static string GenerateCode(string input)

@@ -22,7 +22,7 @@ namespace Registeration.DTOs
         public SchoolDTO School { get; set; } = new SchoolDTO();
 
         [Required(ErrorMessage = "Դասարանը Պարտադիր է։")]
-        public GradeLevel Grade { get; set; }
+        public EGrade Grade { get; set; }
 
         [Required(ErrorMessage = "Անունը Պարտադիր է։")]
         [ArmenianOnly]

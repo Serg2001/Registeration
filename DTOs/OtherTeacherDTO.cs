@@ -8,12 +8,12 @@ namespace Registeration.DTOs
     {
         public Guid Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public Guid RegionId { get; set; }
 
         public RegionDTO? Region { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public Guid SchoolId { get; set; }
 
         public SchoolDTO? School { get; set; }
@@ -33,7 +33,7 @@ namespace Registeration.DTOs
         public string SocNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Էլ․ հասցեն պարտադիր է։")]
-        [EmailAddress(ErrorMessage = "Սխալ Էլ․ հասցե։")]
+        [EmailAddress(ErrorMessage = "Սխալ Էլ․ հասցեի ձևաչափ։")]
         [StringLength(255)]
         public string Email { get; set; } = string.Empty;
     }

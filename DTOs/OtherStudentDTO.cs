@@ -7,27 +7,27 @@ namespace Registeration.DTOs
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Required]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string Country { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string City { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string SurName { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string StudyPlace { get; set; } = string.Empty;
         public int? Age { get; set; }
 
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
+        [EmailAddress(ErrorMessage ="Սխալ էլ․ հասցեի ձևաչափ։")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string Phone { get; set; } = string.Empty;
         public string Purpose { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

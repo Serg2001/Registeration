@@ -9,15 +9,17 @@ namespace Registeration.DTOs
     {
         public Guid Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage ="Պարտադիր լրացման դաշտ։")]
         public string Country { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string City { get; set; } = string.Empty;
         public string PersonType { get; set; } = string.Empty; // New field for Person Type
 
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string OrganizationName { get; set; } = string.Empty; // New field for Organization Name
 
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string FieldOfActivity { get; set; } = string.Empty; // New field for Field of Activity
 
         public string NameSurname { get; set; } = string.Empty;

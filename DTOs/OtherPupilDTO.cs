@@ -34,10 +34,10 @@ namespace Registeration.DTOs
         [StringLength(100, ErrorMessage = "Full name can't exceed 100 characters.")]
         public string SurName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "ՀԾՀ-ն Պարտադիր է։")]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         public string SocNumber { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Ծնողի Էլ․ Հասցեն Պարտադիր է։")]
+        [Required(ErrorMessage = "Պարտադիր լրացման դաշտ։")]
         [EmailAddress(ErrorMessage = "Սխալ էլ․ հասցեի ձևաչափ։")]
         public string ParentsEmail { get; set; } = string.Empty;
 

@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
 using Microsoft.Extensions.Configuration;
 using Registeration.DTOs;
+using Registeration.Services.CrmServices;
+using Registeration.Services.Selection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,7 +71,9 @@ builder.Services.AddScoped<OtherPupilService>();
 builder.Services.AddScoped<OtherTeacherService>();
 
 
-
+builder.Services.AddScoped<CrmService>();
+builder.Services.AddScoped<RegionSelection>();
+builder.Services.AddScoped<SchoolSelection>();
 
 builder.Services.AddHttpClient("ExternalRegions", client =>
 {

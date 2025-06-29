@@ -1,0 +1,366 @@
+﻿@page "/otherteacher"
+@using Registeration.DTOs.OtherTeacherDTOs
+@using Registeration.Services.OtherTeacherServices
+@using Registeration.Services.MailServices
+@using MudBlazor
+
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
+@inject CrmSchoolService CrmSchoolService
+@inject CrmRegionService CrmRegionService
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+@inject IEmailService EmailService
+@inject FormStateService FormStateService
+@inject IDialogService DialogService
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+    }
+
+    .blurred-bubbles {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        z-index: -1;
+    }
+
+    .bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: #b58df1;
+        filter: blur(90px);
+        opacity: 0.7;
+    }
+
+    .bubble1 { top: 10%; left: 5%; width: 300px; height: 300px; }
+    .bubble2 { top: 30%; left: 60%; width: 400px; height: 400px; }
+    .bubble3 { bottom: 10%; left: 30%; width: 500px; height: 500px; }
+
+    .centered-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .form-box {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 3rem;
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(10px);
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #6a1b9a;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .form-button {
+        background-color: #6a1b9a;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<div class="blurred-bubbles">
+    <div class="bubble bubble1"></div>
+    <div class="bubble bubble2"></div>
+    <div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+    <div class="form-box">
+        @if (_step == 1)
+        {
+            <MudStack Spacing="3">
+                <MudAutocomplete T="string"
+                                 Label="Մարզ"
+                                 Value="_selectedRegionName"
+                                 ValueChanged="OnRegionChanged"
+                                 SearchFunc="@SearchRegions"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 MaxItems="null" />
+
+                <MudAutocomplete T="string"
+                                 Label="Դպրոց"
+                                 Value="_selectedSchoolName"
+                                 ValueChanged="OnSchoolChanged"
+                                 SearchFunc="@SearchSchools"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 Disabled="@(_model.Region?.Id == Guid.Empty)"
+                                 MaxItems="null" />
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="NextStep"
+                           Disabled="@(!_canProceed)"
+                           FullWidth="true">
+                    Հաջորդը
+                </MudButton>
+            </MudStack>
+        }
+        else if (_step == 2)
+        {
+            <MudStack Spacing="3">
+                <MudTextField T="string"
+                              Label="Անուն Ազգանուն"
+                              @bind-Value="_model.FullName"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              For="@(() => _model.FullName)" />
+
+                <MudTextField T="string"
+                              Label="Դասավանդվող Առարկա"
+                              @bind-Value="_model.TeachingSubject"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              For="@(() => _model.TeachingSubject)" />
+
+                <MudTextField T="string"
+                              Label="ՀԾՀ"
+                              @bind-Value="_model.SocNumber"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              For="@(() => _model.SocNumber)" />
+
+                <MudTextField T="string"
+                              Label="Էլ. հասցե"
+                              @bind-Value="_model.Email"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              For="@(() => _model.Email)" />
+
+                <div class="d-flex align-items-center gap-4 mt-4">
+                    <MudCheckBox T="bool" @bind-Value="isAgreed" Color="Color.Success">
+                        <LabelContent>
+                            <span class="text-primary text-decoration-underline cursor-pointer" @onclick="OpenContactDialog">
+                                Ուսուցչի Համաձայնություն
+                            </span>
+                        </LabelContent>
+                    </MudCheckBox>
+                </div>
+
+                <MudButton Variant="Variant.Filled"
+                           Disabled="@(!isAgreed)"
+                           Color="Color.Primary"
+                           OnClick="Submit"
+                           FullWidth="true">
+                    Հաջորդը
+                </MudButton>
+            </MudStack>
+        }
+    </div>
+</div>
+
+@code {
+    private MudForm _form = new();
+    private OtherTeacherDTO _model = new() { Id = Guid.NewGuid() };
+    private int _step = 1;
+    private bool isAgreed;
+    private bool _canProceed = true;
+
+    private string _selectedRegionName = string.Empty;
+    private string _selectedSchoolName = string.Empty;
+
+    private List<RegionDTO> _regionList = new();
+    private List<SchoolDTO> _schoolList = new();
+
+    private async Task NextStep()
+    {
+        await _form.Validate();
+
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր դաշտերը։", Severity.Error);
+            return;
+        }
+
+        if (_step == 1)
+        {
+            if (string.IsNullOrWhiteSpace(_selectedRegionName) || string.IsNullOrWhiteSpace(_selectedSchoolName))
+            {
+                Snackbar.Add("Խնդրում ենք ընտրել մարզ և դպրոց։", Severity.Error);
+                return;
+            }
+
+            bool schoolCheckPassed = await OnSchoolChanged(_selectedSchoolName);
+            if (!schoolCheckPassed)
+            {
+                _step = 1;
+                return;
+            }
+        }
+
+        _step++;
+        StateHasChanged();
+    }
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Խնդրում ենք լրացնել բոլոր դաշտերը։", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync("api/otherteacher/save", _model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+
+                if (result != null &&
+                    result.TryGetValue("id", out var idObj) &&
+                    Guid.TryParse(idObj?.ToString(), out Guid id))
+                {
+                    _model.Id = id;
+                    FormStateService.OtherTeacherFormModel = _model;
+
+                    Snackbar.Add("Հաջողությամբ պահպանվեց։", Severity.Success);
+                    Navigation.NavigateTo("/nextstep-otherteacher");
+                }
+                else
+                {
+                    Snackbar.Add("Չհաջողվեց ստանալ գրանցման նույնացուցիչը։", Severity.Error);
+                }
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                if (error.Contains("Այս Ուսուցիչն արդեն գրանցված է։"))
+                {
+                    Snackbar.Add("Դուք արդեն գրանցված եք տվյալ դպրոցում։ Մուտքի տվյալները վերցրեք դպրոցից։", Severity.Warning);
+                    return;
+                }
+                Snackbar.Add($"Սխալ է առաջացել․ {error}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
+    {
+        if (_regionList.Count == 0)
+        {
+            try
+            {
+                var client = HttpClientFactory.CreateClient("ExternalRegions");
+                var response = await client.GetFromJsonAsync<List<RegionDTO>>("api/Platform/GetAllRegions", token);
+                if (response != null)
+                    _regionList = response;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Failed to fetch regions: " + ex.Message);
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(value)
+            ? _regionList.Select(r => r.Name)
+            : _regionList.Where(r => r.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(r => r.Name);
+    }
+
+    private async Task OnRegionChanged(string selectedName)
+    {
+        _selectedRegionName = selectedName;
+        _canProceed = true;  // reset proceed flag
+
+        var selected = _regionList.FirstOrDefault(r => r.Name == selectedName);
+        if (selected != null)
+        {
+            _model.Region = new RegionDTO { Id = selected.Id, Name = selected.Name };
+            _schoolList = await CrmSchoolService.GetSchoolsByRegionAsync(selected.Id);
+        }
+        else
+        {
+            _model.Region = new RegionDTO();
+        }
+
+        _model.School = new SchoolDTO();
+        _selectedSchoolName = string.Empty;
+    }
+
+    private async Task<IEnumerable<string>> SearchSchools(string value, CancellationToken token)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? _schoolList.Select(s => s.Name)
+            : _schoolList.Where(s => s.Name.Contains(value, StringComparison.OrdinalIgnoreCase)).Select(s => s.Name);
+    }
+
+    private async Task<bool> OnSchoolChanged(string selectedSchoolName)
+    {
+        try
+        {
+            _selectedSchoolName = selectedSchoolName;
+
+            var regionDto = await CrmRegionService.SaveRegionIfNotExistsAsync(_selectedRegionName);
+            _model.Region = regionDto;
+
+            var selectedSchool = _schoolList.FirstOrDefault(s => s.Name == selectedSchoolName);
+            if (selectedSchool != null)
+            {
+                var existingSchool = await CrmSchoolService.GetSchoolByNameAsync(selectedSchoolName);
+                if (existingSchool != null)
+                {
+                    Snackbar.Add("Այս դպրոցն արդեն գոյություն ունի։ Խնդրում ենք ընտրել մեկ այլ դպրոց:", Severity.Warning);
+                    _selectedSchoolName = string.Empty;
+                    _model.School = new SchoolDTO();
+                    _form.ResetValidation();
+                    _canProceed = false;
+                    StateHasChanged();
+                    return false;
+                }
+
+                _model.School = selectedSchool;
+                _canProceed = true;
+                return true;
+            }
+
+            Snackbar.Add("Դպրոցը չի գտնվել։ Խնդրում ենք ընտրել դպրոց ցանկից։", Severity.Warning);
+            _selectedSchoolName = string.Empty;
+            _model.School = new SchoolDTO();
+            _form.ResetValidation();
+            _canProceed = false;
+            StateHasChanged();
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Սխալ է առաջացել․ {ex.Message}", Severity.Error);
+            _canProceed = false;
+            StateHasChanged();
+            return false;
+        }
+    }
+
+    private async void OpenContactDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        DialogService.Show<ContactDialog>("Համաձայն եմ", options);
+    }
+}

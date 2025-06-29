@@ -1,4 +1,4 @@
-﻿using Registeration.DTOs;
+﻿using Registeration.DTOs.CrmDTOs;
 
 namespace Registeration.Data
 {

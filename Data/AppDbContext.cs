@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Registeration.Models;
+using Registeration.Models.CrmModels;
+using Registeration.Models.SchoolModels;
 
 namespace Registeration.Data
 {
@@ -10,7 +12,6 @@ namespace Registeration.Data
         {
         }
 
-        public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<Region> Regions { get; set; }
         public DbSet<School> Schools { get; set; }
         public DbSet<Registration> Registrations { get; set; }

@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Registeration.Data;
-using Registeration.DTOs;
+using Registeration.DTOs.CrmDTOs;
 using Registeration.Services.CrmServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
+
 
 namespace Registeration.Services.Selection
 {

@@ -7,13 +7,20 @@ using System.Text;
 using Microsoft.Identity.Client;
 using Registeration.Repos;
 using System.Reflection;
-using Registeration.Services;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
 using Microsoft.Extensions.Configuration;
 using Registeration.DTOs;
+using Registeration.Services.SchoolServices;
+using Registeration.Services.FormStateServices;
+using Registeration.Services.MailServices;
+using Registeration.Services.OtherCompanyServices;
+using Registeration.Services.OtherLecturerServices;
+using Registeration.Services.OtherPhysicalPersonServices;
+using Registeration.Services.OtherStudentServices;
+using Registeration.Services.OtherTeacherServices;
+using Registeration.Services.OtherPupilServices;
 using Registeration.Services.CrmServices;
-using Registeration.Services.Selection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,9 +78,7 @@ builder.Services.AddScoped<OtherPupilService>();
 builder.Services.AddScoped<OtherTeacherService>();
 
 
-builder.Services.AddScoped<CrmService>();
-builder.Services.AddScoped<RegionSelection>();
-builder.Services.AddScoped<SchoolSelection>();
+
 
 builder.Services.AddHttpClient("ExternalRegions", client =>
 {

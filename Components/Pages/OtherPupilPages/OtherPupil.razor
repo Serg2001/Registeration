@@ -1,0 +1,385 @@
+﻿@page "/otherpupil"
+
+
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@using System.Text.Json.Serialization
+@using MudBlazor
+@using Registeration.DTOs.OtherPupilDTOs
+@using Registeration.DTOs.SchoolDTOs
+@using Registeration.DTOs.CrmDTOs
+@using Registeration.Enums
+@using Registeration.Services.CrmServices
+@using Registeration.Services.FormStateServices
+@using Registeration.Services.OtherPupilServices
+@using Registeration.Services.MailServices
+@using Registeration.Services.Selection
+
+@inject ISnackbar Snackbar
+@inject IHttpClientFactory HttpClientFactory
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+@inject IEmailService EmailService
+@inject FormStateService FormStateService
+@inject IDialogService DialogService
+@inject CrmService CrmService
+@inject RegionSelection RegionSelection
+@inject SchoolSelection SchoolSelection
+
+<style>
+	body {
+		margin: 0;
+		padding: 0;
+		font-family: 'Segoe UI', sans-serif;
+		background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+		background-attachment: fixed;
+		background-repeat: no-repeat;
+		overflow-x: hidden;
+	}
+
+	.blurred-bubbles {
+		position: absolute;
+		width: 100vw;
+		height: 100vh;
+		overflow: hidden;
+		z-index: -1;
+	}
+
+	.bubble {
+		position: absolute;
+		border-radius: 50%;
+		background: #b58df1;
+		filter: blur(90px);
+		opacity: 0.7;
+	}
+
+	.bubble1 {
+		top: 10%;
+		left: 5%;
+		width: 300px;
+		height: 300px;
+	}
+
+	.bubble2 {
+		top: 30%;
+		left: 60%;
+		width: 400px;
+		height: 400px;
+	}
+
+	.bubble3 {
+		bottom: 10%;
+		left: 30%;
+		width: 500px;
+		height: 500px;
+	}
+
+	.centered-container {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 100vh;
+		padding: 2rem;
+	}
+
+	.form-box {
+		background-color: rgba(255, 255, 255, 0.85);
+		padding: 3rem;
+		border-radius: 20px;
+		max-width: 600px;
+		width: 100%;
+		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+		backdrop-filter: blur(10px);
+	}
+
+	.form-title {
+		font-size: 2rem;
+		font-weight: bold;
+		color: #6a1b9a;
+		margin-bottom: 1.5rem;
+		text-align: center;
+	}
+
+	.form-button {
+		background-color: #6a1b9a;
+		color: white;
+		font-weight: bold;
+	}
+</style>
+
+<div class="blurred-bubbles">
+	<div class="bubble bubble1"></div>
+	<div class="bubble bubble2"></div>
+	<div class="bubble bubble3"></div>
+</div>
+
+<div class="centered-container">
+	<div class="form-box">
+		<MudForm @ref="_form" Model="_model">
+			@if (_step == 1)
+			{
+				<MudStack Spacing="3">
+					<!-- Region -->
+					<MudAutocomplete T="string"
+									 Label="Մարզ"
+									 Value="_selectedRegionName"
+									 ValueChanged="OnRegionChanged"
+									 SearchFunc="SearchRegions"
+									 Variant="Variant.Outlined"
+									 Required="true"
+									 MaxItems="null" />
+
+					<!-- School -->
+					<MudAutocomplete T="SchoolDTO"
+									 Label="Դպրոց"
+									 Value="_selectedSchool"
+									 ValueChanged="OnSchoolSelected"
+									 SearchFunc="SearchSchools"
+									 ToStringFunc="@(s => s == null ? string.Empty : s.Name)"
+									 Variant="Variant.Outlined"
+									 Required="true"
+									 Disabled="@string.IsNullOrWhiteSpace(_selectedRegionId)"
+									 MaxItems="null" />
+
+					<MudButton Variant="Variant.Filled"
+							   Color="Color.Primary"
+							   OnClick="NextStep"
+							   Disabled="@(!_canProceed)"
+							   FullWidth="true">
+						Հաջորդը
+					</MudButton>
+				</MudStack>
+			}
+			else if (_step == 2)
+			{
+				<MudStack Spacing="3">
+					<MudSelect T="EGrade"
+							   Label="Դասարան"
+							   @bind-Value="_model.Grade"
+							   Required="true"
+							   Variant="Variant.Outlined"
+							   Dense="true">
+						@foreach (var grade in Enum.GetValues(typeof(EGrade)).Cast<EGrade>())
+						{
+							<MudSelectItem Value="@grade">@GetDisplayName(grade)</MudSelectItem>
+						}
+					</MudSelect>
+
+					<MudTextField Label="Անուն" @bind-Value="_model.Name" Variant="Variant.Outlined" Required="true" />
+					<MudTextField Label="Ազգանուն" @bind-Value="_model.SurName" Variant="Variant.Outlined" Required="true" />
+					<MudTextField Label="ՀԾՀ" @bind-Value="_model.SocNumber" Variant="Variant.Outlined" Required="true" />
+					<MudTextField Label="Ծնողի էլ. հասցե" @bind-Value="_model.ParentsEmail" Variant="Variant.Outlined" Required="true" />
+
+					<div class="d-flex align-items-center gap-4 mt-4">
+						<MudCheckBox T="bool" @bind-Value="isAgreed" Color="Color.Success">
+							<LabelContent>
+								<span class="text-primary text-decoration-underline cursor-pointer" @onclick="OpenContactDialog">
+									Ծնողի Համաձայնություն
+								</span>
+							</LabelContent>
+						</MudCheckBox>
+					</div>
+
+					<MudButton Variant="Variant.Filled"
+							   Disabled="@(!isAgreed)"
+							   Color="Color.Primary"
+							   OnClick="Submit"
+							   FullWidth="true">
+						Հաջորդը
+					</MudButton>
+				</MudStack>
+			}
+		</MudForm>
+	</div>
+</div>
+
+@code {
+	private MudForm _form = new();
+	private OtherPupilDTO _model = new() { Id = Guid.NewGuid() };
+	private int _step = 1;
+	private bool isAgreed;
+	private bool _canProceed = true;
+
+	private string _selectedRegionName = string.Empty;
+	private string? _selectedRegionId;
+	private SchoolDTO? _selectedSchool;
+
+	protected override async Task OnInitializedAsync()
+	{
+		// Optionally preload regions
+	}
+
+	private async Task<IEnumerable<string>> SearchRegions(string value, CancellationToken token)
+	{
+		return await RegionSelection.SearchRegionsAsync(value);
+	}
+
+	private async Task OnRegionChanged(string selectedName)
+	{
+		_selectedRegionName = selectedName;
+		var selectedRegion = await RegionSelection.OnRegionChangedAsync(selectedName);
+
+		_model.School = new SchoolDTO();
+		_selectedSchool = null;
+		_canProceed = false;
+
+		if (selectedRegion != null)
+		{
+			_model.Region = selectedRegion;
+			_selectedRegionId = selectedRegion.Id.ToString();
+			await SchoolSelection.LoadSchoolsByRegionAsync(selectedRegion.Id);
+		}
+		else
+		{
+			_model.Region = new RegionDTO();
+			_selectedRegionId = null;
+		}
+	}
+
+
+	// Step 2: School Changed
+	private async Task<IEnumerable<SchoolDTO>> SearchSchools(string value, CancellationToken token)
+	{
+		if (string.IsNullOrWhiteSpace(_selectedRegionId) || !Guid.TryParse(_selectedRegionId, out var regionGuid))
+			return Enumerable.Empty<SchoolDTO>();
+
+		return await SchoolSelection.SearchSchoolsAsync(value, regionGuid);
+	}
+
+	private async Task OnSchoolSelected(SchoolDTO selected)
+	{
+		_selectedSchool = selected;
+
+		if (_model.Region == null || _model.Region.Id == Guid.Empty)
+		{
+			Snackbar.Add("Խնդրում ենք նախ ընտրել մարզ։", Severity.Warning);
+			_model.School = new SchoolDTO();
+			_canProceed = false;
+			return;
+		}
+
+		var (success, school, error) = await SchoolSelection.OnSchoolChangedAsync(
+			selected.Name,
+			_model.Region.Name,
+			_model.Region.Id);
+
+		if (success && school != null)
+		{
+			_model.School = school;
+			_canProceed = true;
+		}
+		else
+		{
+			Snackbar.Add(error ?? "Դպրոցը չի գտնվել կամ արդեն գրանցված է։", Severity.Warning);
+			_model.School = new SchoolDTO();
+			_selectedSchool = null;
+			_canProceed = false;
+			_form.ResetValidation();
+		}
+	}
+
+	private async Task NextStep()
+	{
+		await _form.Validate();
+		if (!_form.IsValid)
+		{
+			Snackbar.Add("Խնդրում ենք լրացնել բոլոր դաշտերը։", Severity.Error);
+			return;
+		}
+
+		if (_step == 1)
+		{
+			if (string.IsNullOrWhiteSpace(_selectedRegionName) || _selectedSchool == null)
+			{
+				Snackbar.Add("Խնդրում ենք ընտրել մարզ և դպրոց։", Severity.Error);
+				return;
+			}
+		}
+
+		_step++;
+	}
+
+	private async Task Submit()
+	{
+		await _form.Validate();
+		if (!_form.IsValid)
+		{
+			Snackbar.Add("Խնդրում ենք լրացնել բոլոր դաշտերը։", Severity.Error);
+			return;
+		}
+
+		try
+		{
+			var checkDto = new PupilCheckDTO
+				{
+					SchoolId = _model.School.Id,
+					Grade = _model.Grade,
+					Name = _model.Name,
+					SurName = _model.SurName
+				};
+
+			var client = HttpClientFactory.CreateClient("CrmApi");
+			var request = new HttpRequestMessage(HttpMethod.Get, "api/Platform/PupilCheck")
+				{
+					Content = JsonContent.Create(checkDto)
+				};
+
+			var response = await client.SendAsync(request);
+			response.EnsureSuccessStatusCode();
+
+			var checkResponse = await response.Content.ReadFromJsonAsync<bool>();
+			if (!checkResponse)
+			{
+				Snackbar.Add("Համապատասխան աշակերտ չի գտնվել։", Severity.Warning);
+				return;
+			}
+
+			var saveResponse = await HttpClient.PostAsJsonAsync("api/otherpupil/save", _model);
+
+			if (saveResponse.IsSuccessStatusCode)
+			{
+				var result = await saveResponse.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+				if (result != null && result.TryGetValue("id", out var idObj) && Guid.TryParse(idObj?.ToString(), out Guid id))
+				{
+					_model.Id = id;
+					FormStateService.OtherPupilFormModel = _model;
+					Snackbar.Add("Հաջողությամբ պահպանվեց։", Severity.Success);
+					Navigation.NavigateTo("/nextstep-otherpupil");
+				}
+				else
+				{
+					Snackbar.Add("Չհաջողվեց ստանալ գրանցման նույնացուցիչը։", Severity.Error);
+				}
+			}
+			else
+			{
+				var errorContent = await saveResponse.Content.ReadAsStringAsync();
+				if (errorContent.Contains("Այս աշակերտն արդեն գրանցված է տվյալ դպրոցում"))
+				{
+					Snackbar.Add("Դուք արդեն գրանցված եք տվյալ դպրոցում։", Severity.Warning);
+				}
+				else
+				{
+					Snackbar.Add($"Սխալ է առաջացել․ {errorContent}", Severity.Error);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add($"Սերվերի սխալ․ {ex.Message}", Severity.Error);
+		}
+	}
+
+	private void OpenContactDialog()
+	{
+		var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+		DialogService.Show<ContactDialog>("Համաձայն եմ", options);
+	}
+
+	private string GetDisplayName(EGrade grade)
+	{
+		var memberInfo = grade.GetType().GetMember(grade.ToString()).FirstOrDefault();
+		var displayAttribute = memberInfo?.GetCustomAttribute<DisplayAttribute>();
+		return displayAttribute?.Name ?? grade.ToString();
+	}
+}

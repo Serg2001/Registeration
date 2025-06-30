@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Registeration.DTOs;
+using Registeration.DTOs.CrmDTOs;
+using Registeration.DTOs.SchoolDTOs;
 using Registeration.Models;
 using Registeration.Data;
 using Registeration.DTOs.OtherTeacherDTOs;
 using Registeration.Services.OtherTeacherServices;
+using Registeration.Services.CrmServices;
 
 namespace Registeration.Controllers
 {
@@ -13,19 +16,16 @@ namespace Registeration.Controllers
     public class OtherTeacherController : ControllerBase
     {
         private readonly OtherTeacherService _service;
-        private readonly CrmRegionService _regionService;
-        private readonly CrmSchoolService _schoolService;
+        private readonly CrmService _crmService;
         private readonly AppDbContext _context;
 
         public OtherTeacherController(
             OtherTeacherService service,
-            CrmRegionService regionService,
-            CrmSchoolService schoolService,
+            CrmService crmService,
             AppDbContext context)
         {
             _service = service;
-            _regionService = regionService;
-            _schoolService = schoolService;
+            _crmService = crmService;
             _context = context;
         }
 
@@ -43,9 +43,9 @@ namespace Registeration.Controllers
 
             try
             {
-                var region = await _regionService.SaveRegionIfNotExistsAsync(dto.Region.Name);
+                var region = await _crmService.SaveRegionIfNotExistsAsync(dto.Region.Name);
 
-                var school = await _schoolService.SaveSchoolIfNotExistsAsync(
+                var school = await _crmService.SaveSchoolIfNotExistsAsync(
                     dto.School.Name,
                     dto.School.Address ?? "Not Provided",
                     region.Id);

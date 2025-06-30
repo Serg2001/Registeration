@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Identity.Client;
-using Registeration.Repos;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
@@ -21,6 +20,7 @@ using Registeration.Services.OtherStudentServices;
 using Registeration.Services.OtherTeacherServices;
 using Registeration.Services.OtherPupilServices;
 using Registeration.Services.CrmServices;
+using Registeration.Services.Selection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +38,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-
 
 builder.Services.AddHttpClient("CRM", client =>
 {
@@ -63,28 +62,25 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
-builder.Services.AddScoped<Registeration.Repos.IAccount, Account>();
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7266") });
-builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<PupilService>();
-builder.Services.AddScoped<ITeacherService, TeacherService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IPupilService, PupilService>();
 builder.Services.AddSingleton<FormStateService>();
 builder.Services.AddScoped<OtherPupilService>();
 builder.Services.AddScoped<OtherTeacherService>();
 
+// Register CrmService
+builder.Services.AddScoped<CrmService>(); // Add this line
 
-
+// Register SchoolSelection and RegionSelection after dependencies
+builder.Services.AddScoped<SchoolSelection>();
+builder.Services.AddScoped<RegionSelection>();
 
 builder.Services.AddHttpClient("ExternalRegions", client =>
 {
     client.BaseAddress = new Uri("https://crm.dshh.am:1400/");
 });
-
 
 builder.Services.AddHttpClient("CrmApi", client =>
 {
@@ -92,10 +88,6 @@ builder.Services.AddHttpClient("CrmApi", client =>
     client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
     client.Timeout = TimeSpan.FromSeconds(30);
 });
-
-
-
-
 
 builder.Services.AddScoped<OtherCompanyService>();
 builder.Services.AddScoped<OtherPhysicalPersonService>();
@@ -106,11 +98,9 @@ builder.Services.AddHttpClient("CountryStateCity", client =>
     client.BaseAddress = new Uri("https://api.countrystatecity.in/v1/");
     client.Timeout = TimeSpan.FromSeconds(60);
 });
+
 builder.Services.AddMudServices();
 
-
-builder.Services.AddScoped<CrmRegionService>();
-builder.Services.AddScoped<CrmSchoolService>();
 builder.Services.AddScoped<RegistrationService>();
 builder.Services.AddScoped<FromStateServiceOtherCompany>();
 builder.Services.AddScoped<FormStateServiceForOtherStudent>();
@@ -121,34 +111,24 @@ builder.Services.AddScoped<OtherLecturerService>();
 builder.Services.AddScoped<OtherPhysicalPersonService>();
 builder.Services.AddScoped<CRMPupilService>();
 
-
-
-
-
-builder.Services.AddMudServices();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
-
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API name V1");
 });
-
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

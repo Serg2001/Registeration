@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Registeration.Data;
 using Registeration.DTOs.SchoolDTOs;
 using Registeration.Services.CrmServices;
 
@@ -12,9 +13,11 @@ namespace Registeration.Services.Selection
         private readonly CrmService _crmService;
         private List<SchoolDTO> _schoolList = new();
         private Guid _currentRegionId = Guid.Empty;
+        private readonly AppDbContext _dbContext;
 
-        public SchoolSelection(CrmService crmService)
+        public SchoolSelection(CrmService crmService, AppDbContext dbContext)
         {
+            _dbContext = dbContext;
             _crmService = crmService;
         }
 

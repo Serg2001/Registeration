@@ -5,6 +5,9 @@ using Registeration.Models;
 using Registeration.Data;
 using Registeration.DTOs.OtherPupilDTOs;
 using Registeration.Services.OtherPupilServices;
+using Registeration.Services.CrmServices;
+using Registeration.DTOs.CrmDTOs;
+using Registeration.DTOs.SchoolDTOs;
 
 namespace Registeration.Controllers
 {
@@ -13,19 +16,16 @@ namespace Registeration.Controllers
     public class OtherPupilController : ControllerBase
     {
         private readonly OtherPupilService _service;
-        private readonly CrmRegionService _regionService;
-        private readonly CrmSchoolService _schoolService;
+        private readonly CrmService _crmService;
         private readonly AppDbContext _context;
 
         public OtherPupilController(
             OtherPupilService service,
-            CrmRegionService regionService,
-            CrmSchoolService schoolService,
+            CrmService crmService,
             AppDbContext context)
         {
             _service = service;
-            _regionService = regionService;
-            _schoolService = schoolService;
+            _crmService = crmService;
             _context = context;
         }
 
@@ -43,9 +43,9 @@ namespace Registeration.Controllers
 
             try
             {
-                var region = await _regionService.SaveRegionIfNotExistsAsync(dto.Region.Name);
+                var region = await _crmService.SaveRegionIfNotExistsAsync(dto.Region.Name);
 
-                var school = await _schoolService.SaveSchoolIfNotExistsAsync(
+                var school = await _crmService.SaveSchoolIfNotExistsAsync(
                     dto.School.Name,
                     dto.School.Address ?? "Not Provided",
                     region.Id);

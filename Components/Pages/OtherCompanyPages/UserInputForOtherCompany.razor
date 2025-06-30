@@ -1,4 +1,6 @@
 ﻿@page "/confirm-other-company"
+
+@using Registeration.DTOs
 @using Registeration.DTOs.OtherCompanyDTOs
 @using Registeration.Services.OtherCompanyServices
 @using Registeration.Services.MailServices
@@ -123,7 +125,7 @@
 
 @code {
     private MudForm _form;
-    private OtherDTO _model = new();
+    private OtherCompanyDTO _model = new();
     private Guid _otherId;
 
     protected override async Task OnInitializedAsync()
@@ -136,7 +138,7 @@
             _otherId = id;
             try
             {
-                var result = await HttpClient.GetFromJsonAsync<OtherDTO>($"api/othercompany/by-id/{id}");
+                var result = await HttpClient.GetFromJsonAsync<OtherCompanyDTO>($"api/othercompany/by-id/{id}");
                 if (result != null)
                     _model = result;
                 else

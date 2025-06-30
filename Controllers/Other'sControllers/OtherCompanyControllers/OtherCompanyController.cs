@@ -70,7 +70,7 @@ namespace Registeration.Controllers
             if (other == null)
                 return NotFound(new { Message = "Other not found" });
 
-            var dto = new OtherDTO
+            var dto = new OtherCompanyDTO
             {
                 Id = other.Id,
                 Country = other.Country,

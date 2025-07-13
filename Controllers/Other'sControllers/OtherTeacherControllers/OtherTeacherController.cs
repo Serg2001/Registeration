@@ -140,6 +140,8 @@ namespace Registeration.Controllers
             teacher.Login = teacher.Email;
             teacher.Password = dto.Password;
             teacher.AccessCode = dto.AccessCode;
+            teacher.Role = dto.Role;
+            teacher.UserType = dto.UserType;
 
             await _context.SaveChangesAsync();
             return Ok();

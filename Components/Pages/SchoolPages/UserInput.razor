@@ -171,10 +171,16 @@
             string password = GenerateCode(_model.Email);
             string accessCode = Guid.NewGuid().ToString().Substring(0, 8);
 
+            // 🆕 Set Role and UserType
+            _model.Role = "school";
+            _model.UserType = "school";
+
             var confirmData = new ConfirmCredentialsDTO
                 {
                     Password = password,
-                    AccessCode = accessCode
+                    AccessCode = accessCode,
+                    Role = _model.Role,
+                    UserType = _model.UserType
                 };
 
             // 3️⃣ Update credentials

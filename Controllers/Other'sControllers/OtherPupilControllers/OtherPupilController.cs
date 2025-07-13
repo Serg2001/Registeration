@@ -145,6 +145,8 @@ namespace Registeration.Controllers
             pupil.Login = pupil.ParentsEmail;
             pupil.Password = dto.Password;
             pupil.AccessCode = dto.AccessCode;
+            pupil.Role = dto.Role;
+            pupil.UserType = dto.UserType;
 
             await _context.SaveChangesAsync();
             return Ok();

@@ -40,5 +40,8 @@ namespace Registeration.DTOs.SchoolDTOs
         public string Password { get; set; } = string.Empty;
 
         public string AccessCode { get; set; } = string.Empty;
+
+        public string Role { get; set; } = string.Empty;
+        public string UserType { get; set; } = string.Empty;
     }
 }

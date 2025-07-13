@@ -131,6 +131,8 @@ namespace Registeration.Controllers
 
             other.Login = other.Email;
             other.Password = dto.Password;
+            other.Role = dto.Role;
+            other.UserType = dto.UserType;
 
             await _context.SaveChangesAsync();
             return Ok();

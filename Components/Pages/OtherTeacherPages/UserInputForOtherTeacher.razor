@@ -12,82 +12,82 @@
 
 <style>
     body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-        overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    overflow-x: hidden;
     }
 
     .blurred-bubbles {
-        position: absolute;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        z-index: -1;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: -1;
     }
 
     .bubble {
-        position: absolute;
-        border-radius: 50%;
-        background: #b58df1;
-        filter: blur(90px);
-        opacity: 0.7;
+    position: absolute;
+    border-radius: 50%;
+    background: #b58df1;
+    filter: blur(90px);
+    opacity: 0.7;
     }
 
     .bubble1 {
-        top: 10%;
-        left: 5%;
-        width: 300px;
-        height: 300px;
+    top: 10%;
+    left: 5%;
+    width: 300px;
+    height: 300px;
     }
 
     .bubble2 {
-        top: 30%;
-        left: 60%;
-        width: 400px;
-        height: 400px;
+    top: 30%;
+    left: 60%;
+    width: 400px;
+    height: 400px;
     }
 
     .bubble3 {
-        bottom: 10%;
-        left: 30%;
-        width: 500px;
-        height: 500px;
+    bottom: 10%;
+    left: 30%;
+    width: 500px;
+    height: 500px;
     }
 
     .centered-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
     }
 
     .form-box {
-        background-color: rgba(255, 255, 255, 0.85);
-        padding: 3rem;
-        border-radius: 20px;
-        max-width: 600px;
-        width: 100%;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 3rem;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
     }
 
     .form-title {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #6a1b9a;
-        margin-bottom: 1.5rem;
-        text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #6a1b9a;
+    margin-bottom: 1.5rem;
+    text-align: center;
     }
 
     .form-button {
-        background-color: #6a1b9a;
-        color: white;
-        font-weight: bold;
+    background-color: #6a1b9a;
+    color: white;
+    font-weight: bold;
     }
 </style>
 
@@ -103,28 +103,28 @@
             <div class="form-title">Ուսուցչի Գրանցման Տվյալների Հաստատում</div>
 
             <MudTextField T="string" Label="Դպրոց"
-                          Text="@_model.School?.Name"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.School?.Name"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Մարզ"
-                          Text="@_model.Region?.Name"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.Region?.Name"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Անուն / Ազգանուն"
-                          Text="@_model.FullName"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.FullName"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Դասավանդվող առարկա"
-                          Text="@_model.TeachingSubject"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.TeachingSubject"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="ՀԾՀ"
-                          Text="@_model.SocNumber"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.SocNumber"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Էլ․ հասցե"
-                          Text="@_model.Email"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.Email"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
                 Հաստատել
@@ -174,10 +174,15 @@
             string password = GenerateCode(_model.Email);
             string accessCode = GenerateCode(identityString);
 
+            _model.Role = "otherteacher";
+            _model.UserType = "otherteacher";
+
             var confirmData = new
             {
                 Password = password,
-                AccessCode = accessCode
+                AccessCode = accessCode,
+                Role = _model.Role,
+                UserType = _model.UserType
             };
 
             var updateResponse = await HttpClient.PostAsJsonAsync($"api/otherteacher/confirm/{_teacherId}", confirmData);

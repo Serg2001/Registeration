@@ -33,5 +33,7 @@ namespace Registeration.DTOs.OtherStudentDTOs
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string Login { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public string UserType { get; set; } = string.Empty;
     }
 }

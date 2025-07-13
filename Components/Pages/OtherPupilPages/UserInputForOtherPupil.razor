@@ -183,10 +183,16 @@
             string parentPassword = GenerateCode(_model.ParentsEmail);
             string childAccessCode = GenerateCode(identityString);
 
+            // 🆕 Set Role and UserType
+            _model.Role = "otherpupil";
+            _model.UserType = "otherpupil";
+
             var confirmData = new
             {
                 Password = parentPassword,
-                AccessCode = childAccessCode
+                AccessCode = childAccessCode,
+                Role = _model.Role,
+                UserType = _model.UserType
             };
 
             var updateResponse = await HttpClient.PostAsJsonAsync($"api/otherpupil/confirm/{_pupilId}", confirmData);

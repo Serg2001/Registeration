@@ -171,10 +171,15 @@
             string password = GenerateCode(_model.Email);
             string accesscode = "petqchi";
 
+            _model.Role = "othercompany";
+            _model.UserType = "othercompany";
+
             var confirmData = new ConfirmCredentialsDTO
                 {
                     Password = password,
-                    AccessCode = "petqchi"
+                    AccessCode = "petqchi",
+                    Role = _model.Role,
+                    UserType = _model.UserType
                 };
 
             var updateResponse = await HttpClient.PostAsJsonAsync($"api/othercompany/confirm/{_otherId}", confirmData);

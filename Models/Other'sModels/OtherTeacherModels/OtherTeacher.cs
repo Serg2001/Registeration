@@ -53,5 +53,7 @@ namespace Registeration.Models
 
         [StringLength(255)]
         public string? AccessCode { get; set; }
+        public string Role { get; set; } = string.Empty;
+        public string UserType { get; set; } = string.Empty;
     }
 }

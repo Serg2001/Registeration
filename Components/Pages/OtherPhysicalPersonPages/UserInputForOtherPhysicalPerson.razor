@@ -13,60 +13,60 @@
 
 <style>
     body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background: radial-gradient(circle at center, #e4d9f9, #ffffff);
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-        overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at center, #e4d9f9, #ffffff);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    overflow-x: hidden;
     }
 
     .blurred-bubbles {
-        position: absolute;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        z-index: -1;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: -1;
     }
 
     .bubble {
-        position: absolute;
-        border-radius: 50%;
-        background: #b58df1;
-        filter: blur(90px);
-        opacity: 0.7;
+    position: absolute;
+    border-radius: 50%;
+    background: #b58df1;
+    filter: blur(90px);
+    opacity: 0.7;
     }
 
     .bubble1 {
-        top: 10%;
-        left: 5%;
-        width: 300px;
-        height: 300px;
+    top: 10%;
+    left: 5%;
+    width: 300px;
+    height: 300px;
     }
 
     .bubble2 {
-        top: 30%;
-        left: 60%;
-        width: 400px;
-        height: 400px;
+    top: 30%;
+    left: 60%;
+    width: 400px;
+    height: 400px;
     }
 
     .bubble3 {
-        bottom: 10%;
-        left: 30%;
-        width: 500px;
-        height: 500px;
+    bottom: 10%;
+    left: 30%;
+    width: 500px;
+    height: 500px;
     }
 
     .confirmation-box {
-        background-color: rgba(255, 255, 255, 0.85);
-        padding: 3rem;
-        border-radius: 20px;
-        max-width: 600px;
-        width: 100%;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 3rem;
+    border-radius: 20px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
     }
 </style>
 
@@ -82,38 +82,38 @@
             <MudText Typo="Typo.h5" Class="mb-4">Գրանցման Տվյալների Հաստատում</MudText>
 
             <MudTextField T="string" Label="Երկիր"
-                          Text="@_model.Country"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.Country"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Քաղաք"
-                          Text="@_model.City"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.City"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Անուն"
-                          Text="@_model.Name"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.Name"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Ազգանուն"
-                          Text="@_model.SurName"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.SurName"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Մասնագիտություն"
-                          Text="@_model.Profession"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.Profession"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Էլ․ հասցե"
-                          Text="@_model.Email"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.Email"
+            Variant="Variant.Outlined" Disabled="true" />
 
             <MudTextField T="string" Label="Հեռ․ համար"
-                          Text="@_model.Phone"
-                          Variant="Variant.Outlined" Disabled="true" />
+            Text="@_model.Phone"
+            Variant="Variant.Outlined" Disabled="true" />
 
             @if (!string.IsNullOrWhiteSpace(_model.Purpose))
             {
                 <MudTextField T="string" Label="Նպատակ"
-                              Text="@_model.Purpose"
-                              Variant="Variant.Outlined" Disabled="true" />
+                Text="@_model.Purpose"
+                Variant="Variant.Outlined" Disabled="true" />
             }
 
             <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="OnConfirm" Class="mt-4 me-2">
@@ -175,10 +175,15 @@
             string password = GenerateCode(_model.Email);
             string accesscode = "petqchi";
 
+            _model.Role = "otherphysicalperson";
+            _model.UserType = "otherphysicalperson";
+
             var confirmData = new ConfirmCredentialsDTO
                 {
                     Password = password,
-                    AccessCode = "petqchi"
+                    AccessCode = "petqchi",
+                    Role = _model.Role,
+                    UserType = _model.UserType
                 };
 
             var updateResponse = await HttpClient.PostAsJsonAsync($"api/otherphysicalperson/confirm/{_otherId}", confirmData);

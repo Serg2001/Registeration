@@ -52,5 +52,7 @@ namespace Registeration.Models.SchoolModels
         [Required]
         [StringLength(10)]
         public string AccessCode { get; set; } = string.Empty;  // 6-digit symbolic code
+        public string Role { get; set; } = string.Empty;
+        public string UserType { get; set; } = string.Empty;
     }
 }

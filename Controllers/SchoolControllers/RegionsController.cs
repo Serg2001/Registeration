@@ -133,6 +133,8 @@ namespace Registeration.Controllers.SchoolControllers
             registration.Login = registration.Email;
             registration.Password = dto.Password;
             registration.AccessCode = dto.AccessCode;
+            registration.Role = dto.Role;
+            registration.UserType = dto.UserType;
 
             await _context.SaveChangesAsync();
             return Ok();

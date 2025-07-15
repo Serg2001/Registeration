@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Registeration.Models
 {
     [Index(nameof(Grade), nameof(SocNumber), nameof(SchoolId), IsUnique = true)]
-    public class OtherPupil
+    public class OtherPupil : LoginParameters
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();

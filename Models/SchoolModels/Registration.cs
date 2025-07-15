@@ -8,7 +8,7 @@ using Registeration.Models.CrmModels;
 namespace Registeration.Models.SchoolModels
 {
     [Index(nameof(Email), IsUnique = true)]
-    public class Registration
+    public class Registration : LoginParameters
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Registeration.Models
 {
-    public class OtherCompany
+    public class OtherCompany : LoginParameters
     {
         public Guid Id { get; set; } = Guid.NewGuid();
 

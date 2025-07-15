@@ -28,9 +28,28 @@ namespace Registeration.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AccessCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPermanentlyLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LockoutEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutStartTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("RequiresPasswordChange")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -39,6 +58,12 @@ namespace Registeration.Migrations
                     b.Property<string>("Surname")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TwoFactorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TwoFactorCodeExpiration")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserType")
                         .IsRequired()
@@ -115,9 +140,21 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
                     b.Property<string>("FieldOfActivity")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsPermanentlyLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LockoutEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutStartTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Login")
                         .IsRequired()
@@ -139,9 +176,18 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("RequiresPasswordChange")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TwoFactorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TwoFactorCodeExpiration")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserType")
                         .IsRequired()
@@ -176,6 +222,18 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPermanentlyLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LockoutEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutStartTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Login")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -196,6 +254,9 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("RequiresPasswordChange")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -211,6 +272,12 @@ namespace Registeration.Migrations
                     b.Property<string>("TeachingSubject")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TwoFactorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TwoFactorCodeExpiration")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserType")
                         .IsRequired()
@@ -248,6 +315,18 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPermanentlyLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LockoutEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutStartTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Login")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -272,6 +351,9 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("RequiresPasswordChange")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -279,6 +361,12 @@ namespace Registeration.Migrations
                     b.Property<string>("SurName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TwoFactorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TwoFactorCodeExpiration")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserType")
                         .IsRequired()
@@ -303,8 +391,20 @@ namespace Registeration.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
                     b.Property<int>("Grade")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsPermanentlyLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LockoutEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutStartTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Login")
                         .IsRequired()
@@ -326,6 +426,9 @@ namespace Registeration.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("RequiresPasswordChange")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -341,6 +444,12 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TwoFactorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TwoFactorCodeExpiration")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserType")
                         .IsRequired()
@@ -380,6 +489,18 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPermanentlyLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LockoutEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutStartTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Login")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -400,6 +521,9 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("RequiresPasswordChange")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -411,6 +535,12 @@ namespace Registeration.Migrations
                     b.Property<string>("SurName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TwoFactorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TwoFactorCodeExpiration")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserType")
                         .IsRequired()
@@ -439,10 +569,22 @@ namespace Registeration.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsPermanentlyLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LockoutEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutStartTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Login")
                         .HasMaxLength(255)
@@ -454,6 +596,9 @@ namespace Registeration.Migrations
 
                     b.Property<Guid>("RegionId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("RequiresPasswordChange")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -470,6 +615,12 @@ namespace Registeration.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TwoFactorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TwoFactorCodeExpiration")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserType")
                         .IsRequired()
@@ -518,6 +669,18 @@ namespace Registeration.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPermanentlyLocked")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LockoutEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutStartTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Login")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -528,12 +691,21 @@ namespace Registeration.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("RequiresPasswordChange")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("SchoolId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TwoFactorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TwoFactorCodeExpiration")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserType")
                         .IsRequired()

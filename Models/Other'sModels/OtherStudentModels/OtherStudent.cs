@@ -5,7 +5,7 @@ using System.Drawing;
 namespace Registeration.Models
 {
     [Index(nameof(Email), IsUnique = true)]
-    public class OtherStudent
+    public class OtherStudent : LoginParameters
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Country { get; set; } = string.Empty;

@@ -8,7 +8,7 @@ using Registeration.Models.CrmModels;
 namespace Registeration.Models
 {
     [Index(nameof(SocNumber), nameof(SchoolId), IsUnique = true)]
-    public class OtherTeacher
+    public class OtherTeacher : LoginParameters
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();

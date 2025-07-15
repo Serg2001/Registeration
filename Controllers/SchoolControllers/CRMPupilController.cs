@@ -2,6 +2,8 @@
 using Registeration.Models.CrmModels;
 using Registeration.Services.CrmServices;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -48,7 +50,10 @@ public class PupilsController : ControllerBase
             {
                 Id = p.Id,  // Preserving the CRM Ids
                 Name = p.Name ?? string.Empty,
-                Surname = p.Surname ?? string.Empty
+                Surname = p.Surname ?? string.Empty,
+                Role = "pupil",
+                UserType = "pupil",
+                AccessCode = GenerateCode($"{p.Id}-{p.Name}-{p.Surname}")
             }).ToList();
 
             await _pupilService.SavePupilsAsync(pupilsToSave);
@@ -61,4 +66,47 @@ public class PupilsController : ControllerBase
         }
     }
 
+    private static string GenerateCode(string input)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(input);
+            byte[] hash = sha256.ComputeHash(bytes);
+
+            string hex = BitConverter.ToString(hash).Replace("-", "");
+            string digitsOnly = new string(hex.Where(char.IsDigit).ToArray()).PadRight(3, '0');
+            string digitPart = digitsOnly.Substring(0, 3);
+
+            char[] upper = {
+                'Ա', 'Բ', 'Գ', 'Դ', 'Ե', 'Զ', 'Է', 'Ը', 'Թ', 'Ժ', 'Ի', 'Լ', 'Խ',
+                'Ծ', 'Կ', 'Հ', 'Ձ', 'Ղ', 'Ճ', 'Մ', 'Յ', 'Ն', 'Շ', 'Ո', 'Չ', 'Պ',
+                'Ջ', 'Ռ', 'Ս', 'Վ', 'Տ', 'Ր', 'Ց', 'Փ', 'Ք', 'Օ', 'Ֆ'
+        };
+
+            char[] lower = {
+                'ա', 'բ', 'գ', 'դ', 'ե', 'զ', 'է', 'ը', 'թ', 'ժ', 'ի', 'լ', 'խ',
+                'ծ', 'կ', 'հ', 'ձ', 'ղ', 'ճ', 'մ', 'յ', 'ն', 'շ', 'ո', 'չ', 'պ',
+                'ջ', 'ռ', 'ս', 'վ', 'տ', 'ր', 'ց', 'փ', 'ք', 'օ', 'ֆ'
+        };
+
+            char[] symbols = { '!', '@', '#', '$', '%', '&', '*' };
+
+            Random rand = new Random(hash[0] + hash[1] + hash[2]);
+
+            char letter1 = rand.Next(2) == 0 ? upper[hash[3] % upper.Length] : lower[hash[4] % lower.Length];
+            char letter2 = rand.Next(2) == 0 ? upper[hash[5] % upper.Length] : lower[hash[6] % lower.Length];
+            char symbol = symbols[hash[7] % symbols.Length];
+
+            char[] codeChars = new[] {
+                digitPart[0], digitPart[1], digitPart[2],
+                letter1, letter2,
+                symbol
+            };
+
+            codeChars = codeChars.OrderBy(_ => rand.Next()).ToArray();
+
+            return new string(codeChars);
+        }
+
+    }
 }

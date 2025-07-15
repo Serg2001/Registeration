@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Registeration.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,7 +19,15 @@ namespace Registeration.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Surname = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AccessCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequiresPasswordChange = table.Column<bool>(type: "bit", nullable: false),
+                    FailedLoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockoutStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LockoutEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPermanentlyLocked = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TwoFactorCodeExpiration = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -42,7 +50,14 @@ namespace Registeration.Migrations
                     Login = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequiresPasswordChange = table.Column<bool>(type: "bit", nullable: false),
+                    FailedLoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockoutStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LockoutEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPermanentlyLocked = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TwoFactorCodeExpiration = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -68,7 +83,14 @@ namespace Registeration.Migrations
                     Login = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequiresPasswordChange = table.Column<bool>(type: "bit", nullable: false),
+                    FailedLoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockoutStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LockoutEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPermanentlyLocked = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TwoFactorCodeExpiration = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -93,7 +115,14 @@ namespace Registeration.Migrations
                     Login = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequiresPasswordChange = table.Column<bool>(type: "bit", nullable: false),
+                    FailedLoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockoutStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LockoutEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPermanentlyLocked = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TwoFactorCodeExpiration = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -118,7 +147,14 @@ namespace Registeration.Migrations
                     Login = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequiresPasswordChange = table.Column<bool>(type: "bit", nullable: false),
+                    FailedLoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockoutStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LockoutEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPermanentlyLocked = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TwoFactorCodeExpiration = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -172,7 +208,14 @@ namespace Registeration.Migrations
                     Password = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     AccessCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequiresPasswordChange = table.Column<bool>(type: "bit", nullable: false),
+                    FailedLoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockoutStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LockoutEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPermanentlyLocked = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TwoFactorCodeExpiration = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -199,7 +242,14 @@ namespace Registeration.Migrations
                     Password = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     AccessCode = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequiresPasswordChange = table.Column<bool>(type: "bit", nullable: false),
+                    FailedLoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockoutStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LockoutEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPermanentlyLocked = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TwoFactorCodeExpiration = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -230,7 +280,14 @@ namespace Registeration.Migrations
                     Password = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     AccessCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequiresPasswordChange = table.Column<bool>(type: "bit", nullable: false),
+                    FailedLoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    LockoutStartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LockoutEndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsPermanentlyLocked = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TwoFactorCodeExpiration = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {

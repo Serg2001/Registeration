@@ -3,7 +3,7 @@
 namespace Registeration.Models
 {
     [Index(nameof(Email), IsUnique = true)]
-    public class OtherLecturer
+    public class OtherLecturer : LoginParameters
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Country { get; set; } = string.Empty;

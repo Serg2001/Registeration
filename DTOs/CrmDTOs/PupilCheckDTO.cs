@@ -6,8 +6,8 @@ namespace Registeration.DTOs.CrmDTOs
     {
         public Guid SchoolId { get; set; }
         public EGrade Grade { get; set; }
-        public string Name { get; set; }
-        public string SurName { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string SurName { get; set; } = string.Empty;
 
     }
 }

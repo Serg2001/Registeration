@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Registeration.Models
 {
     [Index(nameof(Email), IsUnique = true)]
-    public class OtherPhysicalPerson
+    public class OtherPhysicalPerson : LoginParameters
     {
        public Guid Id { get; set; } = Guid.NewGuid();
 

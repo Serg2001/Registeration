@@ -12,7 +12,7 @@ using Registeration.Data;
 namespace Registeration.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250715075949_InitialCreate")]
+    [Migration("20250716181443_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
